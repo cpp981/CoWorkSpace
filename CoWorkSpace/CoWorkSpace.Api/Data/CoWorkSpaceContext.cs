@@ -1,0 +1,290 @@
+﻿using Microsoft.EntityFrameworkCore;
+using CoWorkSpace.Api.Models;
+using System;
+
+namespace CoWorkSpace.Api.Data
+{
+    public class CoWorkSpaceContext : DbContext
+    {
+        public DbSet<User> Users { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<Space> Spaces { get; set; }
+        public DbSet<Booking> Bookings { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<Log> Logs { get; set; }
+
+        public CoWorkSpaceContext(DbContextOptions<CoWorkSpaceContext> options)
+            : base(options)
+        {
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            // Índices únicos y no únicos
+            modelBuilder.Entity<User>()
+                .HasIndex(u => u.Email)
+                .IsUnique();
+
+            modelBuilder.Entity<Log>()
+                .HasIndex(l => l.Timestamp);
+
+            modelBuilder.Entity<Log>()
+                .HasIndex(l => l.EventType);
+
+            // Relación User -> User (Admins creados por Providers)
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Provider)
+                .WithMany()
+                .HasForeignKey(u => u.ProviderId)
+                .HasConstraintName("FK_Users_Users_ProviderId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // Filtro global para usuarios cuyo ProviderId es null o el Provider tiene Role "Provider"
+            modelBuilder.Entity<User>()
+                .HasQueryFilter(u => u.ProviderId == null || (u.Provider != null && u.Provider.Role.RoleId == 3));
+
+            // Relación User -> Role (Obligatoria)
+            modelBuilder.Entity<User>()
+                .HasOne(u => u.Role)
+                .WithMany(r => r.Users)
+                .HasForeignKey(u => u.RoleId)
+                .IsRequired();
+
+            // Relación Space -> User (Admin obligatorio)
+            modelBuilder.Entity<Space>()
+                .HasOne(s => s.Admin)
+                .WithMany()
+                .HasForeignKey(s => s.AdminId)
+                .HasConstraintName("FK_Spaces_Users_AdminId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            // Nombre explícito de columna para AdminId
+            modelBuilder.Entity<Space>()
+                .Property(s => s.AdminId)
+                .HasColumnName("AdminId");
+
+            // Filtros globales para Space (no eliminado y Admin con rol Admin o SuperAdmin)
+            modelBuilder.Entity<Space>()
+                .HasQueryFilter(s => !s.IsDeleted
+                    && s.Admin != null
+                    && (s.Admin.Role.RoleId == 2 || s.Admin.Role.RoleId == 1));
+
+            // Relación Booking -> User (Cliente obligatorio)
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.User)
+                .WithMany()
+                .HasForeignKey(b => b.UserId)
+                .HasConstraintName("FK_Bookings_Users_UserId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            // Relación Booking -> Space obligatorio
+            modelBuilder.Entity<Booking>()
+                .HasOne(b => b.Space)
+                .WithMany(s => s.Bookings)
+                .HasForeignKey(b => b.SpaceId)
+                .HasConstraintName("FK_Bookings_Spaces_SpaceId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            // Filtro global para Booking solo para usuarios con rol Client
+            modelBuilder.Entity<Booking>()
+                .HasQueryFilter(b => b.User != null && b.User.Role.RoleId == 4);
+
+            // Relación Review -> User (Cliente obligatorio)
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.User)
+                .WithMany()
+                .HasForeignKey(r => r.UserId)
+                .HasConstraintName("FK_Reviews_Users_UserId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            // Relación Review -> Space (obligatoria, con borrado en cascada)
+            modelBuilder.Entity<Review>()
+                .HasOne(r => r.Space)
+                .WithMany(s => s.Reviews)
+                .HasForeignKey(r => r.SpaceId)
+                .HasConstraintName("FK_Reviews_Spaces_SpaceId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired();
+
+            // Filtro global para Review solo usuarios con rol Client
+            modelBuilder.Entity<Review>()
+                .HasQueryFilter(r => r.User != null && r.User.Role.RoleId == 4);
+
+            // Relación Payment -> User (obligatoria)
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.User)
+                .WithMany()
+                .HasForeignKey(p => p.UserId)
+                .HasConstraintName("FK_Payments_Users_UserId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            // Relación Payment -> Booking (opcional, borrado en cascada)
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Booking)
+                .WithMany(b => b.Payments)
+                .HasForeignKey(p => p.BookingId)
+                .HasConstraintName("FK_Payments_Bookings_BookingId")
+                .OnDelete(DeleteBehavior.Cascade)
+                .IsRequired(false);
+
+            // Relación Payment -> Space (opcional)
+            modelBuilder.Entity<Payment>()
+                .HasOne(p => p.Space)
+                .WithMany(s => s.Payments)
+                .HasForeignKey(p => p.SpaceId)
+                .HasConstraintName("FK_Payments_Spaces_SpaceId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // Precisión para Amount en Payment
+            modelBuilder.Entity<Payment>()
+                .Property(p => p.Amount)
+                .HasColumnType("decimal(18,2)");
+
+            // Filtro global para Payment por roles de usuario
+            modelBuilder.Entity<Payment>()
+                .HasQueryFilter(p => p.User != null &&
+                    (p.User.Role.RoleId == 4
+                    || p.User.Role.RoleId == 2
+                    || p.User.Role.RoleId == 1));
+
+            // Relación Log -> User (opcional)
+            modelBuilder.Entity<Log>()
+                .HasOne(l => l.User)
+                .WithMany()
+                .HasForeignKey(l => l.UserId)
+                .HasConstraintName("FK_Logs_Users_UserId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired(false);
+
+            // Seed Roles
+            modelBuilder.Entity<Role>().HasData(
+                new Role { RoleId = 1, RoleName = "SuperAdmin" },
+                new Role { RoleId = 2, RoleName = "Admin" },
+                new Role { RoleId = 3, RoleName = "Provider" },
+                new Role { RoleId = 4, RoleName = "Client" }
+            );
+
+            // Seed Users
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    Id = 1,
+                    Email = "superadmin@coworkspace.com",
+                    PasswordHash = "$2a$11$LSiUCLVeVeOynzKQVsM2XOq4jS3IBhsJ.VzouEqCmjQjhty4l.3Pa",
+                    Name = "Super Admin",
+                    RoleId = 1,
+                    ProviderId = null
+                },
+                new User
+                {
+                    Id = 2,
+                    Email = "provider@coworkspace.com",
+                    PasswordHash = "$2a$11$ix99XlIasCCcYr/Zz5AwzO5TTr.Zv.ykHWwRULTo4NyWTSr9J3W5W",
+                    Name = "Test Provider",
+                    RoleId = 3,
+                    ProviderId = null
+                },
+                new User
+                {
+                    Id = 3,
+                    Email = "admin@coworkspace.com",
+                    PasswordHash = "$2a$11$Kn0nDdok.EqeppL6E0rTje40JdNq0qP8Pz.D/YtISJBgH1UgRrvqG",
+                    Name = "Test Admin",
+                    RoleId = 2,
+                    ProviderId = 2
+                },
+                new User
+                {
+                    Id = 4,
+                    Email = "client@coworkspace.com",
+                    PasswordHash = "$2a$11$R6e5nDM1HoXKHFhxALf4B.jQpJ7tko/p5zY.R.e7QCloUrOEMtoRe",
+                    Name = "Test Client",
+                    RoleId = 4,
+                    ProviderId = null
+                }
+            );
+
+            // Seed Space
+            modelBuilder.Entity<Space>().HasData(
+                new Space
+                {
+                    Id = 1,
+                    Name = "Test Space",
+                    AdminId = 3,
+                    IsPublic = true,
+                    Price = 50.00m,
+                    City = "Madrid",
+                    IsDeleted = false
+                }
+            );
+
+            // Seed Booking
+            modelBuilder.Entity<Booking>().HasData(
+                new Booking
+                {
+                    Id = 1,
+                    UserId = 4,
+                    SpaceId = 1,
+                    StartTime = new DateTime(2025, 5, 21, 10, 0, 0, DateTimeKind.Utc),
+                    EndTime = new DateTime(2025, 5, 21, 12, 0, 0, DateTimeKind.Utc)
+                }
+            );
+
+            // Seed Review
+            modelBuilder.Entity<Review>().HasData(
+                new Review
+                {
+                    Id = 1,
+                    UserId = 4,
+                    SpaceId = 1,
+                    Rating = 5,
+                    Comment = "Excelente espacio de trabajo!"
+                }
+            );
+
+            // Seed Payments
+            modelBuilder.Entity<Payment>().HasData(
+                new Payment
+                {
+                    Id = 1,
+                    BookingId = 1,
+                    SpaceId = null,
+                    UserId = 4,
+                    Amount = 100.00m,
+                    Status = "Completed"
+                },
+                new Payment
+                {
+                    Id = 2,
+                    BookingId = null,
+                    SpaceId = 1,
+                    UserId = 3,
+                    Amount = 500.00m,
+                    Status = "Completed"
+                }
+            );
+
+            // Seed Log
+            modelBuilder.Entity<Log>().HasData(
+                new Log
+                {
+                    Id = 1,
+                    Timestamp = new DateTime(2025, 5, 19, 20, 23, 0, DateTimeKind.Utc),
+                    EventType = "SystemStartup",
+                    UserId = null,
+                    Details = "Sistema iniciado correctamente."
+                }
+            );
+
+            base.OnModelCreating(modelBuilder);
+        }
+    }
+}
