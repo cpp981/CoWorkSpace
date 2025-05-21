@@ -4,7 +4,6 @@ using CoWorkSpace.Api.Data;
 using CoWorkSpace.Api.Models;
 using CoWorkSpace.Api.DTOs;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace CoWorkSpace.Api.Controllers
@@ -21,20 +20,14 @@ namespace CoWorkSpace.Api.Controllers
         }
 
         [HttpPost("register")]
-        [Authorize]
         public async Task<IActionResult> Register([FromBody] RegisterRequestDTO request)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // Obtener el claim "roleId"
-            var roleIdClaim = User.FindFirst("roleId")?.Value;
-            if (roleIdClaim == null || !int.TryParse(roleIdClaim, out int userRoleId))
-                return Unauthorized("No autorizado. Rol inválido o no encontrado.");
-
             // Permitir solo roles 3 y 4 para registrar
-            if (userRoleId != 3 && userRoleId != 4)
-                return Unauthorized(new { message = "No tiene permisos para registrar usuarios." });
+            if (request.RoleId != 3 && request.RoleId != 4)
+                return BadRequest(new { message = "Rol no permitido. Solo se pueden registrar usuarios con rol provider o client." });
 
             // Verificar si el RoleId solicitado existe
             var roleEntity = await _context.Roles.FindAsync(request.RoleId);
@@ -62,4 +55,3 @@ namespace CoWorkSpace.Api.Controllers
         }
     }
 }
-
