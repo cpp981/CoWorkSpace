@@ -29,15 +29,15 @@ namespace CoWorkSpace.Api.Data
             // Relación recursiva User -> Provider (otro User)
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Provider)
-                .WithMany(p => p.Admins) // debes tener ICollection<User> Admins en User.cs
+                .WithMany(p => p.Admins)
                 .HasForeignKey(u => u.ProviderId)
                 .HasConstraintName("FK_Users_Users_ProviderId")
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false);
 
-            // Filtro global para usuarios (permitir admins con Provider con rol válido o sin provider)
+            // Filtro global simplificado para usuarios
             modelBuilder.Entity<User>()
-                .HasQueryFilter(u => u.ProviderId == null || (u.Provider != null && u.Provider.Role.RoleId == 3));
+                .HasQueryFilter(u => u.ProviderId == null);
 
             // Relación User -> Role
             modelBuilder.Entity<User>()
@@ -46,7 +46,7 @@ namespace CoWorkSpace.Api.Data
                 .HasForeignKey(u => u.RoleId)
                 .IsRequired();
 
-            // Relación Space -> Admin (User)
+            // Resto del código sin cambios
             modelBuilder.Entity<Space>()
                 .HasOne(s => s.Admin)
                 .WithMany()
@@ -59,13 +59,11 @@ namespace CoWorkSpace.Api.Data
                 .Property(s => s.AdminId)
                 .HasColumnName("AdminId");
 
-            // Filtro global para Space
             modelBuilder.Entity<Space>()
                 .HasQueryFilter(s => !s.IsDeleted
                     && s.Admin != null
                     && (s.Admin.Role.RoleId == 2 || s.Admin.Role.RoleId == 1));
 
-            // Relación Booking -> User (cliente)
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.User)
                 .WithMany()
@@ -74,7 +72,6 @@ namespace CoWorkSpace.Api.Data
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired();
 
-            // Relación Booking -> Space
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.Space)
                 .WithMany(s => s.Bookings)
@@ -83,11 +80,9 @@ namespace CoWorkSpace.Api.Data
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired();
 
-            // Filtro global para Booking
             modelBuilder.Entity<Booking>()
                 .HasQueryFilter(b => b.User != null && b.User.Role.RoleId == 4);
 
-            // Relación Review -> User
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.User)
                 .WithMany()
@@ -96,7 +91,6 @@ namespace CoWorkSpace.Api.Data
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired();
 
-            // Relación Review -> Space
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.Space)
                 .WithMany(s => s.Reviews)
@@ -108,7 +102,6 @@ namespace CoWorkSpace.Api.Data
             modelBuilder.Entity<Review>()
                 .HasQueryFilter(r => r.User != null && r.User.Role.RoleId == 4);
 
-            // Relación Payment -> User
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.User)
                 .WithMany()
@@ -117,7 +110,6 @@ namespace CoWorkSpace.Api.Data
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired();
 
-            // Relación Payment -> Booking (opcional)
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.Booking)
                 .WithMany(b => b.Payments)
@@ -126,7 +118,6 @@ namespace CoWorkSpace.Api.Data
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired(false);
 
-            // Relación Payment -> Space (opcional)
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.Space)
                 .WithMany(s => s.Payments)
@@ -143,7 +134,6 @@ namespace CoWorkSpace.Api.Data
                 .HasQueryFilter(p => p.User != null &&
                     (p.User.Role.RoleId == 4 || p.User.Role.RoleId == 2 || p.User.Role.RoleId == 1));
 
-            // Relación Log -> User (opcional)
             modelBuilder.Entity<Log>()
                 .HasOne(l => l.User)
                 .WithMany()

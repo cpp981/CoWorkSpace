@@ -17,5 +17,6 @@ namespace CoWorkSpace.Api.DTOs
 
         [Required]
         public int RoleId { get; set; }
+        public int? ProviderId { get; set; } // Opcional, solo para RoleId = 2
     }
 }

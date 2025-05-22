@@ -45,7 +45,8 @@ namespace CoWorkSpace.Api.Controllers
                 Email = request.Email,
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
                 Name = request.Name,
-                RoleId = request.RoleId
+                RoleId = request.RoleId,
+                ProviderId = null // ProviderId no se usa para RoleId = 3 o 4
             };
 
             _context.Users.Add(user);

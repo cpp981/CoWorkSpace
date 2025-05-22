@@ -46,11 +46,9 @@ namespace CoWorkSpace.Tests
             if (objectResult?.Value == null)
                 return null;
 
-            // Usa reflection para obtener la propiedad "message"
             var messageProperty = objectResult.Value.GetType().GetProperty("message");
             return messageProperty?.GetValue(objectResult.Value)?.ToString();
         }
-
 
         [Fact]
         public async Task Register_Returns_BadRequest_If_Email_Exists()
@@ -97,12 +95,10 @@ namespace CoWorkSpace.Tests
         [Fact]
         public async Task Register_Returns_BadRequest_If_RoleId_Not_Exists()
         {
-            // Arrange
             var context = new CoWorkSpaceContext(new DbContextOptionsBuilder<CoWorkSpaceContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options);
 
-            // Agregamos SOLO el rol 3
             context.Roles.Add(new Role { RoleId = 3, RoleName = "Provider" });
             await context.SaveChangesAsync();
 
@@ -113,18 +109,15 @@ namespace CoWorkSpace.Tests
                 Email = "test@cowork.com",
                 Password = "Test123!",
                 Name = "Test User",
-                RoleId = 4 // válido, pero NO existe en la base de datos
+                RoleId = 4
             };
 
-            // Act
             var result = await controller.Register(dto);
 
-            // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var message = GetMessageFromResult(result);
             Assert.Equal("Rol no válido. RoleId no encontrado en la base de datos.", message);
         }
-
 
         [Fact]
         public async Task Register_Returns_Ok_If_Valid()
@@ -152,4 +145,3 @@ namespace CoWorkSpace.Tests
         }
     }
 }
-
