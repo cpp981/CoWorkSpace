@@ -1,5 +1,4 @@
 ﻿using Xunit;
-using Moq;
 using Microsoft.AspNetCore.Mvc;
 using CoWorkSpace.Api.Controllers;
 using CoWorkSpace.Api.DTOs;
@@ -8,7 +7,6 @@ using CoWorkSpace.Api.Data;
 using CoWorkSpace.Api.Constants;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace CoWorkSpace.Tests
@@ -41,19 +39,10 @@ namespace CoWorkSpace.Tests
             return context;
         }
 
-        private string GetMessageFromResult(IActionResult result)
-        {
-            var objectResult = result as ObjectResult;
-            if (objectResult?.Value == null)
-                return null;
-
-            var messageProperty = objectResult.Value.GetType().GetProperty("message");
-            return messageProperty?.GetValue(objectResult.Value)?.ToString();
-        }
-
         [Fact]
         public async Task Register_Returns_BadRequest_If_Email_Exists()
         {
+            // Arrange
             var context = GetDbContextWithData();
             var controller = new AuthController(context);
 
@@ -65,16 +54,19 @@ namespace CoWorkSpace.Tests
                 RoleId = 3
             };
 
+            // Act
             var result = await controller.Register(dto);
 
+            // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            var message = GetMessageFromResult(badRequest);
-            Assert.Equal(ApiMessages.EmailAlreadyRegistered, message);
+            var response = Assert.IsType<RegisterResponseDTO>(badRequest.Value);
+            Assert.Equal(ApiMessages.EmailAlreadyRegistered, response.Message);
         }
 
         [Fact]
         public async Task Register_Returns_BadRequest_If_RoleId_Not_Allowed()
         {
+            // Arrange
             var context = GetDbContextWithData();
             var controller = new AuthController(context);
 
@@ -86,16 +78,19 @@ namespace CoWorkSpace.Tests
                 RoleId = 2
             };
 
+            // Act
             var result = await controller.Register(dto);
 
+            // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            var message = GetMessageFromResult(badRequest);
-            Assert.Equal(ApiMessages.RoleNotAllowedOnlyCanRegisterProviderOrClient, message);
+            var response = Assert.IsType<RegisterResponseDTO>(badRequest.Value);
+            Assert.Equal(ApiMessages.RoleNotAllowedOnlyCanRegisterProviderOrClient, response.Message);
         }
 
         [Fact]
         public async Task Register_Returns_BadRequest_If_RoleId_Not_Exists()
         {
+            // Arrange
             var context = new CoWorkSpaceContext(new DbContextOptionsBuilder<CoWorkSpaceContext>()
                 .UseInMemoryDatabase(Guid.NewGuid().ToString())
                 .Options);
@@ -113,16 +108,19 @@ namespace CoWorkSpace.Tests
                 RoleId = 4
             };
 
+            // Act
             var result = await controller.Register(dto);
 
+            // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            var message = GetMessageFromResult(result);
-            Assert.Equal(ApiMessages.InvalidRoleOrRoleIdNotFound, message);
+            var response = Assert.IsType<RegisterResponseDTO>(badRequest.Value);
+            Assert.Equal(ApiMessages.InvalidRoleOrRoleIdNotFound, response.Message);
         }
 
         [Fact]
         public async Task Register_Returns_Ok_If_Valid()
         {
+            // Arrange
             var context = GetDbContextWithData();
             var controller = new AuthController(context);
 
@@ -134,11 +132,17 @@ namespace CoWorkSpace.Tests
                 RoleId = 3
             };
 
+            // Act
             var result = await controller.Register(dto);
 
+            // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var message = GetMessageFromResult(okResult);
-            Assert.Equal(ApiMessages.UserRegisteredSuccessfully, message);
+            var response = Assert.IsType<RegisterResponseDTO>(okResult.Value);
+            Assert.Equal(ApiMessages.UserRegisteredSuccessfully, response.Message);
+            Assert.Equal(dto.Email, response.Email);
+            Assert.Equal(dto.Name, response.Name);
+            Assert.Equal(dto.RoleId, response.RoleId);
+            Assert.Null(response.ProviderId);
 
             var user = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
             Assert.NotNull(user);

@@ -22,13 +22,13 @@ namespace CoWorkSpace.Tests
 
             var context = new CoWorkSpaceContext(options);
 
-            // Añadimos un usuario con hash 
+            // Añadimos un usuario con hash para "Provider1234"
             var user = new User
             {
                 Id = 2,
                 Email = "provider@coworkspace.com",
                 Name = "Test Provider",
-                PasswordHash = "$2a$11$ix99XlIasCCcYr/Zz5AwzO5TTr.Zv.ykHWwRULTo4NyWTSr9J3W5W", // hash "12345678"
+                PasswordHash = "$2a$11$ix99XlIasCCcYr/Zz5AwzO5TTr.Zv.ykHWwRULTo4NyWTSr9J3W5W", // Hash para "Provider1234"
                 RoleId = 3,
                 Role = new Role { RoleId = 3, RoleName = "Provider" }
             };
@@ -41,7 +41,8 @@ namespace CoWorkSpace.Tests
 
         private IConfiguration GetTestConfiguration()
         {
-            var inMemorySettings = new System.Collections.Generic.Dictionary<string, string> {
+            var inMemorySettings = new System.Collections.Generic.Dictionary<string, string>
+            {
                 {"Jwt:Key", "EstaEsUnaClaveSuperSecreta123456789!"},
                 {"Jwt:Issuer", "coworkspace"},
                 {"Jwt:Audience", "coworkspaceUsers"}
@@ -63,7 +64,7 @@ namespace CoWorkSpace.Tests
             var loginDto = new LoginRequestDto
             {
                 Email = "provider@coworkspace.com",
-                Password = "Provider123"
+                Password = "Provider123" 
             };
 
             // Act
@@ -73,6 +74,7 @@ namespace CoWorkSpace.Tests
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<LoginResponseDto>(okResult.Value);
             Assert.False(string.IsNullOrEmpty(response.Token));
+            Assert.Equal("Inicio de sesión exitoso.", response.Message);
         }
 
         [Fact]
@@ -94,7 +96,8 @@ namespace CoWorkSpace.Tests
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal(ApiMessages.InvalidCredentials, unauthorizedResult.Value);
+            var response = Assert.IsType<LoginResponseDto>(unauthorizedResult.Value);
+            Assert.Equal(ApiMessages.InvalidCredentials, response.Message);
         }
 
         [Fact]
@@ -116,7 +119,8 @@ namespace CoWorkSpace.Tests
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal(ApiMessages.InvalidCredentials, unauthorizedResult.Value);
+            var response = Assert.IsType<LoginResponseDto>(unauthorizedResult.Value);
+            Assert.Equal(ApiMessages.InvalidCredentials, response.Message);
         }
 
         [Fact]
@@ -135,9 +139,11 @@ namespace CoWorkSpace.Tests
             var badRequestNull = Assert.IsType<BadRequestObjectResult>(resultNull);
             var badRequestEmpty = Assert.IsType<BadRequestObjectResult>(resultEmpty);
 
-            Assert.Equal(ApiMessages.MailAndPasswordAreRequired, badRequestNull.Value);
-            Assert.Equal(ApiMessages.MailAndPasswordAreRequired, badRequestEmpty.Value);
+            var responseNull = Assert.IsType<LoginResponseDto>(badRequestNull.Value);
+            var responseEmpty = Assert.IsType<LoginResponseDto>(badRequestEmpty.Value);
+
+            Assert.Equal(ApiMessages.MailAndPasswordAreRequired, responseNull.Message);
+            Assert.Equal(ApiMessages.MailAndPasswordAreRequired, responseEmpty.Message);
         }
     }
 }
-

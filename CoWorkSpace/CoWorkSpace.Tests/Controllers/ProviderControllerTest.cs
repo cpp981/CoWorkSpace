@@ -6,9 +6,7 @@ using CoWorkSpace.Api.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Moq;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
@@ -45,16 +43,6 @@ namespace CoWorkSpace.Tests
             return context;
         }
 
-        private string GetMessageFromResult(IActionResult result)
-        {
-            var objectResult = result as ObjectResult;
-            if (objectResult?.Value == null)
-                return null;
-
-            var messageProperty = objectResult.Value.GetType().GetProperty("message");
-            return messageProperty?.GetValue(objectResult.Value)?.ToString();
-        }
-
         [Fact]
         public async Task CreateAdmin_Returns_Ok_If_Valid()
         {
@@ -89,8 +77,12 @@ namespace CoWorkSpace.Tests
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var message = GetMessageFromResult(okResult);
-            Assert.Equal(ApiMessages.AdminCreatedSuccessfully, message);
+            var response = Assert.IsType<RegisterResponseDTO>(okResult.Value);
+            Assert.Equal(ApiMessages.AdminCreatedSuccessfully, response.Message);
+            Assert.Equal(dto.Email, response.Email);
+            Assert.Equal(dto.Name, response.Name);
+            Assert.Equal(dto.RoleId, response.RoleId);
+            Assert.Equal(providerId, response.ProviderId);
 
             var admin = await context.Users.IgnoreQueryFilters()
                 .FirstOrDefaultAsync(u => u.Email == dto.Email);
@@ -164,8 +156,8 @@ namespace CoWorkSpace.Tests
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            var message = GetMessageFromResult(unauthorizedResult);
-            Assert.Equal(ApiMessages.Unauthorized, message);
+            var response = Assert.IsType<RegisterResponseDTO>(unauthorizedResult.Value);
+            Assert.Equal(ApiMessages.Unauthorized, response.Message);
         }
 
         [Fact]
@@ -202,8 +194,8 @@ namespace CoWorkSpace.Tests
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            var message = GetMessageFromResult(unauthorizedResult);
-            Assert.Equal(ApiMessages.OnlyProvidersCanCreateAdmins, message);
+            var response = Assert.IsType<RegisterResponseDTO>(unauthorizedResult.Value);
+            Assert.Equal(ApiMessages.OnlyProvidersCanCreateAdmins, response.Message);
         }
 
         [Fact]
@@ -240,8 +232,8 @@ namespace CoWorkSpace.Tests
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            var message = GetMessageFromResult(unauthorizedResult);
-            Assert.Equal(ApiMessages.CannotCreateAdminsForOtherProviders, message);
+            var response = Assert.IsType<RegisterResponseDTO>(unauthorizedResult.Value);
+            Assert.Equal(ApiMessages.CannotCreateAdminsForOtherProviders, response.Message);
         }
 
         [Fact]
@@ -278,8 +270,8 @@ namespace CoWorkSpace.Tests
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            var message = GetMessageFromResult(badRequest);
-            Assert.Equal(ApiMessages.OnlyAdminRoleAllowed, message);
+            var response = Assert.IsType<RegisterResponseDTO>(badRequest.Value);
+            Assert.Equal(ApiMessages.OnlyAdminRoleAllowed, response.Message);
         }
 
         [Fact]
@@ -316,8 +308,8 @@ namespace CoWorkSpace.Tests
 
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
-            var message = GetMessageFromResult(badRequest);
-            Assert.Equal(ApiMessages.EmailAlreadyRegistered, message);
+            var response = Assert.IsType<RegisterResponseDTO>(badRequest.Value);
+            Assert.Equal(ApiMessages.EmailAlreadyRegistered, response.Message);
         }
     }
 }

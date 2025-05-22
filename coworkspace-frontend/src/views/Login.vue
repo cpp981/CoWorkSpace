@@ -52,7 +52,7 @@
                   {{ error }}
                 </div>
                 <div v-if="success" class="alert alert-success alert-sm" role="alert">
-                  ¡Sesión iniciada correctamente!
+                 ¡Inicio de sesión exitoso!
                 </div>
               </form>
             </div>
