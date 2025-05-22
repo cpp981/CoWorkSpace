@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using CoWorkSpace.Api.Controllers;
 using CoWorkSpace.Api.Data;
 using CoWorkSpace.Api.DTOs;
+using CoWorkSpace.Api.Constants;
 using CoWorkSpace.Api.Models;
 
 namespace CoWorkSpace.Tests
@@ -21,7 +22,7 @@ namespace CoWorkSpace.Tests
 
             var context = new CoWorkSpaceContext(options);
 
-            // Añadimos un usuario con hash para "12345678"
+            // Añadimos un usuario con hash 
             var user = new User
             {
                 Id = 2,
@@ -93,7 +94,7 @@ namespace CoWorkSpace.Tests
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal("Credenciales inválidas.", unauthorizedResult.Value);
+            Assert.Equal(ApiMessages.InvalidCredentials, unauthorizedResult.Value);
         }
 
         [Fact]
@@ -115,7 +116,7 @@ namespace CoWorkSpace.Tests
 
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal("Credenciales inválidas.", unauthorizedResult.Value);
+            Assert.Equal(ApiMessages.InvalidCredentials, unauthorizedResult.Value);
         }
 
         [Fact]
@@ -134,8 +135,8 @@ namespace CoWorkSpace.Tests
             var badRequestNull = Assert.IsType<BadRequestObjectResult>(resultNull);
             var badRequestEmpty = Assert.IsType<BadRequestObjectResult>(resultEmpty);
 
-            Assert.Equal("Email y contraseña son requeridos.", badRequestNull.Value);
-            Assert.Equal("Email y contraseña son requeridos.", badRequestEmpty.Value);
+            Assert.Equal(ApiMessages.MailAndPasswordAreRequired, badRequestNull.Value);
+            Assert.Equal(ApiMessages.MailAndPasswordAreRequired, badRequestEmpty.Value);
         }
     }
 }

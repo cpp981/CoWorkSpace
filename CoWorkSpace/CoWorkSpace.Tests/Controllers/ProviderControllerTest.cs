@@ -1,6 +1,7 @@
 ﻿using CoWorkSpace.Api.Controllers;
 using CoWorkSpace.Api.Data;
 using CoWorkSpace.Api.DTOs;
+using CoWorkSpace.Api.Constants;
 using CoWorkSpace.Api.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -89,7 +90,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var message = GetMessageFromResult(okResult);
-            Assert.Equal("Administrador creado correctamente.", message);
+            Assert.Equal(ApiMessages.AdminCreatedSuccessfully, message);
 
             var admin = await context.Users.IgnoreQueryFilters()
                 .FirstOrDefaultAsync(u => u.Email == dto.Email);
@@ -119,7 +120,7 @@ namespace CoWorkSpace.Tests
                     HttpContext = new DefaultHttpContext { User = user }
                 }
             };
-            controller.ModelState.AddModelError("Email", "El email es requerido.");
+            controller.ModelState.AddModelError("Email", ApiMessages.MailRequired);
 
             var dto = new RegisterRequestDTO
             {
@@ -164,7 +165,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
             var message = GetMessageFromResult(unauthorizedResult);
-            Assert.Equal("No autorizado.", message);
+            Assert.Equal(ApiMessages.Unauthorized, message);
         }
 
         [Fact]
@@ -202,7 +203,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
             var message = GetMessageFromResult(unauthorizedResult);
-            Assert.Equal("Solo los proveedores pueden crear administradores.", message);
+            Assert.Equal(ApiMessages.OnlyProvidersCanCreateAdmins, message);
         }
 
         [Fact]
@@ -240,7 +241,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
             var message = GetMessageFromResult(unauthorizedResult);
-            Assert.Equal("No puedes crear administradores para otros proveedores.", message);
+            Assert.Equal(ApiMessages.CannotCreateAdminsForOtherProviders, message);
         }
 
         [Fact]
@@ -278,7 +279,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var message = GetMessageFromResult(badRequest);
-            Assert.Equal("Solo puede crear usuarios con rol de administrador.", message);
+            Assert.Equal(ApiMessages.OnlyAdminRoleAllowed, message);
         }
 
         [Fact]
@@ -316,7 +317,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var message = GetMessageFromResult(badRequest);
-            Assert.Equal("El email ya está registrado.", message);
+            Assert.Equal(ApiMessages.EmailAlreadyRegistered, message);
         }
     }
 }

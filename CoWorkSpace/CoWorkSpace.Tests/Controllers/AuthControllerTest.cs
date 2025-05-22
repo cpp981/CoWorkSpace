@@ -5,6 +5,7 @@ using CoWorkSpace.Api.Controllers;
 using CoWorkSpace.Api.DTOs;
 using CoWorkSpace.Api.Models;
 using CoWorkSpace.Api.Data;
+using CoWorkSpace.Api.Constants;
 using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -68,7 +69,7 @@ namespace CoWorkSpace.Tests
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var message = GetMessageFromResult(badRequest);
-            Assert.Equal("El email ya está registrado.", message);
+            Assert.Equal(ApiMessages.EmailAlreadyRegistered, message);
         }
 
         [Fact]
@@ -89,7 +90,7 @@ namespace CoWorkSpace.Tests
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var message = GetMessageFromResult(badRequest);
-            Assert.Equal("Rol no permitido. Solo se pueden registrar usuarios con rol provider o client.", message);
+            Assert.Equal(ApiMessages.RoleNotAllowedOnlyCanRegisterProviderOrClient, message);
         }
 
         [Fact]
@@ -116,7 +117,7 @@ namespace CoWorkSpace.Tests
 
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var message = GetMessageFromResult(result);
-            Assert.Equal("Rol no válido. RoleId no encontrado en la base de datos.", message);
+            Assert.Equal(ApiMessages.InvalidRoleOrRoleIdNotFound, message);
         }
 
         [Fact]
@@ -137,7 +138,7 @@ namespace CoWorkSpace.Tests
 
             var okResult = Assert.IsType<OkObjectResult>(result);
             var message = GetMessageFromResult(okResult);
-            Assert.Equal("Usuario registrado correctamente.", message);
+            Assert.Equal(ApiMessages.UserRegisteredSuccessfully, message);
 
             var user = await context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
             Assert.NotNull(user);
