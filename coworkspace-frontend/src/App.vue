@@ -1,32 +1,33 @@
 <template>
-  <div class="container mt-4">
-    <h1>CoWorkSpace Frontend</h1>
-    <div class="mb-3">
-      <button
-        class="btn btn-primary"
-        :disabled="appStore.loading"
-        @click="appStore.testConnection"
-      >
-        {{ appStore.loading ? 'Conectando...' : 'Probar Conexión' }}
-      </button>
-    </div>
-    <div v-if="appStore.testMessage" class="alert alert-success">
-      {{ appStore.testMessage }}
-    </div>
-    <div v-if="appStore.error" class="alert alert-danger">
-      {{ appStore.error }}
-    </div>
+  <div class="app-container">
+    <Home
+      @open-login="handleOpenLogin"
+      @open-register="handleOpenRegister"
+    />
   </div>
 </template>
 
 <script>
-import { useAppStore } from './stores/app';
+import Home from './views/Home.vue';
 
 export default {
   name: 'App',
-  setup() {
-    const appStore = useAppStore();
-    return { appStore };
+  components: { Home },
+  methods: {
+    handleOpenLogin() {
+      // Lógica de login se implementará más adelante
+    },
+    handleOpenRegister() {
+      // Lógica de registro se implementará más adelante
+    },
   },
 };
 </script>
+
+<style scoped>
+.app-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+</style>
