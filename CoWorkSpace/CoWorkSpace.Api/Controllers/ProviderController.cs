@@ -32,18 +32,18 @@ namespace CoWorkSpace.Api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (roleIdClaim == null || userIdClaim == null || !int.TryParse(roleIdClaim, out int roleId))
-                return Unauthorized("No autorizado.");
+                return Unauthorized(new { message = "No autorizado." });
 
             if (!int.TryParse(userIdClaim, out int userId))
-                return Unauthorized("Usuario inválido.");
+                return Unauthorized(new { message = "Usuario inválido." });
 
             // Solo Providers (rol 3) pueden usar este endpoint
             if (roleId != 3)
-                return Unauthorized("Solo los proveedores pueden crear administradores.");
+                return Unauthorized(new { message = "Solo los proveedores pueden crear administradores." });
 
             // Solo puede crear admins para su propio providerId
             if (userId != providerId)
-                return Unauthorized("No puedes crear administradores para otros proveedores.");
+                return Unauthorized(new { message = "No puedes crear administradores para otros proveedores." });
 
             // Validar que se está creando un admin (roleId = 2)
             if (request.RoleId != 2)
@@ -71,4 +71,3 @@ namespace CoWorkSpace.Api.Controllers
         }
     }
 }
-
