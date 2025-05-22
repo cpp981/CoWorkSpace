@@ -1,5 +1,6 @@
 ﻿using CoWorkSpace.Api.Data;
 using CoWorkSpace.Api.DTOs;
+using CoWorkSpace.Api.Constants;
 using CoWorkSpace.Api.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,27 +33,27 @@ namespace CoWorkSpace.Api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (roleIdClaim == null || userIdClaim == null || !int.TryParse(roleIdClaim, out int roleId))
-                return Unauthorized(new { message = "No autorizado." });
+                return Unauthorized(new { message = ApiMessages.Unauthorized });
 
             if (!int.TryParse(userIdClaim, out int userId))
-                return Unauthorized(new { message = "Usuario inválido." });
+                return Unauthorized(new { message = ApiMessages.InvalidUser });
 
             // Solo Providers (rol 3) pueden usar este endpoint
             if (roleId != 3)
-                return Unauthorized(new { message = "Solo los proveedores pueden crear administradores." });
+                return Unauthorized(new { message = ApiMessages.OnlyProvidersCanCreateAdmins });
 
             // Solo puede crear admins para su propio providerId
             if (userId != providerId)
-                return Unauthorized(new { message = "No puedes crear administradores para otros proveedores." });
+                return Unauthorized(new { message = ApiMessages.CannotCreateAdminsForOtherProviders });
 
             // Validar que se está creando un admin (roleId = 2)
             if (request.RoleId != 2)
-                return BadRequest(new { message = "Solo puede crear usuarios con rol de administrador." });
+                return BadRequest(new { message = ApiMessages.OnlyAdminRoleAllowed });
 
             // Verificar si el email ya existe
             var exists = await _context.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == request.Email);
             if (exists)
-                return BadRequest(new { message = "El email ya está registrado." });
+                return BadRequest(new { message = ApiMessages.EmailAlreadyRegistered });
 
             // Crear nuevo usuario admin
             var adminUser = new User
@@ -67,7 +68,7 @@ namespace CoWorkSpace.Api.Controllers
             _context.Users.Add(adminUser);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Administrador creado correctamente." });
+            return Ok(new { message = ApiMessages.AdminCreatedSuccessfully });
         }
     }
 }

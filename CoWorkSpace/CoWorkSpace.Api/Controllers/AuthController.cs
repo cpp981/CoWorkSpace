@@ -5,6 +5,7 @@ using CoWorkSpace.Api.Models;
 using CoWorkSpace.Api.DTOs;
 using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using CoWorkSpace.Api.Constants;
 
 namespace CoWorkSpace.Api.Controllers
 {
@@ -27,17 +28,17 @@ namespace CoWorkSpace.Api.Controllers
 
             // Permitir solo roles 3 y 4 para registrar
             if (request.RoleId != 3 && request.RoleId != 4)
-                return BadRequest(new { message = "Rol no permitido. Solo se pueden registrar usuarios con rol provider o client." });
+                return BadRequest(new { message = ApiMessages.RoleNotAllowedOnlyCanRegisterProviderOrClient });
 
             // Verificar si el RoleId solicitado existe
             var roleEntity = await _context.Roles.FindAsync(request.RoleId);
             if (roleEntity == null)
-                return BadRequest(new { message = "Rol no válido. RoleId no encontrado en la base de datos." });
+                return BadRequest(new { message = ApiMessages.InvalidRoleOrRoleIdNotFound });
 
             // Verificar si el email ya existe
             var existingUser = await _context.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == request.Email);
             if (existingUser)
-                return BadRequest(new { message = "El email ya está registrado." });
+                return BadRequest(new { message = ApiMessages.EmailAlreadyRegistered });
 
             // Crear el usuario
             var user = new User
@@ -52,7 +53,7 @@ namespace CoWorkSpace.Api.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Usuario registrado correctamente." });
+            return Ok(new { message = ApiMessages.UserRegisteredSuccessfully });
         }
     }
 }

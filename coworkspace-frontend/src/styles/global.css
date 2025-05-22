@@ -1,0 +1,68 @@
+/* Reset y Estilos Base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #app {
+  min-height: 100vh;
+  min-width: 320px;
+  background: linear-gradient(to top, #e9ecef, #f8f9fa); /* Gradiente global: oscuro abajo, claro arriba */
+  color: #212529; /* Texto oscuro para tema claro */
+}
+
+/* Tipografía */
+body {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400; /* Regular para texto general */
+  font-size: 16px; /* Tamaño base */
+  line-height: 1.5;
+}
+
+/* Elementos específicos (usar Inter) */
+h1, h2, h3, h4, h5, h6, p, label, input, button, .form-control, .btn, .alert {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Énfasis con Inter Medium */
+.fw-medium, label, .btn {
+  font-weight: 500;
+}
+
+/* Títulos grandes (como el <h1> de Home.vue, que usa Poppins en scoped) */
+h1 {
+  font-size: 3.2rem;
+  line-height: 1.1;
+}
+
+/* Enlaces */
+a {
+  color: #0d6efd; /* Azul de btn-primary */
+  text-decoration: none;
+  font-weight: 500;
+}
+
+a:hover {
+  color: #0a58ca; /* Azul más oscuro para hover */
+}
+
+/* Botones (respetar Bootstrap) */
+button, .btn {
+  border-radius: 0.375rem; /* Consistente con Home.vue y Login.vue */
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* Media Queries */
+@media (prefers-color-scheme: light) {
+  html, body, #app {
+    background: linear-gradient(to top, #e9ecef, #f8f9fa); /* Reforzar gradiente en modo claro */
+    color: #212529;
+  }
+}

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using CoWorkSpace.Api.Data;
 using CoWorkSpace.Api.DTOs;
+using CoWorkSpace.Api.Constants;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -27,7 +28,7 @@ namespace CoWorkSpace.Api.Controllers
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginDto)
         {
             if (loginDto == null || string.IsNullOrEmpty(loginDto.Email) || string.IsNullOrEmpty(loginDto.Password))
-                return BadRequest("Email y contraseña son requeridos.");
+                return BadRequest(ApiMessages.MailAndPasswordAreRequired);
 
             // Incluyo el Role para poder acceder a su nombre
             var user = await _context.Users
@@ -36,12 +37,12 @@ namespace CoWorkSpace.Api.Controllers
                 .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
 
             if (user == null)
-                return Unauthorized("Credenciales inválidas.");
+                return Unauthorized(ApiMessages.InvalidCredentials);
 
             // Validar contraseña con BCrypt
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash);
             if (!isPasswordValid)
-                return Unauthorized("Credenciales inválidas.");
+                return Unauthorized(ApiMessages.InvalidCredentials);
 
             // Uso el nombre del rol en el claim
             var roleName = user.Role?.RoleName ?? "User"; // Si por alguna razón no tiene rol, asigno "User"
