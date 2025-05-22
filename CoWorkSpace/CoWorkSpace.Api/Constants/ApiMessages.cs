@@ -10,6 +10,7 @@
         public const string MailAndPasswordAreRequired = "Email y contraseña son requeridos.";
         public const string MailRequired = "El email es requerido.";
         public const string InvalidCredentials = "Credenciales inválidas.";
+        public const string InvalidData = "Los datos proporcionados son inválidos";
 
         // Errores de validación
         public const string EmailAlreadyRegistered = "El email ya está registrado.";
@@ -19,6 +20,7 @@
 
 
         // Éxito
+        public const string LoginSuccessfully = "Inicio de sesión exitoso.";
         public const string AdminCreatedSuccessfully = "Administrador creado correctamente.";
         public const string UserRegisteredSuccessfully = "Usuario registrado correctamente.";
     }
