@@ -11,13 +11,13 @@
         </p>
         <div class="d-flex justify-content-center gap-3">
           <button
-            class="btn btn-primary btn-lg"
+            class="btn btn-primary"
             @click="$emit('open-login')"
           >
             <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
           </button>
           <button
-            class="btn btn-outline-secondary btn-lg"
+            class="btn btn-outline-secondary"
             @click="$emit('open-register')"
           >
             <i class="bi bi-person-plus me-2"></i>Registrarse
