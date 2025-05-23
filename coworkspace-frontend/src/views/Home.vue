@@ -108,27 +108,3 @@ export default {
   emits: ['open-login', 'open-register'],
 };
 </script>
-
-<style scoped>
-.home-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background-color: #f8f9fa;
-}
-
-.hero-section {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
-}
-
-.carousel-section .carousel-item img {
-  transition: opacity 0.5s ease-in-out;
-}
-
-footer a:hover {
-  color: #adb5bd;
-}
-</style>

@@ -1,12 +1,16 @@
 <template>
   <div class="app-container">
     <Home
-      v-if="!showLogin"
+      v-if="currentView === 'home'"
       @open-login="handleOpenLogin"
       @open-register="handleOpenRegister"
     />
     <Login
-      v-if="showLogin"
+      v-if="currentView === 'login'"
+      @cancel="handleCancel"
+    />
+    <Register
+      v-if="currentView === 'register'"
       @cancel="handleCancel"
     />
   </div>
@@ -15,27 +19,28 @@
 <script>
 import Home from './views/Home.vue';
 import Login from './views/Login.vue';
+import Register from './views/Register.vue';
 
 export default {
   name: 'App',
-  components: { Home, Login },
+  components: { Home, Login, Register },
   data() {
     return {
-      showLogin: false,
+      currentView: 'home', // Vista inicial
     };
   },
   methods: {
     handleOpenLogin() {
       console.log('Evento open-login recibido, mostrando Login.vue');
-      this.showLogin = true;
+      this.currentView = 'login';
     },
     handleOpenRegister() {
-      console.log('Evento open-register recibido (no implementado aún)');
-      // Lógica de registro se implementará más adelante
+      console.log('Evento open-register recibido, mostrando Register.vue');
+      this.currentView = 'register';
     },
     handleCancel() {
       console.log('Evento cancel recibido, volviendo a Home.vue');
-      this.showLogin = false;
+      this.currentView = 'home';
     },
   },
 };
