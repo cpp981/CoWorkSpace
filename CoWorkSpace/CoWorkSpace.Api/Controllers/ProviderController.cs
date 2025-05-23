@@ -36,27 +36,45 @@ namespace CoWorkSpace.Api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (roleIdClaim == null || userIdClaim == null || !int.TryParse(roleIdClaim, out int roleId))
-                return Unauthorized(new RegisterResponseDTO{ Message = ApiMessages.Unauthorized });
+                return Unauthorized(new RegisterResponseDTO
+                { 
+                    Message = ApiMessages.Unauthorized 
+                });
 
             if (!int.TryParse(userIdClaim, out int userId))
-                return Unauthorized(new RegisterResponseDTO { Message = ApiMessages.InvalidUser });
+                return Unauthorized(new RegisterResponseDTO
+                { 
+                    Message = ApiMessages.InvalidUser 
+                });
 
             // Solo Providers (rol 3) pueden usar este endpoint
             if (roleId != 3)
-                return Unauthorized(new RegisterResponseDTO { Message = ApiMessages.OnlyProvidersCanCreateAdmins });
+                return Unauthorized(new RegisterResponseDTO
+                { 
+                    Message = ApiMessages.OnlyProvidersCanCreateAdmins 
+                });
 
             // Solo puede crear admins para su propio providerId
             if (userId != providerId)
-                return Unauthorized(new RegisterResponseDTO { Message = ApiMessages.CannotCreateAdminsForOtherProviders });
+                return Unauthorized(new RegisterResponseDTO
+                { 
+                    Message = ApiMessages.CannotCreateAdminsForOtherProviders 
+                });
 
             // Validar que se está creando un admin (roleId = 2)
             if (request.RoleId != 2)
-                return BadRequest(new RegisterResponseDTO{ Message = ApiMessages.OnlyAdminRoleAllowed });
+                return BadRequest(new RegisterResponseDTO
+                { 
+                    Message = ApiMessages.OnlyAdminRoleAllowed 
+                });
 
             // Verificar si el email ya existe
             var exists = await _context.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == request.Email);
             if (exists)
-                return BadRequest(new RegisterResponseDTO { Message = ApiMessages.EmailAlreadyRegistered });
+                return BadRequest(new RegisterResponseDTO
+                { 
+                    Message = ApiMessages.EmailAlreadyRegistered 
+                });
 
             // Crear nuevo usuario admin
             var adminUser = new User
