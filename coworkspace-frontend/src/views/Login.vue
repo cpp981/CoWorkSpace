@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '../services/api';
 
 export default {
   name: 'LoginPage',
@@ -85,19 +85,15 @@ export default {
       this.error = null;
       this.success = null;
       try {
-        const response = await axios.post('/api/auth/login', {
+        const response = await api.login({
           email: this.form.email,
           password: this.form.password,
         });
-        // Almacenar el token en localStorage (temporal, hasta usar Pinia)
-        localStorage.setItem('token', response.data.token);
-        // Mensaje de la API para éxito
+        localStorage.setItem('token', response.data.token); // Se almacena el token del usuario en el LocalSotorage por el momento
         this.success = response.data.message;
-        // Limpiar formulario
         this.form.email = '';
         this.form.password = '';
       } catch (error) {
-        // Mensaje de la API para error
         this.error = error.response?.data?.message;
       } finally {
         this.loading = false;
@@ -134,7 +130,7 @@ export default {
 }
 
 .alert-sm {
-  font-size: 0.9rem; /* Aumentado para mejor legibilidad */
+  font-size: 0.9rem;
   padding: 0.75rem;
   margin-bottom: 0;
   display: flex;
