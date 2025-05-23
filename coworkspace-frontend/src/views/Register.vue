@@ -88,7 +88,7 @@
 </template>
 
 <script>
-import axios from 'axios';
+import api from '../services/api';
 
 export default {
   name: 'RegisterPage',
@@ -112,11 +112,11 @@ export default {
       this.success = null;
 
       try {
-        const response = await axios.post('/api/auth/register', {
+        const response = await api.register({
           email: this.form.email,
           password: this.form.password,
           name: this.form.name,
-          roleId: parseInt(this.form.roleId), // Convertir a número
+          roleId: parseInt(this.form.roleId),
         });
         this.success = response.data.message;
         this.form.email = '';

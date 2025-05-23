@@ -8,8 +8,10 @@ const apiClient = axios.create({
 });
 
 export default {
-    testConnection() {
-        console.log('Enviando petición a /api/test...');
-        return apiClient.get('/test');
+   login(credentials) {
+        return apiClient.post('/auth/login', credentials);
+    },
+    register(userData) {
+        return apiClient.post('/auth/register', userData);
     },
 };
