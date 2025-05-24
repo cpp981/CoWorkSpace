@@ -1,47 +1,72 @@
 <template>
   <div class="app-container">
-    <Home
-      v-if="currentView === 'home'"
-      @open-login="handleOpenLogin"
-      @open-register="handleOpenRegister"
+    <component
+      :is="currentView"
+      @open-login="setView('Login')"
+      @open-register="setView('Register')"
+      @cancel="setView('Home')"
+      @login-success="handleLoginSuccess"
     />
-    <Login
-      v-if="currentView === 'login'"
-      @cancel="handleCancel"
-    />
-    <Register
-      v-if="currentView === 'register'"
-      @cancel="handleCancel"
-    />
+    <div v-if="authStore.isAuthenticated && authStore.isTokenValid" class="logout-container">
+      <button @click="logout" class="btn btn-outline-danger">
+        Cerrar Sesión
+      </button>
+    </div>
   </div>
 </template>
 
 <script>
+import { useAuthStore } from './stores/auth';
 import Home from './views/Home.vue';
 import Login from './views/Login.vue';
 import Register from './views/Register.vue';
+import api from './services/api';
 
 export default {
   name: 'App',
-  components: { Home, Login, Register },
+  components: {
+    Home,
+    Login,
+    Register,
+  },
   data() {
     return {
-      currentView: 'home', // Vista inicial
+      currentView: 'Home',
     };
   },
+  setup() {
+    const authStore = useAuthStore();
+    return { authStore };
+  },
   methods: {
-    handleOpenLogin() {
-      console.log('Evento open-login recibido, mostrando Login.vue');
-      this.currentView = 'login';
+    setView(view) {
+      this.currentView = view;
     },
-    handleOpenRegister() {
-      console.log('Evento open-register recibido, mostrando Register.vue');
-      this.currentView = 'register';
+    handleLoginSuccess() {
+      //this.setView('Home'); // Redirigir a Dashboard según rol de usuario logueado
     },
-    handleCancel() {
-      console.log('Evento cancel recibido, volviendo a Home.vue');
-      this.currentView = 'home';
+    logout() {
+      this.authStore.logout();
+      this.setView('Login');
     },
+  },
+  created() {
+    // Verificar token al cargar
+    if (this.authStore.isAuthenticated && !this.authStore.isTokenValid) {
+      this.authStore.logout();
+      this.setView('Login');
+    }
+    // Interceptar errores 401
+    api.client.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401) {
+          this.authStore.logout();
+          this.setView('Login');
+        }
+        return Promise.reject(error);
+      }
+    );
   },
 };
 </script>
@@ -49,7 +74,12 @@ export default {
 <style scoped>
 .app-container {
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  background-color: #f8f9fa;
+}
+
+.logout-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
 }
 </style>
