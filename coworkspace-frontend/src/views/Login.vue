@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import api from '../services/api';
+import { useAuthStore } from '../stores/auth';
 
 export default {
   name: 'LoginPage',
@@ -84,23 +84,23 @@ export default {
       this.loading = true;
       this.error = null;
       this.success = null;
+      const authStore = useAuthStore();
       try {
-        const response = await api.login({
+        this.success = await authStore.login({
           email: this.form.email,
           password: this.form.password,
         });
-        localStorage.setItem('token', response.data.token); // Se almacena el token del usuario en el LocalSotorage por el momento
-        this.success = response.data.message;
         this.form.email = '';
         this.form.password = '';
+        this.$emit('login-success'); // Notificar login exitoso
       } catch (error) {
-        this.error = error.response?.data?.message;
+        this.error = error;
       } finally {
         this.loading = false;
       }
     },
   },
-  emits: ['cancel'],
+  emits: ['cancel', 'login-success'],
 };
 </script>
 
