@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace CoWorkSpace.Api.Controllers
 {
     [ApiController]
-    [Route("api/roles")]
+    [Route("api/v1/roles")]
     public class RoleController : ControllerBase
     {
         private readonly CoWorkSpaceContext _context;
