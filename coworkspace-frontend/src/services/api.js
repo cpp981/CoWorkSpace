@@ -26,5 +26,8 @@ export default {
     register(userData) {
         return apiClient.post('/auth/register', userData);
     },
+    registerAdmin(providerId, adminData) {
+        return apiClient.post(`/providers/${providerId}/admins`, adminData);
+    },
     client: apiClient, // Para interceptores en App.vue
 };
