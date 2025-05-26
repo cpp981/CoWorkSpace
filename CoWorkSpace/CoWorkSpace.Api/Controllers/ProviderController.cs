@@ -10,7 +10,7 @@ using System.Security.Claims;
 namespace CoWorkSpace.Api.Controllers
 {
     [ApiController]
-    [Route("api/providers")]
+    [Route("api/v1/providers")]
     public class ProviderController : Controller
     {
         private readonly CoWorkSpaceContext _context;

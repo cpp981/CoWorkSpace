@@ -9,7 +9,7 @@ using CoWorkSpace.Api.Constants;
 namespace CoWorkSpace.Api.Controllers
 {
     [ApiController]
-    [Route("api/auth")]
+    [Route("api/v1/auth")]
     public class AuthController : Controller
     {
         private readonly CoWorkSpaceContext _context;

@@ -11,7 +11,7 @@ using System.Text;
 namespace CoWorkSpace.Api.Controllers
 {
     [ApiController]
-    [Route("api/auth/login")]
+    [Route("api/v1/auth/login")]
     public class LoginController : ControllerBase
     {
         private readonly CoWorkSpaceContext _context;
