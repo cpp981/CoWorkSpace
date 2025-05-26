@@ -4,6 +4,7 @@
     {
         // Errores de autorización
         public const string Unauthorized = "No autorizado.";
+        public const string ServerError = "Error en el servidor.";
         public const string InvalidUser = "Usuario inválido.";
         public const string OnlyProvidersCanCreateAdmins = "Solo los proveedores pueden crear administradores.";
         public const string CannotCreateAdminsForOtherProviders = "No puedes crear administradores para otros proveedores.";
@@ -11,6 +12,7 @@
         public const string MailRequired = "El email es requerido.";
         public const string InvalidCredentials = "Credenciales inválidas.";
         public const string InvalidData = "Los datos proporcionados son inválidos";
+
 
         // Errores de validación
         public const string EmailAlreadyRegistered = "El email ya está registrado.";

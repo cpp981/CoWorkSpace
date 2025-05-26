@@ -43,11 +43,11 @@ export default {
       this.currentView = view;
     },
     handleLoginSuccess() {
-      //this.setView('Home'); // Redirigir a Dashboard según rol de usuario logueado
+      //this.setView('Home'); // Redirigir a Home tras login exitoso
     },
     logout() {
       this.authStore.logout();
-      this.setView('Login');
+      this.setView('Home');
     },
   },
   created() {
@@ -70,7 +70,6 @@ export default {
   },
 };
 </script>
-
 <style scoped>
 .app-container {
   min-height: 100vh;
