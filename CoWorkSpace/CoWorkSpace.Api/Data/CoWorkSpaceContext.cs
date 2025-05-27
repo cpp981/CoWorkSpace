@@ -15,7 +15,7 @@ namespace CoWorkSpace.Api.Data
         public virtual DbSet<Log> Logs { get; set; }
 
         public CoWorkSpaceContext(DbContextOptions<CoWorkSpaceContext> options)
-            : base(options)
+                : base(options)
         {
         }
 
@@ -26,7 +26,7 @@ namespace CoWorkSpace.Api.Data
             modelBuilder.Entity<Log>().HasIndex(l => l.Timestamp);
             modelBuilder.Entity<Log>().HasIndex(l => l.EventType);
 
-            // Relación recursiva User -> Provider (otro User)
+            // Relación recursiva User -> Provider
             modelBuilder.Entity<User>()
                 .HasOne(u => u.Provider)
                 .WithMany(p => p.Admins)
@@ -35,9 +35,9 @@ namespace CoWorkSpace.Api.Data
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false);
 
-            // Filtro global simplificado para usuarios
+            // Filtro global para usuarios
             modelBuilder.Entity<User>()
-                .HasQueryFilter(u => u.ProviderId == null);
+                .HasQueryFilter(u => u.RoleId == 1 || u.RoleId == 3 || u.RoleId == 4);
 
             // Relación User -> Role
             modelBuilder.Entity<User>()
@@ -46,7 +46,7 @@ namespace CoWorkSpace.Api.Data
                 .HasForeignKey(u => u.RoleId)
                 .IsRequired();
 
-            // Resto del código sin cambios
+            // Relación Space -> Admin
             modelBuilder.Entity<Space>()
                 .HasOne(s => s.Admin)
                 .WithMany()
@@ -55,15 +55,24 @@ namespace CoWorkSpace.Api.Data
                 .OnDelete(DeleteBehavior.Cascade)
                 .IsRequired();
 
+            // Índice para ProviderId
             modelBuilder.Entity<Space>()
-                .Property(s => s.AdminId)
-                .HasColumnName("AdminId");
+                .HasIndex(s => s.ProviderId);
 
+            // Relación Space -> Provider
             modelBuilder.Entity<Space>()
-                .HasQueryFilter(s => !s.IsDeleted
-                    && s.Admin != null
-                    && (s.Admin.Role.RoleId == 2 || s.Admin.Role.RoleId == 1));
+                .HasOne(s => s.Provider)
+                .WithMany()
+                .HasForeignKey(s => s.ProviderId)
+                .HasConstraintName("FK_Spaces_Users_ProviderId")
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
 
+            // Filtro global para Spaces
+            modelBuilder.Entity<Space>()
+                .HasQueryFilter(s => !s.IsDeleted && s.Admin != null && s.Admin.RoleId == 2 && s.Admin.ProviderId == s.ProviderId);
+
+            // Relaciones de Booking
             modelBuilder.Entity<Booking>()
                 .HasOne(b => b.User)
                 .WithMany()
@@ -81,8 +90,9 @@ namespace CoWorkSpace.Api.Data
                 .IsRequired();
 
             modelBuilder.Entity<Booking>()
-                .HasQueryFilter(b => b.User != null && b.User.Role.RoleId == 4);
+                .HasQueryFilter(b => b.User != null && b.User.RoleId == 4);
 
+            // Relaciones de Review
             modelBuilder.Entity<Review>()
                 .HasOne(r => r.User)
                 .WithMany()
@@ -100,8 +110,9 @@ namespace CoWorkSpace.Api.Data
                 .IsRequired();
 
             modelBuilder.Entity<Review>()
-                .HasQueryFilter(r => r.User != null && r.User.Role.RoleId == 4);
+                .HasQueryFilter(r => r.User != null && r.User.RoleId == 4);
 
+            // Relaciones de Payment
             modelBuilder.Entity<Payment>()
                 .HasOne(p => p.User)
                 .WithMany()
@@ -132,8 +143,9 @@ namespace CoWorkSpace.Api.Data
 
             modelBuilder.Entity<Payment>()
                 .HasQueryFilter(p => p.User != null &&
-                    (p.User.Role.RoleId == 4 || p.User.Role.RoleId == 2 || p.User.Role.RoleId == 1));
+                    (p.User.RoleId == 4 || p.User.RoleId == 2 || p.User.RoleId == 1));
 
+            // Relaciones de Log
             modelBuilder.Entity<Log>()
                 .HasOne(l => l.User)
                 .WithMany()
@@ -197,6 +209,7 @@ namespace CoWorkSpace.Api.Data
                     Id = 1,
                     Name = "Test Space",
                     AdminId = 3,
+                    ProviderId = 2,
                     IsPublic = true,
                     Price = 50.00m,
                     City = "Madrid",
@@ -237,7 +250,7 @@ namespace CoWorkSpace.Api.Data
                     SpaceId = null,
                     UserId = 4,
                     Amount = 100.00m,
-                    Status = "Completed"
+                    Status = "CREADO"
                 },
                 new Payment
                 {
@@ -245,8 +258,8 @@ namespace CoWorkSpace.Api.Data
                     BookingId = null,
                     SpaceId = 1,
                     UserId = 3,
-                    Amount = 500.00m,
-                    Status = "Completed"
+                    Amount = 50.00m,
+                    Status = "CREADO"
                 }
             );
 
@@ -255,7 +268,7 @@ namespace CoWorkSpace.Api.Data
                 new Log
                 {
                     Id = 1,
-                    Timestamp = new DateTime(2025, 5, 19, 20, 23, 0, DateTimeKind.Utc),
+                    Timestamp = new DateTime(2025, 5, 19, 23, 59, 59, DateTimeKind.Utc),
                     EventType = "SystemStartup",
                     UserId = null,
                     Details = "Sistema iniciado correctamente."
@@ -265,5 +278,5 @@ namespace CoWorkSpace.Api.Data
             base.OnModelCreating(modelBuilder);
         }
     }
-}
 
+}
