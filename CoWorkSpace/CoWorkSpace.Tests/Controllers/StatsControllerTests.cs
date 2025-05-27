@@ -1,373 +1,327 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using CoWorkSpace.Api.Controllers;
+using CoWorkSpace.Api.Data;
+using CoWorkSpace.Api.DTOs;
+using CoWorkSpace.Api.Models;
+using CoWorkSpace.Api.Services;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Moq;
+using System.Collections.Generic;
 using System.Security.Claims;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Xunit;
-using CoWorkSpace.Api.Controllers;
-using CoWorkSpace.Api.Services;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Http;
-using System.Text.Json;
 
 namespace CoWorkSpace.Api.Tests.Controllers
 {
     public class StatsControllerTests
     {
-        private readonly Mock<IStatsService> _statsServiceMock;
-        private readonly StatsController _controller;
-
-        public StatsControllerTests()
+        private CoWorkSpaceContext GetDbContextWithData()
         {
-            _statsServiceMock = new Mock<IStatsService>();
-            _controller = new StatsController(_statsServiceMock.Object);
+            var options = new DbContextOptionsBuilder<CoWorkSpaceContext>().UseInMemoryDatabase(databaseName: System.Guid.NewGuid().ToString())
+                .Options;
+            var context = new CoWorkSpaceContext(options);
+
+            // Roles
+            context.Roles.AddRange(
+                new Role { RoleId = 1, RoleName = "SuperAdmin" },
+                new Role { RoleId = 2, RoleName = "Admin" },
+                new Role { RoleId = 3, RoleName = "Provider" },
+                new Role { RoleId = 4, RoleName = "Client" }
+            );
+
+            // Users
+            context.Users.AddRange(
+                new User { Id = 1, Email = "superadmin@coworkspace.com", Name = "Super Admin", RoleId = 1, PasswordHash = BCrypt.Net.BCrypt.HashPassword("SuperAdmin123") },
+                new User { Id = 2, Email = "provider@coworkspace.com", Name = "Provider", RoleId = 3, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Provider123") },
+                new User { Id = 3, Email = "admin@coworkspace.com", Name = "Admin", RoleId = 2, ProviderId = 2, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123") },
+                new User { Id = 4, Email = "client@coworkspace.com", Name = "Client", RoleId = 4, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Client123") }
+             );
+
+            // Spaces
+            context.Spaces.Add(new Space
+            {
+                Id = 1,
+                Name = "Test Space",
+                City = "Madrid",
+                AdminId = 3,
+                ProviderId = 2,
+                IsDeleted = false
+            });
+
+            // Bookings
+            context.Bookings.Add(new Booking
+            {
+                Id = 1,
+                UserId = 4,
+                SpaceId = 1,
+                StartTime = DateTime.UtcNow
+            });
+
+            // Payments
+            context.Payments.Add(new Payment
+            {
+                Id = 1,
+                BookingId = 1,
+                SpaceId = 1,
+                UserId = 4,
+                Amount = 100m,
+                Status = "CREADO"
+            });
+
+            // Reviews
+            context.Reviews.Add(new Review
+            {
+                Id = 1,
+                UserId = 4,
+                SpaceId = 1,
+                Rating = 5,
+                Comment = "Excelente espacio de trabajo!"
+            });
+
+            context.SaveChanges();
+            return context;
         }
 
-        private void SetupUser(string role, string userId)
+        private void SetupClaims(ControllerBase controller, int userId, int roleId)
         {
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, userId),
-                new Claim(ClaimTypes.Role, role)
-            };
+        {
+            new Claim(ClaimTypes.NameIdentifier, userId.ToString()),
+            new Claim("roleId", roleId.ToString())
+        };
             var identity = new ClaimsIdentity(claims, "TestAuthType");
             var principal = new ClaimsPrincipal(identity);
-            _controller.ControllerContext = new ControllerContext
+            controller.ControllerContext = new ControllerContext
             {
                 HttpContext = new DefaultHttpContext { User = principal }
             };
         }
 
-        #region SuperAdmin Tests
-
         [Fact]
-        public async Task GetUserStats_SuperAdmin_ReturnsOk()
+        public async Task GetSuperAdminStats_ValidUserAndRole_ReturnsOkWithStats()
         {
             // Arrange
-            SetupUser("SuperAdmin", "superadmin-1");
-            var stats = new UserStats
-            {
-                TotalUsers = 100,
-                UsersByRole = new Dictionary<string, int>
-                {
-                    { "SuperAdmin", 2 },
-                    { "Admin", 10 },
-                    { "Provider", 30 },
-                    { "Client", 58 }
-                }
-            };
-            _statsServiceMock.Setup(s => s.GetUserStats()).ReturnsAsync(stats);
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 1, 1);
 
             // Act
-            var result = await _controller.GetUserStats();
+            var result = await controller.GetSuperAdminStats(1);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(okResult.Value));
-            Assert.Equal(100, Convert.ToInt32(response["totalUsers"]));
-            var byRole = JsonSerializer.Deserialize<Dictionary<string, int>>(response["byRole"].ToString());
-            Assert.Equal(2, byRole["SuperAdmin"]);
+            var stats = Assert.IsType<SuperAdminStatsDTO>(okResult.Value);
+            Assert.Equal(1, stats.TotalSpaces);
+            Assert.Equal(1, stats.TotalBookings);
+            Assert.Equal(100m, stats.TotalRevenue);
+            Assert.Equal(4, stats.TotalUsers);
+            Assert.Equal(4, stats.UsersByRole.Count);
+            Assert.Equal(1, stats.UsersByRole["SuperAdmin"]);
+            Assert.Equal(1, stats.UsersByRole["Admin"]);
+            Assert.Equal(1, stats.UsersByRole["Provider"]);
+            Assert.Equal(1, stats.UsersByRole["Client"]);
         }
 
         [Fact]
-        public async Task GetUserStats_SuperAdmin_ThrowsException_Returns500()
+        public async Task GetSuperAdminStats_WrongUserId_ReturnsForbid()
         {
             // Arrange
-            SetupUser("SuperAdmin", "superadmin-1");
-            _statsServiceMock.Setup(s => s.GetUserStats()).ThrowsAsync(new Exception());
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 2, 1);
 
             // Act
-            var result = await _controller.GetUserStats();
+            var result = await controller.GetSuperAdminStats(1);
 
             // Assert
-            var statusResult = Assert.IsType<ObjectResult>(result);
-            Assert.Equal(500, statusResult.StatusCode);
+            Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
-        public async Task GetRegistrationStats_SuperAdmin_ReturnsOk()
+        public async Task GetSuperAdminStats_WrongRoleId_ReturnsForbid()
         {
             // Arrange
-            SetupUser("SuperAdmin", "superadmin-1");
-            var stats = new List<RegistrationStats>
-            {
-                new() { Month = "2025-01", Count = 10 },
-                new() { Month = "2025-02", Count = 15 }
-            };
-            _statsServiceMock.Setup(s => s.GetRegistrationStats()).ReturnsAsync(stats);
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 1, 2);
 
             // Act
-            var result = await _controller.GetRegistrationStats();
+            var result = await controller.GetSuperAdminStats(1);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(okResult.Value));
-            var registrations = JsonSerializer.Deserialize<List<RegistrationStats>>(response["registrations"].ToString());
-            Assert.Equal(2, registrations.Count);
-            Assert.Equal("2025-01", registrations[0].Month);
+            Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
-        public async Task GetSpaceStats_SuperAdmin_ReturnsOk()
+        public async Task GetAdminStats_ValidUserAndRole_ReturnsOkWithStats()
         {
             // Arrange
-            SetupUser("SuperAdmin", "superadmin-1");
-            var stats = new SpaceStats
-            {
-                TotalSpaces = 50,
-                SpacesByProvider = new List<ProviderSpace>
-                {
-                    new() { ProviderId = 1, Spaces = 20 },
-                    new() { ProviderId = 2, Spaces = 30 }
-                }
-            };
-            _statsServiceMock.Setup(s => s.GetSpaceStats()).ReturnsAsync(stats);
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 3, 2);
 
             // Act
-            var result = await _controller.GetSpaceStats();
+            var result = await controller.GetAdminStats(3);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(okResult.Value));
-            Assert.Equal(50, Convert.ToInt32(response["totalSpaces"]));
-            var byProvider = JsonSerializer.Deserialize<List<ProviderSpace>>(response["byProvider"].ToString());
-            Assert.Equal(20, byProvider[0].Spaces);
+            var stats = Assert.IsType<AdminStatsDTO>(okResult.Value);
+            Assert.Equal(1, stats.TotalSpaces);
+            Assert.Equal(1, stats.TotalBookings);
+            Assert.Equal(100m, stats.TotalRevenue);
+            Assert.Equal(5.0, stats.AverageRating);
+            Assert.Single(stats.Spaces);
+            var space = stats.Spaces[0];
+            Assert.Equal(1, space.SpaceId);
+            Assert.Equal("Test Space", space.SpaceName);
+            Assert.Equal(1, space.BookingsCount);
+            Assert.Equal(100m, space.Revenue);
+            Assert.Equal(5.0, space.AverageRating);
         }
 
-        #endregion
-
-        #region Admin Tests
-
         [Fact]
-        public async Task GetAdminUserStats_Admin_ReturnsOk()
+        public async Task GetAdminStats_WrongUserId_ReturnsForbid()
         {
             // Arrange
-            SetupUser("Admin", "admin-1");
-            var stats = new AdminUserStats { TotalUsers = 50 };
-            _statsServiceMock.Setup(s => s.GetAdminUserStats()).ReturnsAsync(stats);
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 4, 2);
 
             // Act
-            var result = await _controller.GetAdminUserStats();
+            var result = await controller.GetAdminStats(3);
+
+            // Assert
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task GetAdminStats_WrongRoleId_ReturnsForbid()
+        {
+            // Arrange
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 3, 3);
+
+            // Act
+            var result = await controller.GetAdminStats(3);
+
+            // Assert
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task GetProviderStats_ValidUserAndRole_ReturnsOkWithStats()
+        {
+            // Arrange
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 2, 3);
+
+            // Act
+            var result = await controller.GetProviderStats(2);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(okResult.Value));
-            Assert.Equal(50, Convert.ToInt32(response["totalUsers"]));
+            var stats = Assert.IsType<ProviderStatsDTO>(okResult.Value);
+            Assert.Equal(1, stats.TotalSpaces);
+            Assert.Equal(1, stats.TotalAdmins);
+            Assert.Equal(1, stats.TotalBookings);
+            Assert.Equal(100m, stats.TotalRevenue);
+            Assert.Single(stats.Spaces);
+            var space = stats.Spaces[0];
+            Assert.Equal(1, space.SpaceId);
+            Assert.Equal("Test Space", space.SpaceName);
+            Assert.Equal(3, space.AdminId);
+            Assert.Equal("Admin", space.AdminName);
+            Assert.Equal(1, space.BookingsCount);
+            Assert.Equal(100m, space.Revenue);
         }
 
         [Fact]
-        public async Task GetAdminBookingStats_Admin_ReturnsOk()
+        public async Task GetProviderStats_WrongUserId_ReturnsForbid()
         {
             // Arrange
-            SetupUser("Admin", "admin-1");
-            var stats = new AdminBookingStats
-            {
-                TotalBookings = 100,
-                BookingsByMonth = new List<MonthlyBookings>
-                {
-                    new() { Month = "2025-01", Count = 40 },
-                    new() { Month = "2025-02", Count = 60 }
-                }
-            };
-            _statsServiceMock.Setup(s => s.GetAdminBookingStats()).ReturnsAsync(stats);
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 1, 3);
 
             // Act
-            var result = await _controller.GetAdminBookingStats();
+            var result = await controller.GetProviderStats(2);
+
+            // Assert
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task GetProviderStats_WrongRoleId_ReturnsForbid()
+        {
+            // Arrange
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 2, 4);
+
+            // Act
+            var result = await controller.GetProviderStats(2);
+
+            // Assert
+            Assert.IsType<ForbidResult>(result);
+        }
+
+        [Fact]
+        public async Task GetClientStats_ValidUserAndRole_ReturnsOkWithStats()
+        {
+            // Arrange
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 4, 4);
+
+            // Act
+            var result = await controller.GetClientStats(4);
 
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(okResult.Value));
-            Assert.Equal(100, Convert.ToInt32(response["totalBookings"]));
-            var byMonth = JsonSerializer.Deserialize<List<MonthlyBookings>>(response["byMonth"].ToString());
-            Assert.Equal(40, byMonth[0].Count);
-        }
-
-        #endregion
-
-        #region Provider Tests
-
-        [Fact]
-        public async Task GetProviderSpaceStats_Provider_Authorized_ReturnsOk()
-        {
-            // Arrange
-            SetupUser("Provider", "provider-user-1");
-            var providerId = 1;
-            var stats = new ProviderSpaceStats { TotalSpaces = 10 };
-            _statsServiceMock.Setup(s => s.IsProviderAuthorized("provider-user-1", providerId)).ReturnsAsync(true);
-            _statsServiceMock.Setup(s => s.GetProviderSpaceStats(providerId)).ReturnsAsync(stats);
-
-            // Act
-            var result = await _controller.GetProviderSpaceStats(providerId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(okResult.Value));
-            Assert.Equal(10, Convert.ToInt32(response["totalSpaces"]));
+            var stats = Assert.IsType<ClientStatsDTO>(okResult.Value);
+            Assert.Equal(1, stats.TotalBookings);
+            Assert.Equal(100m, stats.TotalSpent);
+            Assert.Equal(1, stats.TotalReviews);
+            Assert.Single(stats.Bookings);
+            var booking = stats.Bookings[0];
+            Assert.Equal(1, booking.BookingId);
+            Assert.Equal(1, booking.SpaceId);
+            Assert.Equal("Test Space", booking.Name);
+            Assert.Equal(100m, booking.Amount);
         }
 
         [Fact]
-        public async Task GetProviderSpaceStats_Provider_Unauthorized_Returns401()
+        public async Task GetClientStats_WrongUserId_ReturnsForbid()
         {
             // Arrange
-            SetupUser("Provider", "provider-user-1");
-            var providerId = 1;
-            _statsServiceMock.Setup(s => s.IsProviderAuthorized("provider-user-1", providerId)).ReturnsAsync(false);
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 5, 4);
 
             // Act
-            var result = await _controller.GetProviderSpaceStats(providerId);
+            var result = await controller.GetClientStats(4);
 
             // Assert
-            var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal(401, unauthorizedResult.StatusCode);
+            Assert.IsType<ForbidResult>(result);
         }
 
         [Fact]
-        public async Task GetProviderBookingStats_Provider_Authorized_ReturnsOk()
+        public async Task GetClientStats_WrongRoleId_ReturnsForbid()
         {
             // Arrange
-            SetupUser("Provider", "provider-user-1");
-            var providerId = 1;
-            var stats = new ProviderBookingStats
-            {
-                TotalBookings = 30,
-                BookingsByDay = new List<DailyBookings>
-                {
-                    new() { Date = "2025-05-01", Count = 5 },
-                    new() { Date = "2025-05-02", Count = 10 }
-                }
-            };
-            _statsServiceMock.Setup(s => s.IsProviderAuthorized("provider-user-1", providerId)).ReturnsAsync(true);
-            _statsServiceMock.Setup(s => s.GetProviderBookingStats(providerId)).ReturnsAsync(stats);
+            var context = GetDbContextWithData();
+            var controller = new StatsController(context);
+            SetupClaims(controller, 4, 3);
 
             // Act
-            var result = await _controller.GetProviderBookingStats(providerId);
+            var result = await controller.GetClientStats(4);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(okResult.Value));
-            Assert.Equal(30, Convert.ToInt32(response["totalBookings"]));
-            var byDay = JsonSerializer.Deserialize<List<DailyBookings>>(response["byDay"].ToString());
-            Assert.Equal(5, byDay[0].Count);
+            Assert.IsType<ForbidResult>(result);
         }
-
-        [Fact]
-        public async Task GetProviderOccupancyStats_Provider_Authorized_ReturnsOk()
-        {
-            // Arrange
-            SetupUser("Provider", "provider-user-1");
-            var providerId = 1;
-            var stats = new ProviderOccupancyStats
-            {
-                OccupancyRate = 0.75,
-                OccupancyByDay = new List<DailyOccupancy>
-                {
-                    new() { Date = "2025-05-01", Rate = 0.7 },
-                    new() { Date = "2025-05-02", Rate = 0.8 }
-                }
-            };
-            _statsServiceMock.Setup(s => s.IsProviderAuthorized("provider-user-1", providerId)).ReturnsAsync(true);
-            _statsServiceMock.Setup(s => s.GetProviderOccupancyStats(providerId)).ReturnsAsync(stats);
-
-            // Act
-            var result = await _controller.GetProviderOccupancyStats(providerId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(okResult.Value));
-            Assert.Equal(0.75, Convert.ToDouble(response["occupancyRate"]));
-            var byDay = JsonSerializer.Deserialize<List<DailyOccupancy>>(response["byDay"].ToString());
-            Assert.Equal(0.7, byDay[0].Rate);
-        }
-
-        #endregion
-
-        #region Client Tests
-
-        [Fact]
-        public async Task GetClientBookingStats_Client_Authorized_ReturnsOk()
-        {
-            // Arrange
-            SetupUser("Client", "client-1");
-            var userId = "client-1";
-            var stats = new ClientBookingStats
-            {
-                TotalBookings = 5,
-                Bookings = new List<BookingDetail>
-                {
-                    new() { SpaceId = "space-1", Date = "2025-05-01" },
-                    new() { SpaceId = "space-2", Date = "2025-05-02" }
-                }
-            };
-            _statsServiceMock.Setup(s => s.GetClientBookingStats(userId)).ReturnsAsync(stats);
-
-            // Act
-            var result = await _controller.GetClientBookingStats(userId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(okResult.Value));
-            Assert.Equal(5, Convert.ToInt32(response["totalBookings"]));
-            var bookings = JsonSerializer.Deserialize<List<BookingDetail>>(response["bookings"].ToString());
-            Assert.Equal("space-1", bookings[0].SpaceId);
-        }
-
-        [Fact]
-        public async Task GetClientBookingStats_Client_Unauthorized_Returns401()
-        {
-            // Arrange
-            SetupUser("Client", "client-1");
-            var userId = "client-2"; // Diferente userId
-
-            // Act
-            var result = await _controller.GetClientBookingStats(userId);
-
-            // Assert
-            var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal(401, unauthorizedResult.StatusCode);
-        }
-
-        [Fact]
-        public async Task GetClientActivityStats_Client_Authorized_ReturnsOk()
-        {
-            // Arrange
-            SetupUser("Client", "client-1");
-            var userId = "client-1";
-            var stats = new ClientActivityStats
-            {
-                TotalActions = 10,
-                Actions = new List<ActionDetail>
-                {
-                    new() { Date = "2025-05-01", ActionType = "Login" },
-                    new() { Date = "2025-05-02", ActionType = "Search" }
-                }
-            };
-            _statsServiceMock.Setup(s => s.GetClientActivityStats(userId)).ReturnsAsync(stats);
-
-            // Act
-            var result = await _controller.GetClientActivityStats(userId);
-
-            // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
-            var response = JsonSerializer.Deserialize<Dictionary<string, object>>(JsonSerializer.Serialize(okResult.Value));
-            Assert.Equal(10, Convert.ToInt32(response["totalActions"]));
-            var actions = JsonSerializer.Deserialize<List<ActionDetail>>(response["actions"].ToString());
-            Assert.Equal("Login", actions[0].ActionType);
-        }
-
-        [Fact]
-        public async Task GetClientActivityStats_Client_Unauthorized_Returns401()
-        {
-            // Arrange
-            SetupUser("Client", "client-1");
-            var userId = "client-2"; // Diferente userId
-
-            // Act
-            var result = await _controller.GetClientActivityStats(userId);
-
-            // Assert
-            var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
-            Assert.Equal(401, unauthorizedResult.StatusCode);
-        }
-
-        #endregion
     }
 }

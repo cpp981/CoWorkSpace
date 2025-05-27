@@ -1,285 +1,203 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using CoWorkSpace.Api.Data;
+using CoWorkSpace.Api.DTOs;
 using System.Security.Claims;
-using CoWorkSpace.Api.Constants;
-using CoWorkSpace.Api.Services;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace CoWorkSpace.Api.Controllers
 {
     [Route("api/v1/stats")]
     [ApiController]
-    [Authorize]
     public class StatsController : ControllerBase
     {
-        private readonly IStatsService _statsService;
+        private readonly CoWorkSpaceContext _context;
 
-        public StatsController(IStatsService statsService)
+        public StatsController(CoWorkSpaceContext context)
         {
-            _statsService = statsService;
+            _context = context;
         }
 
-        // SuperAdmin: Total de usuarios y por rol
-        [HttpGet("users")]
-        [Authorize(Roles = "SuperAdmin")]
-        public async Task<IActionResult> GetUserStats()
+        // GET: api/v1/stats/superadmin/{idUser}
+        [HttpGet("superadmin/{idUser}")]
+        [Authorize]
+        public async Task<ActionResult<SuperAdminStatsDTO>> GetSuperAdminStats(int idUser)
         {
-            try
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var roleId = int.Parse(User.FindFirst("roleId")?.Value ?? "0");
+
+            if (userId != idUser)
             {
-                var stats = await _statsService.GetUserStats();
-                return Ok(new
+                return Forbid();
+            }
+
+            if (roleId != 1) // SuperAdmin RoleId
+            {
+                return Forbid();
+            }
+
+            var stats = new SuperAdminStatsDTO
+            {
+                TotalSpaces = await _context.Spaces.CountAsync(s => !s.IsDeleted),
+                TotalBookings = await _context.Bookings.CountAsync(),
+                TotalRevenue = await _context.Payments.SumAsync(p => p.Amount),
+                TotalUsers = await _context.Users.CountAsync(),
+                UsersByRole = await _context.Users
+                    .GroupBy(u => u.Role.RoleName)
+                    .Select(g => new { Role = g.Key, Count = g.Count() })
+                    .ToDictionaryAsync(k => k.Role, v => v.Count)
+            };
+
+            return Ok(stats);
+        }
+
+        // GET: api/v1/stats/admin/{idUser}
+        [HttpGet("admin/{idUser}")]
+        [Authorize]
+        public async Task<ActionResult<AdminStatsDTO>> GetAdminStats(int idUser)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var roleId = int.Parse(User.FindFirst("roleId")?.Value ?? "0");
+
+            if (userId != idUser)
+            {
+                return Forbid();
+            }
+
+            if (roleId != 2) // Admin RoleId
+            {
+                return Forbid();
+            }
+
+            var spaces = await _context.Spaces
+                .Include(s => s.Bookings)
+                .Include(s => s.Payments)
+                .Include(s => s.Reviews)
+                .Where(s => s.AdminId == userId && !s.IsDeleted)
+                .ToListAsync();
+
+            var spaceIds = spaces.Select(s => s.Id).ToList();
+
+            var stats = new AdminStatsDTO
+            {
+                TotalSpaces = spaces.Count,
+                TotalBookings = await _context.Bookings
+                    .CountAsync(b => spaceIds.Contains(b.SpaceId)),
+                TotalRevenue = await _context.Payments
+                    .Where(p => p.SpaceId.HasValue && spaceIds.Contains(p.SpaceId.Value))
+                    .SumAsync(p => p.Amount),
+                AverageRating = await _context.Reviews
+                    .Where(r => spaceIds.Contains(r.SpaceId))
+                    .AverageAsync(r => (double?)r.Rating) ?? 0.0,
+                Spaces = spaces.Select(s => new SpaceStatsDTO
                 {
-                    totalUsers = stats.TotalUsers,
-                    byRole = stats.UsersByRole
-                });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = ApiMessages.ServerError 
-                });
-            }
+                    SpaceId = s.Id,
+                    SpaceName = s.Name,
+                    BookingsCount = s.Bookings.Count,
+                    Revenue = s.Payments.Sum(p => p.Amount),
+                    AverageRating = s.Reviews.Any() ? s.Reviews.Average(r => (double)r.Rating) : 0.0
+                }).ToList()
+            };
+
+            return Ok(stats);
         }
 
-        // SuperAdmin: Registros por mes
-        [HttpGet("registrations")]
-        [Authorize(Roles = "SuperAdmin")]
-        public async Task<IActionResult> GetRegistrationStats()
+        // GET: api/v1/stats/provider/{idUser}
+        [HttpGet("provider/{idUser}")]
+        [Authorize]
+        public async Task<ActionResult<ProviderStatsDTO>> GetProviderStats(int idUser)
         {
-            try
-            {
-                var stats = await _statsService.GetRegistrationStats();
-                return Ok(new { registrations = stats });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = ApiMessages.ServerError 
-                });
-            }
-        }
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var roleId = int.Parse(User.FindFirst("roleId")?.Value ?? "0");
 
-        // SuperAdmin: Espacios totales y por proveedor
-        [HttpGet("spaces")]
-        [Authorize(Roles = "SuperAdmin")]
-        public async Task<IActionResult> GetSpaceStats()
-        {
-            try
+            if (userId != idUser)
             {
-                var stats = await _statsService.GetSpaceStats();
-                return Ok(new
+                return Forbid();
+            }
+
+            if (roleId != 3) // Provider RoleId
+            {
+                return Forbid();
+            }
+
+            var spaces = await _context.Spaces
+                .Include(s => s.Bookings)
+                .Include(s => s.Payments)
+                .Include(s => s.Admin)
+                .Where(s => s.ProviderId == userId && !s.IsDeleted)
+                .ToListAsync();
+
+            var spaceIds = spaces.Select(s => s.Id).ToList();
+
+            var stats = new ProviderStatsDTO
+            {
+                TotalSpaces = spaces.Count,
+                TotalAdmins = await _context.Users
+                    .CountAsync(u => u.ProviderId == userId && u.RoleId == 2),
+                TotalBookings = await _context.Bookings
+                    .CountAsync(b => spaceIds.Contains(b.SpaceId)),
+                TotalRevenue = await _context.Payments
+                    .Where(p => p.SpaceId.HasValue && spaceIds.Contains(p.SpaceId.Value))
+                    .SumAsync(p => p.Amount),
+                Spaces = spaces.Select(s => new ProviderSpaceStatsDTO
                 {
-                    totalSpaces = stats.TotalSpaces,
-                    byProvider = stats.SpacesByProvider
-                });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = ApiMessages.ServerError 
-                });
-            }
+                    SpaceId = s.Id,
+                    SpaceName = s.Name,
+                    AdminId = s.AdminId,
+                    AdminName = s.Admin?.Name ?? string.Empty,
+                    BookingsCount = s.Bookings.Count,
+                    Revenue = s.Payments.Sum(p => p.Amount)
+                }).ToList()
+            };
+
+            return Ok(stats);
         }
 
-        // Admin: Usuarios gestionados
-        [HttpGet("admins/users")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAdminUserStats()
+        // GET: api/v1/stats/client/{idUser}
+        [HttpGet("client/{idUser}")]
+        [Authorize]
+        public async Task<ActionResult<ClientStatsDTO>> GetClientStats(int idUser)
         {
-            try
-            {
-                var stats = await _statsService.GetAdminUserStats();
-                return Ok(new
-                {
-                    totalUsers = stats.TotalUsers
-                });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = ApiMessages.ServerError 
-                });
-            }
-        }
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var roleId = int.Parse(User.FindFirst("roleId")?.Value ?? "0");
 
-        // Admin: Reservas asociadas
-        [HttpGet("admins/bookings")]
-        [Authorize(Roles = "Admin")]
-        public async Task<IActionResult> GetAdminBookingStats()
-        {
-            try
+            if (userId != idUser)
             {
-                var stats = await _statsService.GetAdminBookingStats();
-                return Ok(new
-                {
-                    totalBookings = stats.TotalBookings,
-                    byMonth = stats.BookingsByMonth
-                });
+                return Forbid();
             }
-            catch (Exception)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = ApiMessages.ServerError 
-                });
-            }
-        }
 
-        // Provider: Espacios propios
-        [HttpGet("providers/{providerId}/spaces")]
-        [Authorize(Roles = "Provider")]
-        public async Task<IActionResult> GetProviderSpaceStats(int providerId)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!await _statsService.IsProviderAuthorized(userId, providerId))
+            if (roleId != 4) // Client RoleId
             {
-                return Unauthorized(new 
-                { 
-                    message = ApiMessages.Unauthorized 
-                });
+                return Forbid();
             }
-            try
-            {
-                var stats = await _statsService.GetProviderSpaceStats(providerId);
-                return Ok(new
-                {
-                    totalSpaces = stats.TotalSpaces
-                });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = ApiMessages.ServerError 
-                });
-            }
-        }
 
-        // Provider: Reservas de sus espacios
-        [HttpGet("providers/{providerId}/bookings")]
-        [Authorize(Roles = "Provider")]
-        public async Task<IActionResult> GetProviderBookingStats(int providerId)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!await _statsService.IsProviderAuthorized(userId, providerId))
-            {
-                return Unauthorized(new 
-                { 
-                    message = ApiMessages.Unauthorized 
-                });
-            }
-            try
-            {
-                var stats = await _statsService.GetProviderBookingStats(providerId);
-                return Ok(new
-                {
-                    totalBookings = stats.TotalBookings,
-                    byDay = stats.BookingsByDay
-                });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = ApiMessages.ServerError 
-                });
-            }
-        }
+            var bookings = await _context.Bookings
+                .Include(b => b.Space)
+                .Include(b => b.Payments)
+                .Where(b => b.UserId == userId)
+                .ToListAsync();
 
-        // Provider: Ocupación de espacios
-        [HttpGet("providers/{providerId}/occupancy")]
-        [Authorize(Roles = "Provider")]
-        public async Task<IActionResult> GetProviderOccupancyStats(int providerId)
-        {
-            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (!await _statsService.IsProviderAuthorized(userId, providerId))
+            var stats = new ClientStatsDTO
             {
-                return Unauthorized(new 
-                { 
-                    message = ApiMessages.Unauthorized 
-                });
-            }
-            try
-            {
-                var stats = await _statsService.GetProviderOccupancyStats(providerId);
-                return Ok(new
+                TotalBookings = bookings.Count,
+                TotalSpent = await _context.Payments
+                    .Where(p => p.UserId == userId)
+                    .SumAsync(p => p.Amount),
+                TotalReviews = await _context.Reviews
+                    .CountAsync(r => r.UserId == userId),
+                Bookings = bookings.Select(b => new BookingStatsDTO
                 {
-                    occupancyRate = stats.OccupancyRate,
-                    byDay = stats.OccupancyByDay
-                });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = ApiMessages.ServerError 
-                });
-            }
-        }
+                    BookingId = b.Id,
+                    SpaceId = b.SpaceId,
+                    Name = b.Space?.Name ?? string.Empty,
+                    StartTime = b.StartTime,
+                    Amount = b.Payments.Sum(p => p.Amount)
+                }).ToList()
+            };
 
-        // Client: Reservas propias
-        [HttpGet("clients/{userId}/bookings")]
-        [Authorize(Roles = "Client")]
-        public async Task<IActionResult> GetClientBookingStats(string userId)
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim != userId)
-            {
-                return Unauthorized(new 
-                { 
-                    message = ApiMessages.Unauthorized 
-                });
-            }
-            try
-            {
-                var stats = await _statsService.GetClientBookingStats(userId);
-                return Ok(new
-                {
-                    totalBookings = stats.TotalBookings,
-                    bookings = stats.Bookings
-                });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = ApiMessages.ServerError 
-                });
-            }
-        }
-
-        // Client: Actividad reciente
-        [HttpGet("clients/{userId}/activity")]
-        [Authorize(Roles = "Client")]
-        public async Task<IActionResult> GetClientActivityStats(string userId)
-        {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-            if (userIdClaim != userId)
-            {
-                return Unauthorized(new 
-                { 
-                    message = ApiMessages.Unauthorized 
-                });
-            }
-            try
-            {
-                var stats = await _statsService.GetClientActivityStats(userId);
-                return Ok(new
-                {
-                    totalActions = stats.TotalActions,
-                    actions = stats.Actions
-                });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new 
-                { 
-                    message = ApiMessages.ServerError 
-                });
-            }
+            return Ok(stats);
         }
     }
 }

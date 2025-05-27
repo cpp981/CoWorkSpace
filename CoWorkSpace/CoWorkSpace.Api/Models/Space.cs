@@ -12,7 +12,11 @@ namespace CoWorkSpace.Api.Models
         public int AdminId { get; set; } // FK
         [ForeignKey("AdminId")]
         [JsonIgnore]
-        public User Admin {  get; set; } // Vinculado a User con Role = 'Admin o SuperAdmin'
+        public User Admin {  get; set; } // Vinculado a User con Role = 'Admin '
+        public int ProviderId { get; set; }
+        [ForeignKey("ProviderId")]
+        [JsonIgnore]
+        public User Provider { get; set; } // Vinculado a User con Role = 'Provider' 
         public bool IsPublic { get; set; }
         public decimal Price { get; set; }
         public string City { get; set; }
