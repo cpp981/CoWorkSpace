@@ -19,34 +19,66 @@ namespace CoWorkSpace.Api.Tests.Controllers
     {
         private CoWorkSpaceContext GetDbContextWithData()
         {
-            var options = new DbContextOptionsBuilder<CoWorkSpaceContext>().UseInMemoryDatabase(databaseName: System.Guid.NewGuid().ToString())
+            var options = new DbContextOptionsBuilder<CoWorkSpaceContext>()
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
+                .EnableSensitiveDataLogging()
                 .Options;
             var context = new CoWorkSpaceContext(options);
 
             // Roles
-            context.Roles.AddRange(
-                new Role { RoleId = 1, RoleName = "SuperAdmin" },
-                new Role { RoleId = 2, RoleName = "Admin" },
-                new Role { RoleId = 3, RoleName = "Provider" },
-                new Role { RoleId = 4, RoleName = "Client" }
-            );
+            context.Roles.Add(new Role { RoleId = 1, RoleName = "SuperAdmin" });
+            context.Roles.Add(new Role { RoleId = 2, RoleName = "Admin" });
+            context.Roles.Add(new Role { RoleId = 3, RoleName = "Provider" });
+            context.Roles.Add(new Role { RoleId = 4, RoleName = "Client" });
 
             // Users
-            context.Users.AddRange(
-                new User { Id = 1, Email = "superadmin@coworkspace.com", Name = "Super Admin", RoleId = 1, PasswordHash = BCrypt.Net.BCrypt.HashPassword("SuperAdmin123") },
-                new User { Id = 2, Email = "provider@coworkspace.com", Name = "Provider", RoleId = 3, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Provider123") },
-                new User { Id = 3, Email = "admin@coworkspace.com", Name = "Admin", RoleId = 2, ProviderId = 2, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin123") },
-                new User { Id = 4, Email = "client@coworkspace.com", Name = "Client", RoleId = 4, PasswordHash = BCrypt.Net.BCrypt.HashPassword("Client123") }
-             );
+            context.Users.Add(new User
+            {
+                Id = 1,
+                Email = "superadmin@coworkspace.com",
+                Name = "Super Admin",
+                RoleId = 1,
+                PasswordHash = "$2a$11$LSiUCLVeVeOynzKQVsM2XOq4jS3IBhsJ.VzouEqCmjQjhty4l.3Pa",
+                ProviderId = null
+            });
+            context.Users.Add(new User
+            {
+                Id = 2,
+                Email = "provider@coworkspace.com",
+                Name = "Test Provider",
+                RoleId = 3,
+                PasswordHash = "$2a$11$ix99XlIasCCcYr/Zz5AwzO5TTr.Zv.ykHWwRULTo4NyWTSr9J3W5W",
+                ProviderId = null
+            });
+            context.Users.Add(new User
+            {
+                Id = 3,
+                Email = "admin@coworkspace.com",
+                Name = "Test Admin",
+                RoleId = 2,
+                ProviderId = 2,
+                PasswordHash = "$2a$11$Kn0nDdok.EqeppL6E0rTje40JdNq0qP8Pz.D/YtISJBgH1UgRrvqG"
+            });
+            context.Users.Add(new User
+            {
+                Id = 4,
+                Email = "client@coworkspace.com",
+                Name = "Test Client",
+                RoleId = 4,
+                PasswordHash = "$2a$11$R6e5nDM1HoXKHFhxALf4B.jQpJ7tko/p5zY.R.e7QCloUrOEMtoRe",
+                ProviderId = null
+            });
 
             // Spaces
             context.Spaces.Add(new Space
             {
                 Id = 1,
                 Name = "Test Space",
-                City = "Madrid",
                 AdminId = 3,
                 ProviderId = 2,
+                IsPublic = true,
+                Price = 50.00m,
+                City = "Madrid",
                 IsDeleted = false
             });
 
@@ -56,7 +88,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
                 Id = 1,
                 UserId = 4,
                 SpaceId = 1,
-                StartTime = DateTime.UtcNow
+                StartTime = new DateTime(2025, 5, 21, 10, 0, 0, DateTimeKind.Utc),
+                EndTime = new DateTime(2025, 5, 21, 12, 0, 0, DateTimeKind.Utc)
             });
 
             // Payments
@@ -64,9 +97,18 @@ namespace CoWorkSpace.Api.Tests.Controllers
             {
                 Id = 1,
                 BookingId = 1,
-                SpaceId = 1,
+                SpaceId = null,
                 UserId = 4,
-                Amount = 100m,
+                Amount = 100.00m,
+                Status = "CREADO"
+            });
+            context.Payments.Add(new Payment
+            {
+                Id = 2,
+                BookingId = null,
+                SpaceId = 1,
+                UserId = 3,
+                Amount = 50.00m,
                 Status = "CREADO"
             });
 
@@ -78,6 +120,16 @@ namespace CoWorkSpace.Api.Tests.Controllers
                 SpaceId = 1,
                 Rating = 5,
                 Comment = "Excelente espacio de trabajo!"
+            });
+
+            // Logs
+            context.Logs.Add(new Log
+            {
+                Id = 1,
+                Timestamp = new DateTime(2025, 5, 19, 23, 59, 59, DateTimeKind.Utc),
+                EventType = "SystemStartup",
+                UserId = null,
+                Details = "Sistema iniciado correctamente."
             });
 
             context.SaveChanges();
@@ -111,7 +163,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetSuperAdminStats(1);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            var actionResult = Assert.IsType<ActionResult<SuperAdminStatsDTO>>(result);
+            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
             var stats = Assert.IsType<SuperAdminStatsDTO>(okResult.Value);
             Assert.Equal(1, stats.TotalSpaces);
             Assert.Equal(1, stats.TotalBookings);
@@ -136,7 +189,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetSuperAdminStats(1);
 
             // Assert
-            Assert.IsType<ForbidResult>(result);
+            var actionResult = Assert.IsType<ActionResult<SuperAdminStatsDTO>>(result);
+            Assert.IsType<ForbidResult>(actionResult.Result);
         }
 
         [Fact]
@@ -151,7 +205,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetSuperAdminStats(1);
 
             // Assert
-            Assert.IsType<ForbidResult>(result);
+            var actionResult = Assert.IsType<ActionResult<SuperAdminStatsDTO>>(result);
+            Assert.IsType<ForbidResult>(actionResult.Result);
         }
 
         [Fact]
@@ -166,7 +221,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetAdminStats(3);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            var actionResult = Assert.IsType<ActionResult<AdminStatsDTO>>(result);
+            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
             var stats = Assert.IsType<AdminStatsDTO>(okResult.Value);
             Assert.Equal(1, stats.TotalSpaces);
             Assert.Equal(1, stats.TotalBookings);
@@ -193,7 +249,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetAdminStats(3);
 
             // Assert
-            Assert.IsType<ForbidResult>(result);
+            var actionResult = Assert.IsType<ActionResult<AdminStatsDTO>>(result);
+            Assert.IsType<ForbidResult>(actionResult.Result);
         }
 
         [Fact]
@@ -208,7 +265,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetAdminStats(3);
 
             // Assert
-            Assert.IsType<ForbidResult>(result);
+            var actionResult = Assert.IsType<ActionResult<AdminStatsDTO>>(result);
+            Assert.IsType<ForbidResult>(actionResult.Result);
         }
 
         [Fact]
@@ -223,7 +281,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetProviderStats(2);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            var actionResult = Assert.IsType<ActionResult<ProviderStatsDTO>>(result);
+            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
             var stats = Assert.IsType<ProviderStatsDTO>(okResult.Value);
             Assert.Equal(1, stats.TotalSpaces);
             Assert.Equal(1, stats.TotalAdmins);
@@ -251,7 +310,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetProviderStats(2);
 
             // Assert
-            Assert.IsType<ForbidResult>(result);
+            var actionResult = Assert.IsType<ActionResult<ProviderStatsDTO>>(result);
+            Assert.IsType<ForbidResult>(actionResult.Result);
         }
 
         [Fact]
@@ -266,7 +326,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetProviderStats(2);
 
             // Assert
-            Assert.IsType<ForbidResult>(result);
+            var actionResult = Assert.IsType<ActionResult<ProviderStatsDTO>>(result);
+            Assert.IsType<ForbidResult>(actionResult.Result);
         }
 
         [Fact]
@@ -281,7 +342,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetClientStats(4);
 
             // Assert
-            var okResult = Assert.IsType<OkObjectResult>(result);
+            var actionResult = Assert.IsType<ActionResult<ClientStatsDTO>>(result);
+            var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
             var stats = Assert.IsType<ClientStatsDTO>(okResult.Value);
             Assert.Equal(1, stats.TotalBookings);
             Assert.Equal(100m, stats.TotalSpent);
@@ -306,7 +368,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetClientStats(4);
 
             // Assert
-            Assert.IsType<ForbidResult>(result);
+            var actionResult = Assert.IsType<ActionResult<ClientStatsDTO>>(result);
+            Assert.IsType<ForbidResult>(actionResult.Result);
         }
 
         [Fact]
@@ -321,7 +384,8 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var result = await controller.GetClientStats(4);
 
             // Assert
-            Assert.IsType<ForbidResult>(result);
+            var actionResult = Assert.IsType<ActionResult<ClientStatsDTO>>(result);
+            Assert.IsType<ForbidResult>(actionResult.Result);
         }
     }
 }
