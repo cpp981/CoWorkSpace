@@ -2,6 +2,7 @@
   <div class="app-container">
     <component
       :is="currentView"
+      :userId="authStore.userId"
       @open-login="setView('Login')"
       @open-register="setView('Register')"
       @cancel="setView('Home')"
@@ -20,6 +21,10 @@ import { useAuthStore } from './stores/auth';
 import Home from './views/Home.vue';
 import Login from './views/Login.vue';
 import Register from './views/UserRegister.vue';
+import SuperAdminDashboard from './views/SuperAdminDashboard.vue';
+import AdminDashboard from './views/AdminDashboard.vue';
+import ProviderDashboard from './views/ProviderDashboard.vue';
+import ClientDashboard from './views/ClientDashboard.vue';
 import api from './services/api';
 
 export default {
@@ -28,6 +33,10 @@ export default {
     Home,
     Login,
     Register,
+    SuperAdminDashboard,
+    AdminDashboard,
+    ProviderDashboard,
+    ClientDashboard,
   },
   data() {
     return {
@@ -43,7 +52,13 @@ export default {
       this.currentView = view;
     },
     handleLoginSuccess() {
-      //this.setView('Home'); // Redirigir a Home tras login exitoso
+      const roleViewMap = {
+        SuperAdmin: 'SuperAdminDashboard',
+        Admin: 'AdminDashboard',
+        Provider: 'ProviderDashboard',
+        Client: 'ClientDashboard',
+      };
+      this.currentView = roleViewMap[this.authStore.userRole] || 'Home';
     },
     logout() {
       this.authStore.logout();
@@ -51,12 +66,12 @@ export default {
     },
   },
   created() {
-    // Verificar token al cargar
     if (this.authStore.isAuthenticated && !this.authStore.isTokenValid) {
       this.authStore.logout();
       this.setView('Login');
+    } else if (this.authStore.isAuthenticated) {
+      this.handleLoginSuccess();
     }
-    // Interceptar errores 401
     api.client.interceptors.response.use(
       (response) => response,
       (error) => {
@@ -70,15 +85,16 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 .app-container {
   min-height: 100vh;
-  background-color: #f8f9fa;
+  display: flex;
+  flex-direction: column;
 }
-
 .logout-container {
   position: fixed;
-  top: 1rem;
-  right: 1rem;
+  top: 20px;
+  right: 20px;
 }
 </style>

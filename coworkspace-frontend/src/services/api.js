@@ -2,32 +2,43 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/auth';
 
 const apiClient = axios.create({
-    baseURL: '/api/v1',
-    headers: {
-        'Content-Type': 'application/json',
-    },
+  baseURL: '/api/v1',
+  headers: {
+    'Content-Type': 'application/json',
+  },
 });
 
-// Interceptor para añadir el access token
 apiClient.interceptors.request.use((config) => {
-    const authStore = useAuthStore();
-    if (authStore.accessToken && authStore.isTokenValid) {
-        config.headers.Authorization = `Bearer ${authStore.accessToken}`;
-    }
-    return config;
+  const authStore = useAuthStore();
+  if (authStore.accessToken && authStore.isTokenValid) {
+    config.headers.Authorization = `Bearer ${authStore.accessToken}`;
+  }
+  return config;
 }, (error) => {
-    return Promise.reject(error);
+  return Promise.reject(error);
 });
 
 export default {
-    login(credentials) {
-        return apiClient.post('/auth/login', credentials);
-    },
-    register(userData) {
-        return apiClient.post('/auth/register', userData);
-    },
-    registerAdmin(providerId, adminData) {
-        return apiClient.post(`/providers/${providerId}/admins`, adminData);
-    },
-    client: apiClient, // Para interceptores en App.vue
+  login(credentials) {
+    return apiClient.post('/auth/login', credentials);
+  },
+  register(userData) {
+    return apiClient.post('/auth/register', userData);
+  },
+  registerAdmin(providerId, adminData) {
+    return apiClient.post(`/providers/${providerId}/admins`, adminData);
+  },
+  getSuperAdminStats(userId) {
+    return apiClient.get(`/stats/superadmin/${userId}`);
+  },
+  getAdminStats(userId) {
+    return apiClient.get(`/stats/admin/${userId}`);
+  },
+  getProviderStats(userId) {
+    return apiClient.get(`/stats/provider/${userId}`);
+  },
+  getClientStats(userId) {
+    return apiClient.get(`/stats/client/${userId}`);
+  },
+  client: apiClient,
 };
