@@ -15,7 +15,7 @@ namespace CoWorkSpace.Api.Data
         public virtual DbSet<Log> Logs { get; set; }
 
         public CoWorkSpaceContext(DbContextOptions<CoWorkSpaceContext> options)
-                : base(options)
+     : base(options)
         {
         }
 
@@ -34,10 +34,6 @@ namespace CoWorkSpace.Api.Data
                 .HasConstraintName("FK_Users_Users_ProviderId")
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired(false);
-
-            // Filtro global para usuarios
-            modelBuilder.Entity<User>()
-                .HasQueryFilter(u => u.RoleId == 1 || u.RoleId == 3 || u.RoleId == 4);
 
             // Relación User -> Role
             modelBuilder.Entity<User>()
@@ -88,9 +84,6 @@ namespace CoWorkSpace.Api.Data
                 .HasConstraintName("FK_Bookings_Spaces_SpaceId")
                 .OnDelete(DeleteBehavior.Restrict)
                 .IsRequired();
-
-            modelBuilder.Entity<Booking>()
-                .HasQueryFilter(b => b.User != null && b.User.RoleId == 4);
 
             // Relaciones de Review
             modelBuilder.Entity<Review>()
@@ -278,5 +271,4 @@ namespace CoWorkSpace.Api.Data
             base.OnModelCreating(modelBuilder);
         }
     }
-
 }
