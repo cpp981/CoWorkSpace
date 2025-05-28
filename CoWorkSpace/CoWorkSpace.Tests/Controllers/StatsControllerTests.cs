@@ -61,6 +61,42 @@ namespace CoWorkSpace.Api.Tests.Controllers
             });
             context.Users.Add(new User
             {
+                Id = 9,
+                Email = "adminProvider2@coworkspace.com",
+                Name = "Admin de Provider 2",
+                RoleId = 2,
+                ProviderId = 2,
+                PasswordHash = "$2a$11$Z19kPA.lD3FL1yRQMO24H.wzmn4f/YY.LDqtoUhCOVRDi8.eI8BYe"
+            });
+            context.Users.Add(new User
+            {
+                Id = 11,
+                Email = "adminProvider552@coworkspace.com",
+                Name = "Admin 255",
+                RoleId = 2,
+                ProviderId = 2,
+                PasswordHash = "$2a$11$k2OiomhTUyN1heUODp3Q/e6O.TiVBNEjjGmxymMdWT0R4TzJExen6"
+            });
+            context.Users.Add(new User
+            {
+                Id = 12,
+                Email = "adminNuevo@coworkspace.com",
+                Name = "Admin Nuevo",
+                RoleId = 2,
+                ProviderId = 2,
+                PasswordHash = "$2a$11$OvJ2UPyFNxJpPYdo4GOqQ.Hg97EqqMyq8yLat5/AUP8nSTahH/Tde"
+            });
+            context.Users.Add(new User
+            {
+                Id = 13,
+                Email = "adminNuevo2@coworkspace.com",
+                Name = "Admin Nuevo2",
+                RoleId = 2,
+                ProviderId = 2,
+                PasswordHash = "$2a$11$trU7eu.RhyHRvQEdTpy/m.u0YJg4l6pU18BhurdLkazGTcuDgZMWi"
+            });
+            context.Users.Add(new User
+            {
                 Id = 4,
                 Email = "client@coworkspace.com",
                 Name = "Test Client",
@@ -68,7 +104,6 @@ namespace CoWorkSpace.Api.Tests.Controllers
                 PasswordHash = "$2a$11$R6e5nDM1HoXKHFhxALf4B.jQpJ7tko/p5zY.R.e7QCloUrOEMtoRe",
                 ProviderId = null
             });
-
             // Spaces
             context.Spaces.Add(new Space
             {
@@ -168,11 +203,11 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var stats = Assert.IsType<SuperAdminStatsDTO>(okResult.Value);
             Assert.Equal(1, stats.TotalSpaces);
             Assert.Equal(1, stats.TotalBookings);
-            Assert.Equal(100m, stats.TotalRevenue);
-            Assert.Equal(4, stats.TotalUsers);
+            Assert.Equal(150m, stats.TotalRevenue);
+            Assert.Equal(8, stats.TotalUsers); // Cambiado de 4 a 8
             Assert.Equal(4, stats.UsersByRole.Count);
             Assert.Equal(1, stats.UsersByRole["SuperAdmin"]);
-            Assert.Equal(1, stats.UsersByRole["Admin"]);
+            Assert.Equal(5, stats.UsersByRole["Admin"]); // Cambiado de 1 a 5
             Assert.Equal(1, stats.UsersByRole["Provider"]);
             Assert.Equal(1, stats.UsersByRole["Client"]);
         }
@@ -226,14 +261,14 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var stats = Assert.IsType<AdminStatsDTO>(okResult.Value);
             Assert.Equal(1, stats.TotalSpaces);
             Assert.Equal(1, stats.TotalBookings);
-            Assert.Equal(100m, stats.TotalRevenue);
+            Assert.Equal(50m, stats.TotalRevenue);
             Assert.Equal(5.0, stats.AverageRating);
             Assert.Single(stats.Spaces);
             var space = stats.Spaces[0];
             Assert.Equal(1, space.SpaceId);
             Assert.Equal("Test Space", space.SpaceName);
             Assert.Equal(1, space.BookingsCount);
-            Assert.Equal(100m, space.Revenue);
+            Assert.Equal(50m, space.Revenue);
             Assert.Equal(5.0, space.AverageRating);
         }
 
@@ -285,17 +320,17 @@ namespace CoWorkSpace.Api.Tests.Controllers
             var okResult = Assert.IsType<OkObjectResult>(actionResult.Result);
             var stats = Assert.IsType<ProviderStatsDTO>(okResult.Value);
             Assert.Equal(1, stats.TotalSpaces);
-            Assert.Equal(1, stats.TotalAdmins);
+            Assert.Equal(5, stats.TotalAdmins);
             Assert.Equal(1, stats.TotalBookings);
-            Assert.Equal(100m, stats.TotalRevenue);
+            Assert.Equal(50m, stats.TotalRevenue);
             Assert.Single(stats.Spaces);
             var space = stats.Spaces[0];
             Assert.Equal(1, space.SpaceId);
             Assert.Equal("Test Space", space.SpaceName);
             Assert.Equal(3, space.AdminId);
-            Assert.Equal("Admin", space.AdminName);
+            Assert.Equal("Test Admin", space.AdminName);
             Assert.Equal(1, space.BookingsCount);
-            Assert.Equal(100m, space.Revenue);
+            Assert.Equal(50m, space.Revenue);
         }
 
         [Fact]
