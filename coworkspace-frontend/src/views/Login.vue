@@ -5,54 +5,40 @@
         <div class="col-11 col-md-8 col-lg-5">
           <div class="card shadow border-0">
             <div class="card-body p-3">
-              <h3 class="text-center fw-bold mb-3">
-                Iniciar Sesión
-              </h3>
+              <h3 class="text-center fw-bold mb-3">Iniciar Sesión</h3>
               <form @submit.prevent="handleLogin" class="">
-                <div class="mb-2">
-                  <label for="email" class="form-label"><i class="bi bi-person me-1"></i>Email</label>
+                <div class="mb-3 input-icon-wrapper">
                   <input
                     v-model="form.email"
                     type="email"
-                    class="form-control border border-dark"
+                    class="form-control"
                     id="email"
                     placeholder="tu@email.com"
                     required
+                    :disabled="loading"
                   />
+                  <i class="bi bi-person input-icon"></i>
                 </div>
-                <div class="mb-2">
-                  <label for="password" class="form-label"><i class="bi bi-lock me-1"></i>Contraseña</label>
+                <div class="mb-3 input-icon-wrapper">
                   <input
                     v-model="form.password"
                     type="password"
-                    class="form-control border border-dark"
+                    class="form-control"
                     id="password"
                     placeholder="••••••••"
                     required
+                    :disabled="loading"
                   />
+                  <i class="bi bi-lock input-icon"></i>
                 </div>
                 <div class="d-grid gap-2 mb-2">
-                  <button
-                    type="submit"
-                    class="btn btn-primary"
-                    :disabled="loading"
-                  >
+                  <button type="submit" class="btn btn-primary" :disabled="loading">
                     <i class="bi bi-box-arrow-in-right me-2"></i>
                     {{ loading ? 'Iniciando...' : 'Iniciar Sesión' }}
                   </button>
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    @click="$emit('cancel')"
-                  >
+                  <button type="button" class="btn btn-outline-secondary" @click="$emit('cancel')" :disabled="loading">
                     Volver
                   </button>
-                </div>
-                <div v-if="error" class="alert alert-danger alert-sm" role="alert">
-                  <i class="bi bi-exclamation-circle me-2"></i>{{ error }}
-                </div>
-                <div v-if="success" class="alert alert-success alert-sm" role="alert">
-                  <i class="bi bi-check-circle me-2"></i>{{ success }}
                 </div>
               </form>
             </div>
@@ -65,6 +51,7 @@
 
 <script>
 import { useAuthStore } from '../stores/auth';
+import { useNotyf } from '../composables/useNotyf';
 
 export default {
   name: 'LoginPage',
@@ -75,26 +62,32 @@ export default {
         password: '',
       },
       loading: false,
-      error: null,
-      success: null,
     };
+  },
+  setup() {
+    const notyf = useNotyf();
+    return { notyf };
   },
   methods: {
     async handleLogin() {
       this.loading = true;
-      this.error = null;
-      this.success = null;
-      const authStore = useAuthStore();
       try {
-        this.success = await authStore.login({
+        const authStore = useAuthStore();
+        const message = await authStore.login({
           email: this.form.email,
           password: this.form.password,
         });
+        this.notyf.success(message || 'Inicio de sesión exitoso');
         this.form.email = '';
         this.form.password = '';
-        this.$emit('login-success'); // Notificar login exitoso
+        this.$emit('login-success');
       } catch (error) {
-        this.error = error;
+        // Intentamos obtener mensaje claro del error
+        const errorMsg =
+          error?.response?.data?.message ||
+          error?.message ||
+          'Error al iniciar sesión';
+        this.notyf.error(errorMsg);
       } finally {
         this.loading = false;
       }
@@ -122,11 +115,14 @@ export default {
 .form-control {
   border-radius: 0.375rem;
   font-size: 0.9rem;
+  height: 38px;
+  padding-right: 2.5rem;
 }
 
 .btn {
   border-radius: 0.375rem;
   font-size: 0.9rem;
+  height: 38px;
 }
 
 .alert-sm {
@@ -139,5 +135,22 @@ export default {
 
 label {
   font-size: 0.9rem;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.input-icon-wrapper {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  color: #6c757d;
+  pointer-events: none;
+  font-size: 1.1rem;
 }
 </style>
