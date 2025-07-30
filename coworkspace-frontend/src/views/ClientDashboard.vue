@@ -1,45 +1,49 @@
 <template>
-  <Dashboard
-    title="Dashboard de Cliente"
-    :metrics="clientMetrics"
-    :chartTitle="'Gasto por Reserva'"
-    :chartData="chartData"
-    :chartOptions="chartOptions"
-    :detailsTitle="'Historial de Reservas'"
-    :tableHeaders="tableHeaders"
-    :tableData="tableData"
-    :errorMessage="errorMessage"
-  >
-    <template #details>
-      <table v-if="stats.bookings.length" class="table table-striped">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Espacio</th>
-            <th>Monto</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="booking in stats.bookings" :key="booking.bookingId">
-            <td>{{ booking.bookingId }}</td>
-            <td>{{ booking.name }}</td>
-            <td>{{ booking.amount.toFixed(2) }} €</td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else class="text-muted">No hay reservas disponibles.</p>
-    </template>
-  </Dashboard>
+  <div class="d-flex">
+    <!-- Menú lateral -->
+    <GenericMenu @button-click="handleMenuClick" />
+
+    <!-- Contenido principal del dashboard -->
+    <div class="flex-grow-1 p-3">
+      <Dashboard title="Dashboard de Cliente" :metrics="clientMetrics" :chartTitle="'Gasto por Reserva'"
+        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Historial de Reservas'"
+        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
+        <template #details>
+          <table v-if="stats.bookings.length" class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Espacio</th>
+                <th>Monto</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="booking in stats.bookings" :key="booking.bookingId">
+                <td>{{ booking.bookingId }}</td>
+                <td>{{ booking.name }}</td>
+                <td>{{ booking.amount.toFixed(2) }} €</td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-else class="text-muted">No hay reservas disponibles.</p>
+        </template>
+      </Dashboard>
+    </div>
+  </div>
 </template>
 
 <script>
 import Dashboard from '../components/Dashboard.vue';
+import GenericMenu from '../components/GenericMenu.vue';
 import api from '../services/api'; // Importar objeto completo
 import { useAuthStore } from '../stores/auth';
 
 export default {
   name: 'ClientDashboard',
-  components: { Dashboard },
+  components: {
+    Dashboard,
+    GenericMenu,
+  },
   setup() {
     return { authStore: useAuthStore() };
   },
@@ -104,6 +108,12 @@ export default {
       this.errorMessage = error.response?.data?.message || 'Error al cargar las estadísticas.';
     }
   },
+  methods: {
+    handleMenuClick(button) {
+      console.log('Botón del menú clicado:', button);
+      // Aquí realizamos la acción de redirigir al pulsar el botón del meú lateral
+    }
+  }
 };
 </script>
 

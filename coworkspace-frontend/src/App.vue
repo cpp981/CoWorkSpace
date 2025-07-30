@@ -8,11 +8,11 @@
       @cancel="setView('Home')"
       @login-success="handleLoginSuccess"
     />
-    <div v-if="authStore.isAuthenticated && authStore.isTokenValid" class="logout-container">
+    <!--<div v-if="authStore.isAuthenticated && authStore.isTokenValid" class="logout-container">
       <button @click="logout" class="btn btn-outline-danger">
         Cerrar Sesión
       </button>
-    </div>
+    </div>-->
   </div>
 </template>
 

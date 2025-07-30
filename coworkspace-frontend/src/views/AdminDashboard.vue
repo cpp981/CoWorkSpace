@@ -1,51 +1,65 @@
 <template>
-  <Dashboard
-    title="Dashboard de Administrador"
-    :metrics="adminMetrics"
-    :chartTitle="'Ingresos por Espacio'"
-    :chartData="chartData"
-    :chartOptions="chartOptions"
-    :detailsTitle="'Espacios Gestionados'"
-    :tableHeaders="tableHeaders"
-    :tableData="tableData"
-    :errorMessage="errorMessage"
-  >
-    <template #details>
-      <table v-if="stats.spaces.length" class="table table-striped">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Reservas</th>
-            <th>Ingresos</th>
-            <th>Valoración</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="space in stats.spaces" :key="space.spaceId">
-            <td>{{ space.spaceId }}</td>
-            <td>{{ space.spaceName }}</td>
-            <td>{{ space.bookingsCount }}</td>
-            <td>{{ space.revenue.toFixed(2) }} €</td>
-            <td>{{ space.averageRating.toFixed(1) }}</td>
-          </tr>
-        </tbody>
-      </table>
-      <p v-else class="text-muted">No hay espacios disponibles.</p>
-    </template>
-  </Dashboard>
+  <div class="d-flex">
+    <!-- Menú lateral -->
+    <GenericMenu @button-click="handleMenuClick" />
+
+    <!-- Contenido principal del dashboard -->
+    <div class="flex-grow-1 p-3">
+      <Dashboard
+        title="Dashboard de Administrador"
+        :metrics="adminMetrics"
+        :chartTitle="'Ingresos por Espacio'"
+        :chartData="chartData"
+        :chartOptions="chartOptions"
+        :detailsTitle="'Espacios Gestionados'"
+        :tableHeaders="tableHeaders"
+        :tableData="tableData"
+        :errorMessage="errorMessage"
+      >
+        <template #details>
+          <table v-if="stats.spaces.length" class="table table-striped">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Nombre</th>
+                <th>Reservas</th>
+                <th>Ingresos</th>
+                <th>Valoración</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="space in stats.spaces" :key="space.spaceId">
+                <td>{{ space.spaceId }}</td>
+                <td>{{ space.spaceName }}</td>
+                <td>{{ space.bookingsCount }}</td>
+                <td>{{ space.revenue.toFixed(2) }} €</td>
+                <td>{{ space.averageRating.toFixed(1) }}</td>
+              </tr>
+            </tbody>
+          </table>
+          <p v-else class="text-muted">No hay espacios disponibles.</p>
+        </template>
+      </Dashboard>
+    </div>
+  </div>
 </template>
 
 <script>
 import Dashboard from '../components/Dashboard.vue';
-import api from '../services/api'; // Importar objeto completo
+import GenericMenu from '../components/GenericMenu.vue';
+import api from '../services/api';
 import { useAuthStore } from '../stores/auth';
 
 export default {
   name: 'AdminDashboard',
-  components: { Dashboard },
+  components: {
+    Dashboard,
+    GenericMenu,
+  },
   setup() {
-    return { authStore: useAuthStore() };
+    return {
+      authStore: useAuthStore(),
+    };
   },
   data() {
     return {
@@ -112,6 +126,12 @@ export default {
       this.errorMessage = error.response?.data?.message || 'Error al cargar las estadísticas.';
     }
   },
+  methods: {
+    handleMenuClick(button) {
+      console.log('Botón del menú clicado:', button);
+      // Aquí realizamos la acción de redirigir al pulsar el botón del meú lateral
+    }
+  }
 };
 </script>
 
