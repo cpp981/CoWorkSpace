@@ -9,6 +9,7 @@ export const useAuthStore = defineStore('auth', {
     isAuthenticated: false,
     userId: null,
     roleId: null,
+    userName: null,
   }),
   getters: {
     isTokenValid: (state) => {
@@ -38,6 +39,7 @@ export const useAuthStore = defineStore('auth', {
         console.log('Decoded JWT:', decoded); // Temporal para depuración
         this.userId = decoded.sub;
         this.roleId = decoded.roleId;
+        this.userName = decoded.name;
 
         return response.data.message;
       } catch (error) {
@@ -49,6 +51,7 @@ export const useAuthStore = defineStore('auth', {
       this.expiration = null;
       this.userId = null;
       this.roleId = null;
+      this.userName = null;
       this.isAuthenticated = false;
     },
   },

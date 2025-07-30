@@ -40,5 +40,8 @@ export default {
   getClientStats(userId) {
     return apiClient.get(`/stats/client/${userId}`);
   },
+  getMenu() {
+    return apiClient.get(`/menu`);
+  },
   client: apiClient,
 };

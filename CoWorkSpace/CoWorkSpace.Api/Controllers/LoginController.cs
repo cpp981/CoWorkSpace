@@ -60,6 +60,7 @@ namespace CoWorkSpace.Api.Controllers
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("roleId", user.RoleId.ToString()),
+                new Claim("name", user.Name),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
