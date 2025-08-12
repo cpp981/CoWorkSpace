@@ -42,17 +42,10 @@ namespace CoWorkSpace.Api.Controllers
                 {
                     new MenuItemDTO { Label = "Dashboard", Action = "showDashboard", Icon = "bi bi-speedometer" },
                     new MenuItemDTO { Label = "Reservas", Action = "showBookings", Icon = "bi bi-calendar-day" },
+                    new MenuItemDTO { Label = "Espacios", Action = "showSpaces", Icon = "bi bi-person-workspace" },
                 },
                 _ => new List<MenuItemDTO>() // Rol no reconocido
             };
-
-            // Todos los roles tienen botón de salir
-           /* menuItems.Add(new MenuItemDTO
-            {
-                Label = "Salir",
-                Action = "logout",
-                Icon = "LogOut"
-            });*/
 
             return Ok(menuItems);
         }

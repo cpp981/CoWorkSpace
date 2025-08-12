@@ -5,9 +5,17 @@
 
     <!-- Contenido principal del dashboard -->
     <div class="flex-grow-1 p-3">
-      <Dashboard title="Dashboard de Cliente" :metrics="clientMetrics" :chartTitle="'Gasto por Reserva'"
-        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Historial de Reservas'"
-        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
+      <Dashboard 
+        :title="dashboardTitle" 
+        :metrics="clientMetrics" 
+        :chartTitle="'Gasto por Reserva'"
+        :chartData="chartData" 
+        :chartOptions="chartOptions" 
+        :detailsTitle="'Historial de Reservas'"
+        :tableHeaders="tableHeaders" 
+        :tableData="tableData" 
+        :errorMessage="errorMessage"
+        >
         <template #details>
           <table v-if="stats.bookings.length" class="table table-striped">
             <thead>
@@ -18,7 +26,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="booking in stats.bookings" :key="booking.bookingId">
+              <tr 
+                v-for="booking in stats.bookings" 
+                :key="booking.bookingId"
+                >
                 <td>{{ booking.bookingId }}</td>
                 <td>{{ booking.name }}</td>
                 <td>{{ booking.amount.toFixed(2) }} €</td>
@@ -59,6 +70,9 @@ export default {
     };
   },
   computed: {
+    dashboardTitle() {
+      return `Dashboard de ${this.authStore.userName || ''}`;
+    },
     clientMetrics() {
       return [
         { label: 'Reservas Totales', value: this.stats.totalBookings },

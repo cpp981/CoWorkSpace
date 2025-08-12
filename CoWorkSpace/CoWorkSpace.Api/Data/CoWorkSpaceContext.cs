@@ -138,6 +138,22 @@ namespace CoWorkSpace.Api.Data
                 .HasQueryFilter(p => p.User != null &&
                     (p.User.RoleId == 4 || p.User.RoleId == 2 || p.User.RoleId == 1));
 
+            // Nueva entidad: SpaceMembership
+            modelBuilder.Entity<SpaceMembership>()
+                .HasKey(sm => sm.Id);
+
+            modelBuilder.Entity<SpaceMembership>()
+                .HasOne(sm => sm.User)
+                .WithMany()
+                .HasForeignKey(sm => sm.UserId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<SpaceMembership>()
+                .HasOne(sm => sm.Space)
+                .WithMany()
+                .HasForeignKey(sm => sm.SpaceId)
+                .OnDelete(DeleteBehavior.Cascade);
+
             // Relaciones de Log
             modelBuilder.Entity<Log>()
                 .HasOne(l => l.User)

@@ -1,14 +1,14 @@
 <template>
-  <div class="sidebar bg-light border-end p-3" style="min-width: 220px;">
+  <div class="sidebar border-end p-3" style="min-width: 220px;">
     <!-- Logo -->
     <div class="logo mb-2 text-center" style="max-width: 220px;">
-      <img src="../assets/logo.png" alt="Logo" class="img-fluid" />
+      <img src="../assets/logo.png" alt="Logo" class="img-fluid rounded" />
     </div>
 
     <!-- Nombre del usuario conectado -->
-    <div class="text-center mb-4">
-      <small class="text-muted">Conectado como:</small><br />
-      <strong>{{ userName }}</strong>
+    <div class="text-center  text-light mt-4">
+      <small class="mt-4 text-light">Conectado como:</small><br />
+      <strong><i class="bi bi-person-circle me-2"></i>{{ userName }}</strong>
     </div>
 
     <!-- Spinner de carga -->
@@ -26,11 +26,12 @@
         class="nav-item mb-2"
       >
         <button
-          class="btn btn-primary w-100 text-start d-flex align-items-center"
+          class="btn text-light w-100 h-100 text-start d-flex align-items-center"
           @click="$emit('button-click', button)"
         >
           <i :class="`bi bi-${button.icon.toLowerCase()}`" class="me-2"></i>
           {{ button.label }}
+          <i class="bi bi-caret-right ms-auto"></i>
         </button>
       </li>
     </ul>
@@ -95,5 +96,6 @@ export default {
   display: flex;
   flex-direction: column;
   height: 100vh;
+  background-color: #0a58ca;
 }
 </style>

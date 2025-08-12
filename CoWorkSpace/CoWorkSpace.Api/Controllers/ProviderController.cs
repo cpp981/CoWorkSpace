@@ -99,5 +99,42 @@ namespace CoWorkSpace.Api.Controllers
                 Message = ApiMessages.AdminCreatedSuccessfully 
             });
         }
+        [HttpGet("{providerId}/admins")]
+        [Authorize]
+        public async Task<IActionResult> GetAdminsByProvider(int providerId)
+        {
+            // 1. Obtener claims del usuario autenticado
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+
+            if (!int.TryParse(roleIdClaim, out int roleId) || !int.TryParse(userIdClaim, out int loggedUserId))
+                return Unauthorized(new { Message = ApiMessages.InvalidUser });
+
+            // 2. Solo Providers (roleId = 3) pueden acceder
+            if (roleId != 3)
+                return Unauthorized(new { Message = ApiMessages.OnlyProvidersCanViewAdmins });
+
+            // 3. Validar que el provider solo accede a sus propios admins
+            if (loggedUserId != providerId)
+                return Unauthorized(new { Message = ApiMessages.CannotViewAdminsForOtherProviders });
+
+            // 4. Obtener admins que pertenezcan a este provider
+            var admins = await _context.Users
+                .Where(u => u.RoleId == 2 && u.ProviderId == providerId)
+                .Select(u => new
+                {
+                    Id = u.Id,
+                    Name = u.Name
+                })
+                .ToListAsync();
+
+            if (!admins.Any())
+                return NotFound(new { Message = ApiMessages.NoAdminsFound });
+
+            return Ok(admins);
+        }
     }
 }

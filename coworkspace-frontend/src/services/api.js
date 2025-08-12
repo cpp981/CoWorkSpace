@@ -43,5 +43,14 @@ export default {
   getMenu() {
     return apiClient.get(`/menu`);
   },
+  getSpacesByProvider(providerId) {
+    return apiClient.get(`/providers/${providerId}/spaces`);
+  },
+createSpace(providerId, spaceData) {
+  return apiClient.post(`/providers/${providerId}/spaces`, spaceData);
+},
+getProviderAdmins(providerId) {
+  return apiClient.get(`/providers/${providerId}/admins`);
+},
   client: apiClient,
 };
