@@ -22,3 +22,20 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# Binarios y ensamblados
+*.dll
+*.exe
+*.pdb
+
+# Carpetas de compilación
+bin/
+obj/
+
+# Archivos de usuario y configuración local
+*.user
+*.suo
+*.vs/
+
+# Otros archivos temporales o de cache
+*.cache
+*.log
