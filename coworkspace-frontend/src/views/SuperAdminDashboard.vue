@@ -5,11 +5,20 @@
 
     <!-- Contenido principal del dashboard -->
     <div class="flex-grow-1 p-3">
-      <Dashboard title="Dashboard de SuperAdmin" :metrics="superAdminMetrics" :chartTitle="'Usuarios por Rol'"
-        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Usuarios por Rol'"
-        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
+      <Dashboard 
+        :title="dashboardTitle" 
+        :metrics="superAdminMetrics" 
+        :chartTitle="'Usuarios por Rol'"
+        :chartData="chartData" 
+        :chartOptions="chartOptions" 
+        :detailsTitle="'Usuarios por Rol'"
+        :tableHeaders="tableHeaders" 
+        :tableData="tableData" 
+        :errorMessage="errorMessage"
+        >
         <template #details>
-          <table v-if="Object.keys(stats.usersByRole).length" class="table table-striped">
+          <table 
+            v-if="Object.keys(stats.usersByRole).length" class="table table-striped">
             <thead>
               <tr>
                 <th>Rol</th>
@@ -17,7 +26,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="(count, role) in stats.usersByRole" :key="role">
+              <tr 
+                v-for="(count, role) in stats.usersByRole" 
+                :key="role"
+                >
                 <td>{{ role }}</td>
                 <td>{{ count }}</td>
               </tr>
@@ -38,10 +50,10 @@ import { useAuthStore } from '../stores/auth';
 
 export default {
   name: 'SuperAdminDashboard',
-  components: { 
+  components: {
     Dashboard,
     GenericMenu,
-   },
+  },
   setup() {
     return { authStore: useAuthStore() };
   },
@@ -58,6 +70,9 @@ export default {
     };
   },
   computed: {
+    dashboardTitle() {
+      return `Dashboard de ${this.authStore.userName || ''}`;
+    },
     superAdminMetrics() {
       return [
         { label: 'Espacios Totales', value: this.stats.totalSpaces },
@@ -106,8 +121,8 @@ export default {
     }
   },
   methods: {
-    handleMenuClick(button){
-     console.log('Botón del menú clicado:', button);
+    handleMenuClick(button) {
+      console.log('Botón del menú clicado:', button);
       // Aquí realizamos la acción de redirigir al pulsar el botón del meú lateral
     }
   }

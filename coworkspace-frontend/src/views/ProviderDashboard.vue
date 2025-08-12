@@ -5,9 +5,22 @@
 
     <!-- Contenido principal del dashboard -->
     <div class="flex-grow-1 p-3">
-      <Dashboard title="Dashboard de Proveedor" :metrics="providerMetrics" :chartTitle="'Ingresos por Espacio'"
-        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Espacios Gestionados'"
-        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
+      <!-- Vista de ESPACIOS del proveedor -->
+      <ProviderSpacesView v-if="currentView === 'spaces'" />
+
+      <!-- Vista principal del dashboard del proveedor -->
+      <Dashboard 
+        v-else
+        :title="dashboardTitle" 
+        :metrics="providerMetrics" 
+        :chartTitle="'Ingresos por Espacio'"
+        :chartData="chartData" 
+        :chartOptions="chartOptions" 
+        :detailsTitle="'Espacios Gestionados'"
+        :tableHeaders="tableHeaders" 
+        :tableData="tableData" 
+        :errorMessage="errorMessage"
+      >
         <template #details>
           <table v-if="stats.spaces.length" class="table table-striped">
             <thead>
@@ -20,7 +33,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="space in stats.spaces" :key="space.spaceId">
+              <tr 
+                v-for="space in stats.spaces" 
+                :key="space.spaceId"
+              >
                 <td>{{ space.spaceId }}</td>
                 <td>{{ space.spaceName }}</td>
                 <td>{{ space.adminName }}</td>
@@ -37,19 +53,24 @@
 </template>
 
 <script>
+import { ref } from 'vue';
 import Dashboard from '../components/Dashboard.vue';
+import ProviderSpacesView from './ProviderSpacesView.vue';
 import GenericMenu from '../components/GenericMenu.vue';
 import api from '../services/api';
 import { useAuthStore } from '../stores/auth';
 
 export default {
   name: 'ProviderDashboard',
-  components: { 
+  components: {
     Dashboard,
     GenericMenu,
-   },
+    ProviderSpacesView,
+  },
   setup() {
-    return { authStore: useAuthStore() };
+    const authStore = useAuthStore();
+    const currentView = ref(null); // Por defecto: dashboard
+    return { authStore, currentView };
   },
   data() {
     return {
@@ -64,6 +85,9 @@ export default {
     };
   },
   computed: {
+    dashboardTitle() {
+      return `Dashboard de ${this.authStore.userName || ''}`;
+    },
     providerMetrics() {
       return [
         { label: 'Espacios Totales', value: this.stats.totalSpaces },
@@ -119,9 +143,15 @@ export default {
   methods: {
     handleMenuClick(button) {
       console.log('Botón del menú clicado:', button);
-      // Aquí realizamos la acción de redirigir al pulsar el botón del meú lateral
-    }
-  }
+
+      // Navegación entre vistas
+      if (button.action === 'showSpaces') {
+        this.currentView = 'spaces';
+      } else {
+        this.currentView = null; // Vuelve al dashboard
+      }
+    },
+  },
 };
 </script>
 

@@ -14,7 +14,7 @@ html, body, #app {
 
 /* Tipografía */
 body {
-  font-family: 'Inter', sans-serif;
+  font-family: "Orbitron", sans-serif;
   font-weight: 400; /* Regular para texto general */
   font-size: 16px; /* Tamaño base */
   line-height: 1.5;
@@ -22,7 +22,7 @@ body {
 
 /* Elementos específicos (usar Inter) */
 h1, h2, h3, h4, h5, h6, p, label, input, button, .form-control, .btn, .alert {
-  font-family: 'Inter', sans-serif;
+  font-family: 'Orbitron', sans-serif;
 }
 
 /* Énfasis con Inter Medium */
@@ -58,6 +58,17 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+
+.badge-transparent-success {
+  background-color: rgba(25, 135, 84, 0.5); /* verde con 50% transparencia */
+  color: inherit;
+}
+
+.badge-transparent-danger {
+  background-color: rgba(220, 53, 69, 0.5); /* rojo con 50% transparencia */
+  color: inherit;
+}
+
 
 /* Media Queries */
 @media (prefers-color-scheme: light) {

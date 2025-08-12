@@ -4,10 +4,10 @@
     <header class="hero-section text-center py-5">
       <div class="container">
         <h1 class="display-4 fw-bold mb-3">
-          <i class="bi bi-building me-2"></i>CoWorkSpace
+          <img src="../assets/logo1.png" alt="Logo" class="" style="height: 85px; width: 85px;"></img>CoWorkSpace
         </h1>
         <p class="lead text-muted mb-4">
-          Reserva espacios de coworking modernos y conecta con profesionales en un entorno inspirador.
+          Reserva o publicita espacios de coworking modernos y conecta con profesionales en un entorno inspirador.
         </p>
         <div class="d-flex justify-content-center gap-3">
           <button
@@ -17,7 +17,7 @@
             <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
           </button>
           <button
-            class="btn btn-outline-secondary"
+            class="btn btn-success"
             @click="$emit('open-register')"
           >
             <i class="bi bi-person-plus me-2"></i>Registrarse
@@ -29,7 +29,7 @@
     <!-- Carrusel -->
     <section class="carousel-section py-5 bg-white">
       <div class="container">
-        <h2 class="text-center fw-semibold mb-4">Descubre Nuestros Espacios</h2>
+        <h2 class="text-center fw-semibold mb-4">Anuncia tus Espacios</h2>
         <div id="coworkingCarousel" class="carousel slide" data-bs-ride="carousel">
           <div class="carousel-inner">
             <div
@@ -71,7 +71,7 @@
     <footer class="bg-dark text-white text-center py-4">
       <div class="container">
         <p class="mb-2">
-          <i class="bi bi-geo-alt me-2"></i>© 2025 CoWorkSpace. Todos los derechos reservados.
+          <!--<i class="bi bi-geo-alt me-2"></i>-->© 2025 CoWorkSpace
         </p>
         <p class="mb-0">
           <i class="bi bi-envelope me-2"></i>

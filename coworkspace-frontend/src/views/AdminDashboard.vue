@@ -5,17 +5,17 @@
 
     <!-- Contenido principal del dashboard -->
     <div class="flex-grow-1 p-3">
-      <Dashboard
-        title="Dashboard de Administrador"
-        :metrics="adminMetrics"
+      <Dashboard 
+        :title="dashboardTitle" 
+        :metrics="adminMetrics" 
         :chartTitle="'Ingresos por Espacio'"
-        :chartData="chartData"
-        :chartOptions="chartOptions"
+        :chartData="chartData" 
+        :chartOptions="chartOptions" 
         :detailsTitle="'Espacios Gestionados'"
-        :tableHeaders="tableHeaders"
-        :tableData="tableData"
+        :tableHeaders="tableHeaders" 
+        :tableData="tableData" 
         :errorMessage="errorMessage"
-      >
+        >
         <template #details>
           <table v-if="stats.spaces.length" class="table table-striped">
             <thead>
@@ -28,7 +28,10 @@
               </tr>
             </thead>
             <tbody>
-              <tr v-for="space in stats.spaces" :key="space.spaceId">
+              <tr 
+                v-for="space in stats.spaces" 
+                :key="space.spaceId"
+                >
                 <td>{{ space.spaceId }}</td>
                 <td>{{ space.spaceName }}</td>
                 <td>{{ space.bookingsCount }}</td>
@@ -74,6 +77,9 @@ export default {
     };
   },
   computed: {
+    dashboardTitle() {
+      return `Dashboard de ${this.authStore.userName || ''}`;
+    },
     adminMetrics() {
       return [
         { label: 'Espacios Totales', value: this.stats.totalSpaces },

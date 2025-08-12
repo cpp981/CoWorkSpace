@@ -8,27 +8,13 @@
               <h3 class="text-center fw-bold mb-3">Iniciar Sesión</h3>
               <form @submit.prevent="handleLogin" class="">
                 <div class="mb-3 input-icon-wrapper">
-                  <input
-                    v-model="form.email"
-                    type="email"
-                    class="form-control"
-                    id="email"
-                    placeholder="tu@email.com"
-                    required
-                    :disabled="loading"
-                  />
+                  <input v-model="form.email" type="email" class="form-control" id="email" placeholder="tu@email.com"
+                    required :disabled="loading" />
                   <i class="bi bi-person input-icon"></i>
                 </div>
                 <div class="mb-3 input-icon-wrapper">
-                  <input
-                    v-model="form.password"
-                    type="password"
-                    class="form-control"
-                    id="password"
-                    placeholder="••••••••"
-                    required
-                    :disabled="loading"
-                  />
+                  <input v-model="form.password" type="password" class="form-control" id="password"
+                    placeholder="••••••••" required :disabled="loading" />
                   <i class="bi bi-lock input-icon"></i>
                 </div>
                 <div class="d-grid gap-2 mb-2">
