@@ -16,7 +16,7 @@
         placeholder="Buscar reserva..." />
     </div>
 
-    <table class="table table-striped mt-3" v-if="filteredBookings.length">
+    <table class="table table-secondary table-striped mt-3" v-if="filteredBookings.length">
       <thead>
         <tr>
           <th>Usuario</th>

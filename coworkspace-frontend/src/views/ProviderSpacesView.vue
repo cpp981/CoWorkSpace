@@ -26,7 +26,8 @@
 
     <div class="row g-3" style="max-height: 70vh; overflow-y: auto">
       <div class="col-md-6 col-lg-4" v-for="space in paginatedSpaces" :key="space.id">
-        <SpaceCard :space="space" @view-bookings="handleViewBookings" @edit-space="handleEditSpace" />
+        <SpaceCard :space="space" @view-bookings="handleViewBookings" @edit-space="handleEditSpace"
+          @delete-space="handleDeleteSpace" />
       </div>
     </div>
 
@@ -44,7 +45,9 @@
         </li>
       </ul>
     </nav>
-
+    <!--Modal para confirmar el borrado-->
+    <ConfirmDeleteModal v-model="showDeleteModal" title="Borrar Espacio"
+      :message="`¿Estás seguro de borrar '${spaceToDelete?.name}'?`" @confirm="deleteSpace" />
     <!-- Modal Editar Espacio -->
     <GenericModal v-model="showEditSpaceModal" title="Editar Espacio" confirmText="Guardar cambios" @submit="editSpace">
       <div v-if="selectedSpace">
@@ -116,14 +119,16 @@ import api from "../services/api";
 import { useAuthStore } from "../stores/auth";
 import SpaceCard from "../components/SpaceCard.vue";
 import GenericModal from "../components/GenericModal.vue";
+import ConfirmDeleteModal from "./ConfirmDeleteModal.vue";
 import "notyf/notyf.min.css";
 import { Modal } from "bootstrap";
 
 export default {
   name: "ProviderSpacesView",
-  components: { SpaceCard, GenericModal },
+  components: { SpaceCard, GenericModal, ConfirmDeleteModal },
   emits: ["view-bookings"],
   emits: ["edit-space"],
+  emits: ["delete-space"],
   setup(props, context) {
     const authStore = useAuthStore();
     const spaces = ref([]);
@@ -211,13 +216,33 @@ export default {
 
         if (response.data.success) {
           notyf.success(response.data.message);
-          showEditSpaceModal.value = false; // 👈 cerrar modal
+          showEditSpaceModal.value = false; // cerrar modal
           await fetchSpaces(); // refrescar lista
         } else {
           notyf.error(response.data.message);
         }
       } catch (err) {
         notyf.error("Error al editar el espacio");
+        console.error(err);
+      }
+    };
+
+    const showDeleteModal = ref(false);
+    const spaceToDelete = ref(null);
+
+    const handleDeleteSpace = async (space) => {
+      spaceToDelete.value = space;
+      showDeleteModal.value = true;
+    };
+
+    const deleteSpace = async () => {
+      try {
+        await api.deleteSpace(authStore.userId, spaceToDelete.value.id);
+        notyf.success("Espacio eliminado correctamente");
+        showDeleteModal.value = false;
+        await fetchSpaces();
+      } catch (err) {
+        notyf.error("Error al eliminar el espacio");
         console.error(err);
       }
     };
@@ -270,7 +295,12 @@ export default {
       selectedSpace,
       editSpace,
       showNewSpaceModal,
-      showEditSpaceModal
+      showEditSpaceModal,
+      handleDeleteSpace,
+      showDeleteModal,
+      selectedSpace,
+      spaceToDelete,
+      deleteSpace
     };
   },
 };
