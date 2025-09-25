@@ -16,7 +16,8 @@
         public const string NoPermissionOtherProvider = "No puedes crear espacios para otro proveedor.";
         public const string OnlyProvidersCanViewAdmins = "Solo los proveedores pueden ver sus administradores.";
         public const string CannotViewAdminsForOtherProviders = "No puedes ver administradores de otros proveedores.";
-
+        public const string NoPermissionUpdateSpace = "No tienes permisos para editar espacios.";
+        public const string NoPermissionUpdateOtherProvider = "No puedes editar espacios para otro proveedor.";
 
         // Errores de validación
         public const string EmailAlreadyRegistered = "El email ya está registrado.";
@@ -24,9 +25,11 @@
         public const string RoleNotAllowedOnlyCanRegisterProviderOrClient = "Rol no permitido. Solo se pueden registrar usuarios con rol provider o client.";
         public const string InvalidRoleOrRoleIdNotFound = "Rol no válido. RoleId no encontrado en la base de datos.";
         public const string SpaceCreatedError = "Ocurrió un error al crear el espacio.";
+        public const string SpaceUpdatedError = "Ocurrió un error al actualizar el espacio.";
 
         // Not Found
-        public const string NoSpacesForProvider = "No se encontraron espacios para el proveedor con ID {0}";
+        public const string NoSpacesForProvider = "No se encontraron espacios para el proveedor.";
+        public const string SpaceNotFound = "No se encontró el espacio.";
         public const string NoAdminsFound = "No se encontraron administradores.";
 
         // Éxito
@@ -34,5 +37,6 @@
         public const string AdminCreatedSuccessfully = "Administrador creado correctamente.";
         public const string UserRegisteredSuccessfully = "Usuario registrado correctamente.";
         public const string SpaceCreatedSuccess = "El espacio se ha creado correctamente.";
+        public const string SpaceUpdatedSuccess = "El espacio se ha actualizado correctamente,";
     }
 }

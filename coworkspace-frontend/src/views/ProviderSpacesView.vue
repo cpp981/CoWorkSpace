@@ -3,7 +3,7 @@
     <h1 class="my-4 text-primary">Espacios de {{ authStore.userName }}</h1>
 
     <!-- Barra de búsqueda -->
-    <div class="input-group mb-2">
+    <div class="input-group mb-3">
       <span class="input-group-text bg-white border-end-0 border-secondary">
         <i class="bi bi-search text-muted"></i>
       </span>
@@ -20,18 +20,13 @@
 
     <!-- Lista de espacios -->
     <div v-if="isLoading" class="text-muted">Cargando espacios...</div>
-    <div v-else-if="filteredSpaces.length === 0" class="text-muted">No se encontraron resultados.</div>
+    <div v-else-if="filteredSpaces.length === 0" class="text-muted">
+      No se encontraron resultados.
+    </div>
 
-    <div class="row g-3" style="max-height: 70vh; overflow-y: auto;">
+    <div class="row g-3" style="max-height: 70vh; overflow-y: auto">
       <div class="col-md-6 col-lg-4" v-for="space in paginatedSpaces" :key="space.id">
-        <SpaceCard :space="space">
-          <template #actions>
-            <div class="d-flex gap-2 mt-2">
-              <button class="btn btn-sm btn-outline-primary">Ver Reservas</button>
-              <button class="btn btn-sm btn-outline-secondary">Editar</button>
-            </div>
-          </template>
-        </SpaceCard>
+        <SpaceCard :space="space" @view-bookings="handleViewBookings" @edit-space="handleEditSpace" />
       </div>
     </div>
 
@@ -50,96 +45,109 @@
       </ul>
     </nav>
 
-    <!-- Modal Nuevo Espacio -->
-    <div class="modal fade" id="newSpaceModal" tabindex="-1" aria-labelledby="newSpaceModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form @submit.prevent="createSpace">
-            <div class="modal-header">
-              <h5 class="modal-title" id="newSpaceModalLabel">Crear Nuevo Espacio</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-              <div class="mb-3">
-                <label class="form-label">Nombre</label>
-                <input v-model="newSpace.name" type="text" class="form-control" required />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Admin</label>
-                <select v-model="newSpace.adminId" class="form-select" required>
-                  <option value="" disabled>Seleccione un admin</option>
-                  <option v-for="admin in admins" :key="admin.id" :value="admin.id">
-                    {{ admin.name }}
-                  </option>
-                </select>
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Ciudad</label>
-                <input v-model="newSpace.city" type="text" class="form-control" required />
-              </div>
-
-              <div class="mb-3">
-                <label class="form-label">Precio</label>
-                <input v-model.number="newSpace.price" type="number" min="0" class="form-control" required />
-              </div>
-
-              <div class="form-check form-switch mb-3">
-                <input class="form-check-input" type="checkbox" v-model="newSpace.isPublic" />
-                <label class="form-check-label">Es público</label>
-              </div>
-            </div>
-            <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-              <button type="submit" class="btn btn-primary">Crear Espacio</button>
-            </div>
-          </form>
+    <!-- Modal Editar Espacio -->
+    <GenericModal v-model="showEditSpaceModal" title="Editar Espacio" confirmText="Guardar cambios" @submit="editSpace">
+      <div v-if="selectedSpace">
+        <div class="mb-3">
+          <label class="form-label">Nombre del Espacio</label>
+          <input v-model="selectedSpace.name" type="text" class="form-control border-secondary" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Administrador</label>
+          <select v-model="selectedSpace.adminId" class="form-select border-secondary" required>
+            <option value="" disabled>Seleccione un administrador</option>
+            <option v-for="admin in admins" :key="admin.id" :value="admin.id">
+              {{ admin.name }}
+            </option>
+          </select>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Ciudad</label>
+          <input v-model="selectedSpace.city" type="text" class="form-control border-secondary" required />
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Precio</label>
+          <input v-model.number="selectedSpace.price" type="number" min="0" class="form-control border-secondary"
+            required />
+        </div>
+        <div class="form-check form-switch mb-3">
+          <input class="form-check-input border-secondary" type="checkbox" v-model="selectedSpace.isPublic" />
+          <label class="form-check-label">Es público</label>
         </div>
       </div>
-    </div>
+    </GenericModal>
+
+    <!--Modal Crear Espacio-->
+    <GenericModal v-model="showNewSpaceModal" title="Crear Nuevo Espacio" confirmText="Crear Espacio"
+      @submit="createSpace">
+      <div class="mb-3">
+        <label class="form-label">Nombre del Espacio</label>
+        <input v-model="newSpace.name" type="text" class="form-control border-secondary" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Administrador</label>
+        <select v-model="newSpace.adminId" class="form-select border-secondary" required>
+          <option value="" disabled>Seleccione un administrador</option>
+          <option v-for="admin in admins" :key="admin.id" :value="admin.id">
+            {{ admin.name }}
+          </option>
+        </select>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Ciudad</label>
+        <input v-model="newSpace.city" type="text" class="form-control border-secondary" required />
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Precio</label>
+        <input v-model.number="newSpace.price" type="number" min="0" class="form-control border-secondary" required />
+      </div>
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input border-secondary" type="checkbox" v-model="newSpace.isPublic" />
+        <label class="form-check-label">Es público</label>
+      </div>
+    </GenericModal>
   </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
-import { useNotyf } from '../composables/useNotyf';
-import api from '../services/api';
-import { useAuthStore } from '../stores/auth';
-import SpaceCard from '../components/SpaceCard.vue';
-import 'notyf/notyf.min.css';
-
-// Importa Modal explícitamente desde bootstrap
-import { Modal } from 'bootstrap';
+import { ref, computed, onMounted } from "vue";
+import { useNotyf } from "../composables/useNotyf";
+import api from "../services/api";
+import { useAuthStore } from "../stores/auth";
+import SpaceCard from "../components/SpaceCard.vue";
+import GenericModal from "../components/GenericModal.vue";
+import "notyf/notyf.min.css";
+import { Modal } from "bootstrap";
 
 export default {
-  name: 'ProviderSpacesView',
-  components: { SpaceCard },
-  setup() {
+  name: "ProviderSpacesView",
+  components: { SpaceCard, GenericModal },
+  emits: ["view-bookings"],
+  emits: ["edit-space"],
+  setup(props, context) {
     const authStore = useAuthStore();
     const spaces = ref([]);
     const admins = ref([]);
     const isLoading = ref(true);
-    const error = ref(null);
-    const search = ref('');
+    const search = ref("");
     const currentPage = ref(1);
     const perPage = 6;
     const notyf = useNotyf();
 
     const newSpace = ref({
-      name: '',
-      adminId: '',
+      name: "",
+      adminId: "",
       isPublic: false,
       price: 0,
-      city: ''
+      city: "",
     });
 
     const fetchSpaces = async () => {
       try {
         const response = await api.getSpacesByProvider(authStore.userId);
-        spaces.value = response.data;
+        spaces.value = response.data || [];
       } catch (err) {
-        error.value = err.response?.data?.message || 'Error al cargar los espacios.';
+        notyf.error("Error al cargar los espacios");
       } finally {
         isLoading.value = false;
       }
@@ -150,37 +158,75 @@ export default {
         const res = await api.getProviderAdmins(authStore.userId);
         admins.value = res.data;
       } catch {
-        notyf.error('Error al cargar los administradores.');
+        notyf.error("Error al cargar los administradores.");
       }
     };
 
-    let modalInstance = null; // guardamos instancia modal para poder ocultarlo luego
+    const showNewSpaceModal = ref(false);
 
-    const openNewSpaceModal = () => {
-      fetchAdmins();
-      const modalEl = document.getElementById('newSpaceModal');
-      modalInstance = new Modal(modalEl);
-      modalInstance.show();
+    const openNewSpaceModal = async () => {
+      await fetchAdmins();
+      showNewSpaceModal.value = true;
     };
 
     const createSpace = async () => {
       try {
         await api.createSpace(authStore.userId, newSpace.value);
-        notyf.success('Espacio creado correctamente');
+        notyf.success("Espacio creado correctamente");
         await fetchSpaces();
-        if (modalInstance) {
-          modalInstance.hide();
-        }
-        newSpace.value = { name: '', adminId: '', isPublic: false, price: 0, city: '' };
+        showNewSpaceModal.value = false; // cerrar modal de forma reactiva
+        // reset
+        newSpace.value = { name: "", adminId: "", city: "", price: 0, isPublic: false };
       } catch (err) {
-        notyf.error(err.response?.data?.message || 'Error al crear el espacio');
+        notyf.error(err.response?.data?.message || "Error al crear el espacio");
+      }
+    };
+
+    const handleViewBookings = (space) => {
+      context.emit("view-bookings", space);
+    };
+
+    const showEditSpaceModal = ref(false);   // control del modal
+    const selectedSpace = ref(null);
+
+    const handleEditSpace = async (space) => {
+      selectedSpace.value = { ...space };
+      await fetchAdmins();
+      showEditSpaceModal.value = true; // abrir modal de forma reactiva
+    };
+
+    const editSpace = async () => {
+      try {
+        const response = await api.updateSpace(
+          authStore.userId,
+          selectedSpace.value.id, // usamos el id del espacio
+          {
+            name: selectedSpace.value.name,
+            adminId: selectedSpace.value.adminId,
+            isPublic: selectedSpace.value.isPublic,
+            price: selectedSpace.value.price,
+            city: selectedSpace.value.city,
+          }
+        );
+
+        if (response.data.success) {
+          notyf.success(response.data.message);
+          showEditSpaceModal.value = false; // 👈 cerrar modal
+          await fetchSpaces(); // refrescar lista
+        } else {
+          notyf.error(response.data.message);
+        }
+      } catch (err) {
+        notyf.error("Error al editar el espacio");
+        console.error(err);
       }
     };
 
     const filteredSpaces = computed(() =>
-      spaces.value.filter(space =>
-        space.name.toLowerCase().includes(search.value.toLowerCase()) ||
-        space.city.toLowerCase().includes(search.value.toLowerCase())
+      spaces.value.filter(
+        (space) =>
+          space.name.toLowerCase().includes(search.value.toLowerCase()) ||
+          space.city.toLowerCase().includes(search.value.toLowerCase())
       )
     );
 
@@ -218,9 +264,14 @@ export default {
       openNewSpaceModal,
       createSpace,
       newSpace,
-      notyf
+      notyf,
+      handleViewBookings,
+      handleEditSpace,
+      selectedSpace,
+      editSpace,
+      showNewSpaceModal,
+      showEditSpaceModal
     };
   },
 };
 </script>
-

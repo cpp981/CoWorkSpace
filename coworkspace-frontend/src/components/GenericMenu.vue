@@ -6,7 +6,7 @@
     </div>
 
     <!-- Nombre del usuario conectado -->
-    <div class="text-center  text-light mt-4">
+    <div class="text-center  text-light mt-4 mb-5">
       <small class="mt-4 text-light">Conectado como:</small><br />
       <strong><i class="bi bi-person-circle me-2"></i>{{ userName }}</strong>
     </div>
@@ -38,7 +38,7 @@
 
     <!-- Botón de logout -->
     <div class="mt-auto">
-      <button class="btn btn-danger w-100" @click="logout">
+      <button class="btn btn-outline-danger w-100" @click="logout">
         <i class="bi bi-box-arrow-right me-2"></i>
         Cerrar Sesión
       </button>

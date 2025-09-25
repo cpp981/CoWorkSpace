@@ -3,24 +3,19 @@
     <!-- Menú lateral -->
     <GenericMenu @button-click="handleMenuClick" />
 
-    <!-- Contenido principal del dashboard -->
+    <!-- Contenido principal -->
     <div class="flex-grow-1 p-3">
-      <!-- Vista de ESPACIOS del proveedor -->
-      <ProviderSpacesView v-if="currentView === 'spaces'" />
+      <!-- Vista de ESPACIOS -->
+      <ProviderSpacesView v-if="currentView === 'spaces'" @view-bookings="openBookings" />
 
-      <!-- Vista principal del dashboard del proveedor -->
-      <Dashboard 
-        v-else
-        :title="dashboardTitle" 
-        :metrics="providerMetrics" 
-        :chartTitle="'Ingresos por Espacio'"
-        :chartData="chartData" 
-        :chartOptions="chartOptions" 
-        :detailsTitle="'Espacios Gestionados'"
-        :tableHeaders="tableHeaders" 
-        :tableData="tableData" 
-        :errorMessage="errorMessage"
-      >
+      <!-- Vista de RESERVAS de un espacio -->
+      <SpacesBookingView v-else-if="currentView === 'bookings'" :space-id="selectedSpaceId"
+        :space-name="selectedSpaceName" @back="currentView = 'spaces'" />
+
+      <!-- Vista principal del dashboard -->
+      <Dashboard v-else :title="dashboardTitle" :metrics="providerMetrics" :chartTitle="'Ingresos por Espacio'"
+        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Espacios Gestionados'"
+        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
         <template #details>
           <table v-if="stats.spaces.length" class="table table-striped">
             <thead>
@@ -33,10 +28,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr 
-                v-for="space in stats.spaces" 
-                :key="space.spaceId"
-              >
+              <tr v-for="space in stats.spaces" :key="space.spaceId">
                 <td>{{ space.spaceId }}</td>
                 <td>{{ space.spaceName }}</td>
                 <td>{{ space.adminName }}</td>
@@ -53,9 +45,10 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, VueElement } from 'vue';
 import Dashboard from '../components/Dashboard.vue';
 import ProviderSpacesView from './ProviderSpacesView.vue';
+import SpacesBookingView from './SpacesBookingView.vue';
 import GenericMenu from '../components/GenericMenu.vue';
 import api from '../services/api';
 import { useAuthStore } from '../stores/auth';
@@ -66,11 +59,14 @@ export default {
     Dashboard,
     GenericMenu,
     ProviderSpacesView,
+    SpacesBookingView
   },
   setup() {
     const authStore = useAuthStore();
-    const currentView = ref(null); // Por defecto: dashboard
-    return { authStore, currentView };
+    const currentView = ref(null);
+    const selectedSpaceId = ref(null);
+    const selectedSpaceName = ref('');
+    return { authStore, currentView, selectedSpaceId, selectedSpaceName };
   },
   data() {
     return {
@@ -79,9 +75,9 @@ export default {
         totalAdmins: 0,
         totalBookings: 0,
         totalRevenue: 0,
-        spaces: [],
+        spaces: []
       },
-      errorMessage: null,
+      errorMessage: null
     };
   },
   computed: {
@@ -93,7 +89,7 @@ export default {
         { label: 'Espacios Totales', value: this.stats.totalSpaces },
         { label: 'Administradores', value: this.stats.totalAdmins },
         { label: 'Reservas Totales', value: this.stats.totalBookings },
-        { label: 'Ingresos Totales', value: `${this.stats.totalRevenue.toFixed(2)} €` },
+        { label: 'Ingresos Totales', value: `${this.stats.totalRevenue.toFixed(2)} €` }
       ];
     },
     chartData() {
@@ -102,8 +98,8 @@ export default {
         datasets: [{
           label: 'Ingresos (€)',
           data: this.stats.spaces.map(space => space.revenue),
-          backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107'],
-        }],
+          backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107']
+        }]
       };
     },
     chartOptions() {
@@ -111,8 +107,8 @@ export default {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
-          legend: { display: true },
-        },
+          legend: { display: true }
+        }
       };
     },
     tableHeaders() {
@@ -124,9 +120,9 @@ export default {
         space.spaceName,
         space.adminName,
         space.bookingsCount,
-        `${space.revenue.toFixed(2)} €`,
+        `${space.revenue.toFixed(2)} €`
       ]);
-    },
+    }
   },
   async created() {
     try {
@@ -142,19 +138,17 @@ export default {
   },
   methods: {
     handleMenuClick(button) {
-      console.log('Botón del menú clicado:', button);
-
-      // Navegación entre vistas
       if (button.action === 'showSpaces') {
         this.currentView = 'spaces';
       } else {
-        this.currentView = null; // Vuelve al dashboard
+        this.currentView = null;
       }
     },
-  },
+    openBookings(space) {
+      this.selectedSpaceId = space.id;
+      this.selectedSpaceName = space.name;
+      this.currentView = 'bookings';
+    }
+  }
 };
 </script>
-
-<style scoped>
-/* Personalizaciones si es necesario */
-</style>

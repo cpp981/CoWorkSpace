@@ -103,7 +103,7 @@ namespace CoWorkSpace.Api.Controllers
         [Authorize]
         public async Task<IActionResult> GetAdminsByProvider(int providerId)
         {
-            // 1. Obtener claims del usuario autenticado
+            // Obtener claims del usuario autenticado
             var roleIdClaim = User.FindFirst("roleId")?.Value;
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
@@ -113,15 +113,15 @@ namespace CoWorkSpace.Api.Controllers
             if (!int.TryParse(roleIdClaim, out int roleId) || !int.TryParse(userIdClaim, out int loggedUserId))
                 return Unauthorized(new { Message = ApiMessages.InvalidUser });
 
-            // 2. Solo Providers (roleId = 3) pueden acceder
+            // Solo Providers (roleId = 3) pueden acceder
             if (roleId != 3)
                 return Unauthorized(new { Message = ApiMessages.OnlyProvidersCanViewAdmins });
 
-            // 3. Validar que el provider solo accede a sus propios admins
+            // Validar que el provider solo accede a sus propios admins
             if (loggedUserId != providerId)
                 return Unauthorized(new { Message = ApiMessages.CannotViewAdminsForOtherProviders });
 
-            // 4. Obtener admins que pertenezcan a este provider
+            // Obtener admins que pertenezcan a este provider
             var admins = await _context.Users
                 .Where(u => u.RoleId == 2 && u.ProviderId == providerId)
                 .Select(u => new
