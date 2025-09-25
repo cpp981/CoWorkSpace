@@ -44,10 +44,10 @@ export default {
     return apiClient.get(`/menu`);
   },
   getSpacesByProvider(providerId) {
-    return apiClient.get(`/providers/${providerId}/spaces`);
+    return apiClient.get(`/providers/${providerId}/spaces/list`);
   },
 createSpace(providerId, spaceData) {
-  return apiClient.post(`/providers/${providerId}/spaces`, spaceData);
+  return apiClient.post(`/providers/${providerId}/spaces/create`, spaceData);
 },
 getProviderAdmins(providerId) {
   return apiClient.get(`/providers/${providerId}/admins`);
@@ -56,7 +56,10 @@ getBookingsBySpace(spaceId){
   return apiClient.get(`/spaces/${spaceId}/bookings`)
 },
 updateSpace(providerId, id, data) {
-    return apiClient.put(`/providers/${providerId}/spaces/${id}`, data);
-  },
+    return apiClient.put(`/providers/${providerId}/spaces/${id}/update`, data);
+},
+deleteSpace(providerId, id){
+  return apiClient.delete(`/providers/${providerId}/spaces/${id}/delete`);
+},
   client: apiClient,
 };

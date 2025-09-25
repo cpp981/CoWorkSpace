@@ -14,12 +14,10 @@
                     </div>
 
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" @click="hide">
-                            Cancelar
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            {{ confirmText }}
-                        </button>
+                        <button type="button" class="btn btn-danger" @click="hide">
+                            <i class="me-2 bi bi-x-circle"></i>Cancelar</button>
+                        <button type="submit" class="btn btn-success">
+                            <i class="me-2 bi bi-check-circle"></i>{{ confirmText }}</button>
                     </div>
                 </form>
             </div>

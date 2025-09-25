@@ -1,5 +1,5 @@
 <template>
-  <div class="card h-100 shadow-sm">
+  <div class="card h-100 shadow-sm bg-secondary bg-opacity-25">
     <div class="card-body d-flex flex-column justify-content-between">
       <div class="d-flex justify-content-between align-items-start mb-2">
         <h5 class="card-title mb-0">{{ space.name }}</h5>
@@ -23,10 +23,12 @@
 
       <!-- Botón que emite el evento -->
       <div class="d-flex gap-2 mt-2">
-        <button class="btn btn-sm btn-outline-primary" @click="$emit('view-bookings', space)">
-          Ver Reservas
-        </button>
-        <button class="btn btn-sm btn-outline-secondary" @click="$emit('edit-space', space)">Editar</button>
+        <button class="btn btn-sm btn-outline-primary" @click="$emit('view-bookings', space)"><i
+            class="bi bi-journal-text"></i>Ver Reservas</button>
+        <button class="btn btn-sm btn-outline-warning" @click="$emit('edit-space', space)"><i
+            class="bi bi-pencil"></i>Editar</button>
+        <button class="btn btn-sm btn-outline-danger" @click="$emit('delete-space', space)"><i
+            class="bi bi-trash"></i>Borrar</button>
       </div>
     </div>
   </div>
@@ -36,4 +38,5 @@
 defineProps({
   space: Object
 });
+defineEmits(["view-bookings", "edit-space", "delete-space"]);
 </script>
