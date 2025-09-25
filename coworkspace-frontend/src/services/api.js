@@ -52,5 +52,11 @@ createSpace(providerId, spaceData) {
 getProviderAdmins(providerId) {
   return apiClient.get(`/providers/${providerId}/admins`);
 },
+getBookingsBySpace(spaceId){
+  return apiClient.get(`/spaces/${spaceId}/bookings`)
+},
+updateSpace(providerId, id, data) {
+    return apiClient.put(`/providers/${providerId}/spaces/${id}`, data);
+  },
   client: apiClient,
 };

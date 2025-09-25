@@ -56,6 +56,74 @@ namespace CoWorkSpace.Api.Controllers
             return Ok(spaces);
         }
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> EditSpace(int providerId, int id, [FromBody] SpaceCreateDTO dto)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var roleId = int.Parse(User.FindFirst("roleId")?.Value ?? "0");
+
+            if (roleId != 3)
+            {
+                return StatusCode(403, new
+                {
+                    success = false,
+                    message = ApiMessages.NoPermissionUpdateSpace
+                });
+            }
+              
+            if (userId != providerId)
+            {
+                return StatusCode(403, new
+                {
+                    success = false,
+                    message = ApiMessages.NoPermissionUpdateOtherProvider
+                });
+            }
+             
+            if (!ModelState.IsValid)
+            {
+                return StatusCode(403, new
+                {
+                    success = false,
+                    message = ApiMessages.InvalidData
+                });
+            }
+
+            try
+            {
+                var space = await _context.Spaces
+                    .FirstOrDefaultAsync(s => s.Id == id && s.ProviderId == providerId && !s.IsDeleted);
+
+                if (space == null)
+                    return NotFound(new { success = false, message = ApiMessages.SpaceNotFound });
+
+                space.Name = dto.Name;
+                space.AdminId = dto.AdminId;
+                space.IsPublic = dto.IsPublic;
+                space.Price = dto.Price;
+                space.City = dto.City;
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = ApiMessages.SpaceUpdatedSuccess,
+                    id = space.Id
+                });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ApiMessages.SpaceUpdatedError
+                });
+            }
+        }
+
+
+
         [HttpPost]
         public async Task<IActionResult> CreateSpace(int providerId, [FromBody] SpaceCreateDTO dto)
         {
@@ -64,16 +132,28 @@ namespace CoWorkSpace.Api.Controllers
 
             if (roleId != 3)
             {
-                return Forbid(ApiMessages.NoPermissionCreateSpace);
+                return StatusCode(403, new
+                {
+                    success = false,
+                    message = ApiMessages.InvalidData
+                });
             }
             if (userId != providerId)
             {
-                return Forbid(ApiMessages.NoPermissionOtherProvider);
+                return StatusCode(403, new
+                {
+                    success = false,
+                    message = ApiMessages.NoPermissionOtherProvider
+                });
             }
 
             if (!ModelState.IsValid)
             {
-                return BadRequest(ApiMessages.InvalidData);
+                return StatusCode(403, new
+                {
+                    success = false,
+                    message = ApiMessages.InvalidData
+                });
             }
 
             try

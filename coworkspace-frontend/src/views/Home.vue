@@ -4,22 +4,16 @@
     <header class="hero-section text-center py-5">
       <div class="container">
         <h1 class="display-4 fw-bold mb-3">
-          <img src="../assets/logo1.png" alt="Logo" class="" style="height: 85px; width: 85px;"></img>CoWorkSpace
+          <img src="../assets/logo1.png" alt="Logo" class="" style="height: 85px; width: 85px;" />CoWorkSpace
         </h1>
         <p class="lead text-muted mb-4">
           Reserva o publicita espacios de coworking modernos y conecta con profesionales en un entorno inspirador.
         </p>
         <div class="d-flex justify-content-center gap-3">
-          <button
-            class="btn btn-primary"
-            @click="$emit('open-login')"
-          >
+          <button class="btn btn-primary" @click="$emit('open-login')">
             <i class="bi bi-box-arrow-in-right me-2"></i>Iniciar Sesión
           </button>
-          <button
-            class="btn btn-success"
-            @click="$emit('open-register')"
-          >
+          <button class="btn btn-success" @click="$emit('open-register')">
             <i class="bi bi-person-plus me-2"></i>Registrarse
           </button>
         </div>
@@ -32,34 +26,16 @@
         <h2 class="text-center fw-semibold mb-4">Anuncia tus Espacios</h2>
         <div id="coworkingCarousel" class="carousel slide" data-bs-ride="carousel">
           <div class="carousel-inner">
-            <div
-              v-for="(image, index) in images"
-              :key="index"
-              :class="['carousel-item', { active: index === 0 }]"
-            >
-              <img
-                :src="image.src"
-                :alt="image.alt"
-                class="d-block w-100 rounded shadow"
-                style="height: 400px; object-fit: cover;"
-              />
+            <div v-for="(image, index) in images" :key="index" :class="['carousel-item', { active: index === 0 }]">
+              <img :src="image.src" :alt="image.alt" class="d-block w-100 rounded shadow"
+                style="height: 400px; object-fit: cover;" />
             </div>
           </div>
-          <button
-            class="carousel-control-prev"
-            type="button"
-            data-bs-target="#coworkingCarousel"
-            data-bs-slide="prev"
-          >
+          <button class="carousel-control-prev" type="button" data-bs-target="#coworkingCarousel" data-bs-slide="prev">
             <span class="carousel-control-prev-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Previous</span>
           </button>
-          <button
-            class="carousel-control-next"
-            type="button"
-            data-bs-target="#coworkingCarousel"
-            data-bs-slide="next"
-          >
+          <button class="carousel-control-next" type="button" data-bs-target="#coworkingCarousel" data-bs-slide="next">
             <span class="carousel-control-next-icon" aria-hidden="true"></span>
             <span class="visually-hidden">Next</span>
           </button>
