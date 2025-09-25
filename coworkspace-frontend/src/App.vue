@@ -1,18 +1,7 @@
 <template>
   <div class="app-container">
-    <component
-      :is="currentView"
-      :userId="authStore.userId"
-      @open-login="setView('Login')"
-      @open-register="setView('Register')"
-      @cancel="setView('Home')"
-      @login-success="handleLoginSuccess"
-    />
-    <!--<div v-if="authStore.isAuthenticated && authStore.isTokenValid" class="logout-container">
-      <button @click="logout" class="btn btn-outline-danger">
-        Cerrar Sesión
-      </button>
-    </div>-->
+    <component :is="currentView" :userId="authStore.userId" @open-login="setView('Login')"
+      @open-register="setView('Register')" @cancel="setView('Home')" @login-success="handleLoginSuccess" />
   </div>
 </template>
 
@@ -92,6 +81,7 @@ export default {
   display: flex;
   flex-direction: column;
 }
+
 .logout-container {
   position: fixed;
   top: 20px;
