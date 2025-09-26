@@ -44,111 +44,110 @@
   </div>
 </template>
 
-<script>
-import { ref, VueElement } from 'vue';
-import Dashboard from '../components/Dashboard.vue';
-import ProviderSpacesView from './ProviderSpacesView.vue';
-import SpacesBookingView from './SpacesBookingView.vue';
-import GenericMenu from '../components/GenericMenu.vue';
-import api from '../services/api';
-import { useAuthStore } from '../stores/auth';
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import Dashboard from "../components/Dashboard.vue";
+import ProviderSpacesView from "./ProviderSpacesView.vue";
+import SpacesBookingView from "./SpacesBookingView.vue";
+import GenericMenu from "../components/GenericMenu.vue";
+import api from "../services/api";
+import { useAuthStore } from "../stores/auth";
 
-export default {
-  name: 'ProviderDashboard',
-  components: {
-    Dashboard,
-    GenericMenu,
-    ProviderSpacesView,
-    SpacesBookingView
+const authStore = useAuthStore();
+
+// Estado principal
+const currentView = ref(null);
+const selectedSpaceId = ref(null);
+const selectedSpaceName = ref("");
+
+const stats = ref({
+  totalSpaces: 0,
+  totalAdmins: 0,
+  totalBookings: 0,
+  totalRevenue: 0,
+  spaces: [],
+});
+const errorMessage = ref(null);
+
+// Computed properties
+const dashboardTitle = computed(
+  () => `Dashboard de ${authStore.userName || ""}`
+);
+
+const providerMetrics = computed(() => [
+  { label: "Espacios Totales", value: stats.value.totalSpaces },
+  { label: "Administradores", value: stats.value.totalAdmins },
+  { label: "Reservas Totales", value: stats.value.totalBookings },
+  {
+    label: "Ingresos Totales",
+    value: `${stats.value.totalRevenue.toFixed(2)} €`,
   },
-  setup() {
-    const authStore = useAuthStore();
-    const currentView = ref(null);
-    const selectedSpaceId = ref(null);
-    const selectedSpaceName = ref('');
-    return { authStore, currentView, selectedSpaceId, selectedSpaceName };
+]);
+
+const chartData = computed(() => ({
+  labels: stats.value.spaces.map((space) => space.spaceName),
+  datasets: [
+    {
+      label: "Ingresos (€)",
+      data: stats.value.spaces.map((space) => space.revenue),
+      backgroundColor: ["#007bff", "#28a745", "#dc3545", "#ffc107"],
+    },
+  ],
+}));
+
+const chartOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: true },
   },
-  data() {
-    return {
-      stats: {
-        totalSpaces: 0,
-        totalAdmins: 0,
-        totalBookings: 0,
-        totalRevenue: 0,
-        spaces: []
-      },
-      errorMessage: null
-    };
-  },
-  computed: {
-    dashboardTitle() {
-      return `Dashboard de ${this.authStore.userName || ''}`;
-    },
-    providerMetrics() {
-      return [
-        { label: 'Espacios Totales', value: this.stats.totalSpaces },
-        { label: 'Administradores', value: this.stats.totalAdmins },
-        { label: 'Reservas Totales', value: this.stats.totalBookings },
-        { label: 'Ingresos Totales', value: `${this.stats.totalRevenue.toFixed(2)} €` }
-      ];
-    },
-    chartData() {
-      return {
-        labels: this.stats.spaces.map(space => space.spaceName),
-        datasets: [{
-          label: 'Ingresos (€)',
-          data: this.stats.spaces.map(space => space.revenue),
-          backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107']
-        }]
-      };
-    },
-    chartOptions() {
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: true }
-        }
-      };
-    },
-    tableHeaders() {
-      return ['ID', 'Nombre', 'Administrador', 'Reservas', 'Ingresos'];
-    },
-    tableData() {
-      return this.stats.spaces.map(space => [
-        space.spaceId,
-        space.spaceName,
-        space.adminName,
-        space.bookingsCount,
-        `${space.revenue.toFixed(2)} €`
-      ]);
-    }
-  },
-  async created() {
-    try {
-      if (!this.authStore.userId) {
-        this.errorMessage = 'Usuario no autenticado.';
-        return;
-      }
-      const response = await api.getProviderStats(this.authStore.userId);
-      this.stats = response.data || this.stats;
-    } catch (error) {
-      this.errorMessage = error.response?.data?.message || 'Error al cargar las estadísticas.';
-    }
-  },
-  methods: {
-    handleMenuClick(button) {
-      if (button.action === 'showSpaces') {
-        this.currentView = 'spaces';
-      } else {
-        this.currentView = null;
-      }
-    },
-    openBookings(space) {
-      this.selectedSpaceId = space.id;
-      this.selectedSpaceName = space.name;
-      this.currentView = 'bookings';
-    }
+}));
+
+const tableHeaders = computed(() => [
+  "ID",
+  "Nombre",
+  "Administrador",
+  "Reservas",
+  "Ingresos",
+]);
+
+const tableData = computed(() =>
+  stats.value.spaces.map((space) => [
+    space.spaceId,
+    space.spaceName,
+    space.adminName,
+    space.bookingsCount,
+    `${space.revenue.toFixed(2)} €`,
+  ])
+);
+
+// Métodos
+function handleMenuClick(button) {
+  if (button.action === "showSpaces") {
+    currentView.value = "spaces";
+  } else {
+    currentView.value = null;
   }
-};
+}
+
+function openBookings(space) {
+  selectedSpaceId.value = space.id;
+  selectedSpaceName.value = space.name;
+  currentView.value = "bookings";
+}
+
+// Cargar datos en montaje
+onMounted(async () => {
+  try {
+    if (!authStore.userId) {
+      errorMessage.value = "Usuario no autenticado.";
+      return;
+    }
+    const response = await api.getProviderStats(authStore.userId);
+    stats.value = response.data || stats.value;
+  } catch (error) {
+    errorMessage.value =
+      error.response?.data?.message || "Error al cargar las estadísticas.";
+  }
+});
 </script>

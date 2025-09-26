@@ -13,7 +13,7 @@
 
     <!-- Botón Nuevo Espacio -->
     <div class="d-flex justify-content-end mb-3">
-      <button class="btn btn-success" @click="openNewSpaceModal">
+      <button class="btn btn-outline-success" @click="openNewSpaceModal">
         <i class="bi bi-plus-lg"></i> Nuevo Espacio
       </button>
     </div>
@@ -126,9 +126,7 @@ import { Modal } from "bootstrap";
 export default {
   name: "ProviderSpacesView",
   components: { SpaceCard, GenericModal, ConfirmDeleteModal },
-  emits: ["view-bookings"],
-  emits: ["edit-space"],
-  emits: ["delete-space"],
+  emits: ["view-bookings", "edit-space", "delete-space"],
   setup(props, context) {
     const authStore = useAuthStore();
     const spaces = ref([]);

@@ -3,10 +3,12 @@
     <div class="card-body d-flex flex-column justify-content-between">
       <div class="d-flex justify-content-between align-items-start mb-2">
         <h5 class="card-title mb-0">{{ space.name }}</h5>
-        <span class="badge rounded-pill"
+        <span class="badge rounded-pill d-flex align-items-center gap-1"
           :class="space.isActive ? 'bg-success-subtle text-success' : 'bg-danger-subtle text-danger'">
+          <span class="status-dot rounded-circle" :class="space.isActive ? 'bg-success' : 'bg-danger'"></span>
           {{ space.isActive ? 'Activo' : 'Inactivo' }}
         </span>
+
       </div>
 
       <ul class="list-unstyled small text-muted mb-3">
@@ -40,3 +42,10 @@ defineProps({
 });
 defineEmits(["view-bookings", "edit-space", "delete-space"]);
 </script>
+<style scoped>
+.status-dot {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
+}
+</style>

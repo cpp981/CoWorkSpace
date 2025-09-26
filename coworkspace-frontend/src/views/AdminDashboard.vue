@@ -5,17 +5,9 @@
 
     <!-- Contenido principal del dashboard -->
     <div class="flex-grow-1 p-3">
-      <Dashboard 
-        :title="dashboardTitle" 
-        :metrics="adminMetrics" 
-        :chartTitle="'Ingresos por Espacio'"
-        :chartData="chartData" 
-        :chartOptions="chartOptions" 
-        :detailsTitle="'Espacios Gestionados'"
-        :tableHeaders="tableHeaders" 
-        :tableData="tableData" 
-        :errorMessage="errorMessage"
-        >
+      <Dashboard :title="dashboardTitle" :metrics="adminMetrics" :chartTitle="'Ingresos por Espacio'"
+        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Espacios Gestionados'"
+        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
         <template #details>
           <table v-if="stats.spaces.length" class="table table-striped">
             <thead>
@@ -28,10 +20,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr 
-                v-for="space in stats.spaces" 
-                :key="space.spaceId"
-                >
+              <tr v-for="space in stats.spaces" :key="space.spaceId">
                 <td>{{ space.spaceId }}</td>
                 <td>{{ space.spaceName }}</td>
                 <td>{{ space.bookingsCount }}</td>
@@ -47,100 +36,81 @@
   </div>
 </template>
 
-<script>
+<script setup>
+import { ref, computed, onMounted } from 'vue';
 import Dashboard from '../components/Dashboard.vue';
 import GenericMenu from '../components/GenericMenu.vue';
 import api from '../services/api';
 import { useAuthStore } from '../stores/auth';
 
-export default {
-  name: 'AdminDashboard',
-  components: {
-    Dashboard,
-    GenericMenu,
-  },
-  setup() {
-    return {
-      authStore: useAuthStore(),
-    };
-  },
-  data() {
-    return {
-      stats: {
-        totalSpaces: 0,
-        totalBookings: 0,
-        totalRevenue: 0,
-        averageRating: 0,
-        spaces: [],
-      },
-      errorMessage: null,
-    };
-  },
-  computed: {
-    dashboardTitle() {
-      return `Dashboard de ${this.authStore.userName || ''}`;
-    },
-    adminMetrics() {
-      return [
-        { label: 'Espacios Totales', value: this.stats.totalSpaces },
-        { label: 'Reservas Totales', value: this.stats.totalBookings },
-        { label: 'Ingresos Totales', value: `${this.stats.totalRevenue.toFixed(2)} €` },
-        { label: 'Valoración Media', value: this.stats.averageRating.toFixed(1) },
-      ];
-    },
-    chartData() {
-      return {
-        labels: this.stats.spaces.map(space => space.spaceName),
-        datasets: [{
-          label: 'Ingresos (€)',
-          data: this.stats.spaces.map(space => space.revenue),
-          backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107'],
-        }],
-      };
-    },
-    chartOptions() {
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: true },
-        },
-      };
-    },
-    tableHeaders() {
-      return ['ID', 'Nombre', 'Reservas', 'Ingresos', 'Valoración'];
-    },
-    tableData() {
-      return this.stats.spaces.map(space => [
-        space.spaceId,
-        space.spaceName,
-        space.bookingsCount,
-        `${space.revenue.toFixed(2)} €`,
-        space.averageRating.toFixed(1),
-      ]);
-    },
-  },
-  async created() {
-    try {
-      if (!this.authStore.userId) {
-        this.errorMessage = 'Usuario no autenticado.';
-        return;
-      }
-      const response = await api.getAdminStats(this.authStore.userId);
-      this.stats = response.data || this.stats;
-    } catch (error) {
-      this.errorMessage = error.response?.data?.message || 'Error al cargar las estadísticas.';
-    }
-  },
-  methods: {
-    handleMenuClick(button) {
-      console.log('Botón del menú clicado:', button);
-      // Aquí realizamos la acción de redirigir al pulsar el botón del meú lateral
-    }
-  }
-};
-</script>
+const authStore = useAuthStore();
 
-<style scoped>
-/* Personalizaciones si es necesario */
-</style>
+const stats = ref({
+  totalSpaces: 0,
+  totalBookings: 0,
+  totalRevenue: 0,
+  averageRating: 0,
+  spaces: [],
+});
+
+const errorMessage = ref(null);
+
+// --- Computed ---
+const dashboardTitle = computed(() => `Dashboard de ${authStore.userName || ''}`);
+
+const adminMetrics = computed(() => [
+  { label: 'Espacios Totales', value: stats.value.totalSpaces },
+  { label: 'Reservas Totales', value: stats.value.totalBookings },
+  { label: 'Ingresos Totales', value: `${stats.value.totalRevenue.toFixed(2)} €` },
+  { label: 'Valoración Media', value: stats.value.averageRating.toFixed(1) },
+]);
+
+const chartData = computed(() => ({
+  labels: stats.value.spaces.map(space => space.spaceName),
+  datasets: [{
+    label: 'Ingresos (€)',
+    data: stats.value.spaces.map(space => space.revenue),
+    backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107'],
+  }],
+}));
+
+const chartOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: true },
+  },
+}));
+
+const tableHeaders = computed(() => ['ID', 'Nombre', 'Reservas', 'Ingresos', 'Valoración']);
+
+const tableData = computed(() =>
+  stats.value.spaces.map(space => [
+    space.spaceId,
+    space.spaceName,
+    space.bookingsCount,
+    `${space.revenue.toFixed(2)} €`,
+    space.averageRating.toFixed(1),
+  ])
+);
+
+// --- Métodos ---
+function handleMenuClick(button) {
+  console.log('Botón del menú clicado:', button);
+  // Aquí realizamos la acción de redirigir al pulsar el botón del menú lateral
+}
+
+
+onMounted(async () => {
+  try {
+    if (!authStore.userId) {
+      errorMessage.value = 'Usuario no autenticado.';
+      return;
+    }
+    const response = await api.getAdminStats(authStore.userId);
+    stats.value = response.data || stats.value;
+  } catch (error) {
+    errorMessage.value = error.response?.data?.message || 'Error al cargar las estadísticas.';
+  }
+});
+</script>
