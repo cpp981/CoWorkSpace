@@ -8,7 +8,7 @@
 html, body, #app {
   min-height: 100vh;
   min-width: 320px;
-  background: linear-gradient(to top, #e9ecef, #f8f9fa); /* Gradiente global: oscuro abajo, claro arriba */
+ background: linear-gradient(120deg, #f8f9fa, #dde0e2, #ced0d3); /* Gradiente global: oscuro abajo, claro arriba */
   color: #212529; /* Texto oscuro para tema claro */
 }
 
@@ -19,6 +19,7 @@ body {
   font-size: 16px; /* Tamaño base */
   line-height: 1.5;
 }
+
 
 /* Elementos específicos (usar Inter) */
 h1, h2, h3, h4, h5, h6, p, label, input, button, .form-control, .btn, .alert {

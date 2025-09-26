@@ -5,20 +5,11 @@
 
     <!-- Contenido principal del dashboard -->
     <div class="flex-grow-1 p-3">
-      <Dashboard 
-        :title="dashboardTitle" 
-        :metrics="superAdminMetrics" 
-        :chartTitle="'Usuarios por Rol'"
-        :chartData="chartData" 
-        :chartOptions="chartOptions" 
-        :detailsTitle="'Usuarios por Rol'"
-        :tableHeaders="tableHeaders" 
-        :tableData="tableData" 
-        :errorMessage="errorMessage"
-        >
+      <Dashboard :title="dashboardTitle" :metrics="superAdminMetrics" :chartTitle="'Usuarios por Rol'"
+        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Usuarios por Rol'"
+        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
         <template #details>
-          <table 
-            v-if="Object.keys(stats.usersByRole).length" class="table table-striped">
+          <table v-if="Object.keys(stats.usersByRole).length" class="table table-striped">
             <thead>
               <tr>
                 <th>Rol</th>
@@ -26,10 +17,7 @@
               </tr>
             </thead>
             <tbody>
-              <tr 
-                v-for="(count, role) in stats.usersByRole" 
-                :key="role"
-                >
+              <tr v-for="(count, role) in stats.usersByRole" :key="role">
                 <td>{{ role }}</td>
                 <td>{{ count }}</td>
               </tr>
@@ -42,93 +30,82 @@
   </div>
 </template>
 
-<script>
-import Dashboard from '../components/Dashboard.vue';
-import GenericMenu from '../components/GenericMenu.vue';
-import api from '../services/api'; // Importar objeto completo
-import { useAuthStore } from '../stores/auth';
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import Dashboard from "../components/Dashboard.vue";
+import GenericMenu from "../components/GenericMenu.vue";
+import api from "../services/api";
+import { useAuthStore } from "../stores/auth";
 
-export default {
-  name: 'SuperAdminDashboard',
-  components: {
-    Dashboard,
-    GenericMenu,
+const authStore = useAuthStore();
+
+// Estado reactivo
+const stats = ref({
+  totalSpaces: 0,
+  totalBookings: 0,
+  totalRevenue: 0,
+  totalUsers: 0,
+  usersByRole: {},
+});
+
+const errorMessage = ref(null);
+
+// Computed
+const dashboardTitle = computed(
+  () => `Dashboard de ${authStore.userName || ""}`
+);
+
+const superAdminMetrics = computed(() => [
+  { label: "Espacios Totales", value: stats.value.totalSpaces },
+  { label: "Reservas Totales", value: stats.value.totalBookings },
+  { label: "Ingresos Totales", value: `${stats.value.totalRevenue.toFixed(2)} €` },
+  { label: "Usuarios Totales", value: stats.value.totalUsers },
+]);
+
+const chartData = computed(() => ({
+  labels: Object.keys(stats.value.usersByRole),
+  datasets: [
+    {
+      label: "Usuarios",
+      data: Object.values(stats.value.usersByRole),
+      backgroundColor: ["#007bff", "#28a745", "#dc3545", "#ffc107"],
+    },
+  ],
+}));
+
+const chartOptions = computed(() => ({
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: { display: true },
   },
-  setup() {
-    return { authStore: useAuthStore() };
-  },
-  data() {
-    return {
-      stats: {
-        totalSpaces: 0,
-        totalBookings: 0,
-        totalRevenue: 0,
-        totalUsers: 0,
-        usersByRole: {},
-      },
-      errorMessage: null,
-    };
-  },
-  computed: {
-    dashboardTitle() {
-      return `Dashboard de ${this.authStore.userName || ''}`;
-    },
-    superAdminMetrics() {
-      return [
-        { label: 'Espacios Totales', value: this.stats.totalSpaces },
-        { label: 'Reservas Totales', value: this.stats.totalBookings },
-        { label: 'Ingresos Totales', value: `${this.stats.totalRevenue.toFixed(2)} €` },
-        { label: 'Usuarios Totales', value: this.stats.totalUsers },
-      ];
-    },
-    chartData() {
-      return {
-        labels: Object.keys(this.stats.usersByRole),
-        datasets: [{
-          label: 'Usuarios',
-          data: Object.values(this.stats.usersByRole),
-          backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107'],
-        }],
-      };
-    },
-    chartOptions() {
-      return {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: { display: true }, // Habilitar leyenda
-        },
-      };
-    },
-    tableHeaders() {
-      return ['Rol', 'Cantidad'];
-    },
-    tableData() {
-      return Object.entries(this.stats.usersByRole).map(([role, count]) => [role, count]);
-    },
-  },
-  async created() {
-    try {
-      if (!this.authStore.userId) {
-        this.errorMessage = 'Usuario no autenticado.';
-        return;
-      }
-      console.log('API object:', api); // Depuración
-      const response = await api.getSuperAdminStats(this.authStore.userId);
-      this.stats = response.data || this.stats;
-    } catch (error) {
-      this.errorMessage = error.response?.data?.message || 'Error al cargar las estadísticas.';
+}));
+
+const tableHeaders = computed(() => ["Rol", "Cantidad"]);
+
+const tableData = computed(() =>
+  Object.entries(stats.value.usersByRole).map(([role, count]) => [role, count])
+);
+
+// Métodos
+function handleMenuClick(button) {
+  console.log("Botón del menú clicado:", button);
+  // Aquí redirigimos al pulsar el botón del menú
+}
+
+// Cargar datos al montar
+onMounted(async () => {
+  try {
+    if (!authStore.userId) {
+      errorMessage.value = "Usuario no autenticado.";
+      return;
     }
-  },
-  methods: {
-    handleMenuClick(button) {
-      console.log('Botón del menú clicado:', button);
-      // Aquí realizamos la acción de redirigir al pulsar el botón del meú lateral
-    }
+    console.log("API object:", api); // Depuración
+    const response = await api.getSuperAdminStats(authStore.userId);
+    stats.value = response.data || stats.value;
+  } catch (error) {
+    errorMessage.value =
+      error.response?.data?.message || "Error al cargar las estadísticas.";
   }
-};
+});
 </script>
-
-<style scoped>
-/* Personalizaciones si es necesario */
-</style>
