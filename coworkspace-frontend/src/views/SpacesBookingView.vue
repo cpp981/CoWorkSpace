@@ -5,46 +5,21 @@
       <i class="bi bi-caret-left me-2"></i>Mis espacios
     </button>
 
-    <h1 class="my-4 text-primary">Reservas en: {{ currentSpaceName }}</h1>
-
-    <!-- Barra de búsqueda -->
-    <div class="input-group mb-3">
-      <span class="input-group-text bg-white border-end-0 border-secondary">
-        <i class="bi bi-search text-muted"></i>
-      </span>
-      <input v-model="search" type="text" class="form-control border-start-0 border-secondary"
-        placeholder="Buscar reserva..." />
-    </div>
-
-    <table class="table table-secondary table-striped mt-3" v-if="filteredBookings.length">
-      <thead>
-        <tr>
-          <th>Usuario</th>
-          <th>Fecha inicio</th>
-          <th>Fecha fin</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr v-for="booking in filteredBookings" :key="booking.id">
-          <td>{{ booking.userName }}</td>
-          <td>{{ formatDateTime(booking.startTime) }}</td>
-          <td>{{ formatDateTime(booking.endTime) }}</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <div v-else class="alert alert-info">
-      No hay reservas para este espacio.
-    </div>
+    <GenericList :title="`Reservas en: ${currentSpaceName}`" :items="bookings"
+      :headers="['Usuario', 'Fecha inicio', 'Fecha fin']"
+      :fields="['userName', 'startTimeFormatted', 'endTimeFormatted']" :loading="loading" :show-add-button="false"
+      :show-actions="false" searchPlaceholder="Buscar reserva..." />
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from "vue";
 import api from "../services/api";
+import GenericList from "../components/GenericList.vue";
 
 export default {
   name: "SpacesBookingView",
+  components: { GenericList },
   props: {
     spaceId: {
       type: Number,
@@ -60,6 +35,7 @@ export default {
     const bookings = ref([]);
     const currentSpaceName = ref(props.spaceName);
     const search = ref("");
+    const loading = ref(false);
 
     const filteredBookings = computed(() => {
       if (!search.value) return bookings.value;
@@ -75,18 +51,27 @@ export default {
 
     onMounted(async () => {
       try {
+        loading.value = true;
         const response = await api.getBookingsBySpace(props.spaceId);
-        bookings.value = response.data;
+        bookings.value = response.data.map(b => ({
+          ...b,
+          startTimeFormatted: formatDateTime(b.startTime),
+          endTimeFormatted: formatDateTime(b.endTime),
+        }));
         if (response.data.length > 0) {
           currentSpaceName.value = response.data[0].spaceName;
         }
       } catch (error) {
         console.error("Error cargando reservas:", error);
+      } finally {
+        loading.value = false;
       }
     });
 
+
     return {
       bookings,
+      loading,
       currentSpaceName,
       search,
       filteredBookings,

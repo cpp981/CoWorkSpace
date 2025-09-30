@@ -20,15 +20,9 @@
 
     <!-- Menú de botones -->
     <ul v-else class="nav flex-column mb-4 mt-5">
-      <li
-        v-for="button in buttons"
-        :key="button.label"
-        class="nav-item mb-2"
-      >
-        <button
-          class="btn text-light w-100 h-100 text-start d-flex align-items-center"
-          @click="$emit('button-click', button)"
-        >
+      <li v-for="button in buttons" :key="button.label" class="nav-item mb-2">
+        <button class="btn text-light w-100 h-100 text-start d-flex align-items-center"
+          @click="$emit('button-click', button)">
           <i :class="`bi bi-${button.icon.toLowerCase()}`" class="me-2"></i>
           {{ button.label }}
           <i class="bi bi-caret-right ms-auto"></i>
@@ -38,7 +32,7 @@
 
     <!-- Botón de logout -->
     <div class="mt-auto">
-      <button class="btn btn-outline-danger w-100" @click="logout">
+      <button class="btn btn-danger w-100" @click="logout">
         <i class="bi bi-box-arrow-right me-2"></i>
         Cerrar Sesión
       </button>
@@ -73,7 +67,7 @@ export default {
         isLoading.value = false;
       }
     };
-    
+
     const logout = () => {
       authStore.logout();
       window.location.href = '/';

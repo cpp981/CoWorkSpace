@@ -18,6 +18,8 @@
         public const string CannotViewAdminsForOtherProviders = "No puedes ver administradores de otros proveedores.";
         public const string NoPermissionUpdateSpace = "No tienes permisos para editar espacios.";
         public const string NoPermissionUpdateOtherProvider = "No puedes editar espacios para otro proveedor.";
+        public const string NoPermissionDeleteSpace = "No tienes permisos para borrar espacios.";
+        public const string NoPermissionDeleteOtherProviderSpaces = "No puedes borrar espacios de otro proveedor.";
 
         // Errores de validación
         public const string EmailAlreadyRegistered = "El email ya está registrado.";
@@ -26,6 +28,7 @@
         public const string InvalidRoleOrRoleIdNotFound = "Rol no válido. RoleId no encontrado en la base de datos.";
         public const string SpaceCreatedError = "Ocurrió un error al crear el espacio.";
         public const string SpaceUpdatedError = "Ocurrió un error al actualizar el espacio.";
+        public const string SpaceDeletedError = "Ocurrió un error al borrar el espaccio.";
 
         // Not Found
         public const string NoSpacesForProvider = "No se encontraron espacios para el proveedor.";
@@ -38,5 +41,6 @@
         public const string UserRegisteredSuccessfully = "Usuario registrado correctamente.";
         public const string SpaceCreatedSuccess = "El espacio se ha creado correctamente.";
         public const string SpaceUpdatedSuccess = "El espacio se ha actualizado correctamente,";
+        public const string SpaceDeletedSuccess = "El espacio se ha borrado correctamente.";
     }
 }

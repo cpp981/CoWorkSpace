@@ -42,9 +42,10 @@ export const useAuthStore = defineStore('auth', {
         this.userName = decoded.name;
 
         return response.data.message;
-      } catch (error) {
-        throw error.response?.data?.message || 'Error al iniciar sesión';
-      }
+     } catch (error) {
+      throw error; // devuelve el AxiosError completo
+     }
+
     },
     logout() {
       this.accessToken = null;

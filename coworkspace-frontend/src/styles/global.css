@@ -8,7 +8,7 @@
 html, body, #app {
   min-height: 100vh;
   min-width: 320px;
- background: linear-gradient(120deg, #f8f9fa, #dde0e2, #ced0d3); /* Gradiente global: oscuro abajo, claro arriba */
+  background: linear-gradient(to bottom, #ced0d3, #dde0e2, #f8f9fa);
   color: #212529; /* Texto oscuro para tema claro */
 }
 

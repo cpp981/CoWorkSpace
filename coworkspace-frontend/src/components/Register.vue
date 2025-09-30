@@ -15,25 +15,12 @@
                     <i :class="field.icon"></i>
                   </span>
 
-                  <input
-                    v-if="field.type !== 'select'"
-                    :type="field.type"
-                    class="form-control"
-                    :id="field.key"
-                    v-model="form[field.key]"
-                    :placeholder="field.placeholder"
-                    :required="field.required"
-                    :disabled="loading"
-                  />
+                  <input v-if="field.type !== 'select'" :type="field.type" class="form-control" :id="field.key"
+                    v-model="form[field.key]" :placeholder="field.placeholder" :required="field.required"
+                    :disabled="loading" />
 
-                  <select
-                    v-else
-                    class="form-select"
-                    :id="field.key"
-                    v-model="form[field.key]"
-                    :required="field.required"
-                    :disabled="loading"
-                  >
+                  <select v-else class="form-select" :id="field.key" v-model="form[field.key]"
+                    :required="field.required" :disabled="loading">
                     <option disabled value="">{{ field.placeholder }}</option>
                     <option v-for="option in field.options" :key="option.value" :value="option.value">
                       {{ option.label }}
@@ -43,21 +30,14 @@
               </div>
 
               <div class="d-flex justify-content-between">
-                <button
-                  type="button"
-                  class="btn btn-secondary"
-                  @click="emit('cancel')"
-                  :disabled="loading"
-                >
+                <button type="button" class="btn btn-danger" @click="emit('cancel')" :disabled="loading"><i
+                    class="bi bi-x-circle me-2"></i>
                   Cancelar
                 </button>
-                <button type="submit" class="btn btn-primary" :disabled="loading">
-                  <span
-                    v-if="loading"
-                    class="spinner-border spinner-border-sm me-2"
-                    role="status"
-                    aria-hidden="true"
-                  ></span>
+                <button type="submit" class="btn btn-primary" :disabled="loading"><i
+                    class="bi bi-person-check-fill me-2"></i>
+                  <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status"
+                    aria-hidden="true"></span>
                   {{ loading ? 'Registrando...' : props.submitButtonText }}
                 </button>
               </div>
