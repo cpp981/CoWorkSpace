@@ -1,11 +1,6 @@
 <template>
-  <Register
-    title="Registrarse"
-    :fields="fields"
-    submit-button-text="Registrarse"
-    :submit-handler="handleRegister"
-    @cancel="$emit('cancel')"
-  />
+  <Register title="Registrarse" :fields="fields" submit-button-text="Registrarse" :submit-handler="handleRegister"
+    @cancel="$emit('cancel')" />
 </template>
 
 <script setup>
@@ -21,7 +16,7 @@ const fields = ref([
     label: 'Email',
     type: 'email',
     placeholder: 'tu@email.com',
-    icon: 'bi bi-person me-1',
+    icon: 'bi bi-envelope-at me-1',
     required: true,
   },
   {
@@ -45,7 +40,7 @@ const fields = ref([
     label: 'Nombre',
     type: 'text',
     placeholder: 'Tu nombre',
-    icon: 'bi bi-person-circle me-1',
+    icon: 'bi bi-person me-1',
     required: true,
   },
   {
@@ -77,14 +72,10 @@ const handleRegister = async (form) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f8f9fa;
+  /*background-color: #dddfe2;*/
   min-width: 125vh;
 }
 
-.card {
-  border-radius: 0.5rem;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.8));
-}
 
 .form-control,
 .form-select {

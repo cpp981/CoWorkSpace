@@ -22,12 +22,12 @@ namespace CoWorkSpace.Api.Controllers
             _context = context;
         }
 
-        [HttpGet]
+        [HttpGet("list")]
         public async Task<IActionResult> GetSpacesByProvider(int providerId)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
             var roleId = int.Parse(User.FindFirst("roleId")?.Value ?? "0");
-            
+
             if (roleId != 3) // Provider RoleId
             {
                 return Forbid();
@@ -51,7 +51,7 @@ namespace CoWorkSpace.Api.Controllers
                 .ToListAsync();
 
             if (spaces.Count == 0)
-                return NotFound(string.Format(ApiMessages.NoSpacesForProvider, providerId ));
+                return NotFound(string.Format(ApiMessages.NoSpacesForProvider, providerId));
 
             return Ok(spaces);
         }
@@ -70,7 +70,7 @@ namespace CoWorkSpace.Api.Controllers
                     message = ApiMessages.NoPermissionUpdateSpace
                 });
             }
-              
+
             if (userId != providerId)
             {
                 return StatusCode(403, new
@@ -79,7 +79,7 @@ namespace CoWorkSpace.Api.Controllers
                     message = ApiMessages.NoPermissionUpdateOtherProvider
                 });
             }
-             
+
             if (!ModelState.IsValid)
             {
                 return StatusCode(403, new
@@ -122,9 +122,69 @@ namespace CoWorkSpace.Api.Controllers
             }
         }
 
+        [HttpDelete("{id}")]
 
+        public async Task<IActionResult> DeleteSpace(int providerId, int id)
+        {
+            var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+            var roleId = int.Parse(User.FindFirst("roleId")?.Value ?? "0");
 
-        [HttpPost]
+            if (roleId != 3)
+            {
+                return StatusCode(403, new
+                {
+                    success = false,
+                    message = ApiMessages.NoPermissionDeleteSpace
+                });
+            }
+            if(userId != providerId)
+            {
+                return StatusCode(403, new
+                {
+                    success = false,
+                    message = ApiMessages.NoPermissionDeleteOtherProviderSpaces
+                });
+                  
+            }
+
+            try
+            {
+                // Buscar el espacio por Id y ProviderId
+                var space = await _context.Spaces
+                    .FirstOrDefaultAsync(s => s.Id == id && s.ProviderId == providerId);
+
+                if (space == null)
+                {
+                    return NotFound(new
+                    {
+                        success = false,
+                        message = ApiMessages.SpaceNotFound
+                    });
+                }
+
+                // Marcar como eliminado
+                space.IsDeleted = true;
+
+                _context.Spaces.Update(space);
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = ApiMessages.SpaceDeletedSuccess
+                });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ApiMessages.SpaceDeletedError
+                });
+            }
+        }
+
+        [HttpPost("create")]
         public async Task<IActionResult> CreateSpace(int providerId, [FromBody] SpaceCreateDTO dto)
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
@@ -188,7 +248,5 @@ namespace CoWorkSpace.Api.Controllers
                 });
             }
         }
-
-
     }
 }

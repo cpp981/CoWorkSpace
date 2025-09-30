@@ -38,7 +38,7 @@ export default {
     return apiClient.get(`/stats/provider/${userId}`);
   },
   getClientStats(userId) {
-    return apiClient.get(`/stats/client/${userId}`);
+    return apiClient.get(`/stats/client/${userId}`);   
   },
   getMenu() {
     return apiClient.get(`/menu`);
@@ -46,20 +46,23 @@ export default {
   getSpacesByProvider(providerId) {
     return apiClient.get(`/providers/${providerId}/spaces/list`);
   },
-createSpace(providerId, spaceData) {
-  return apiClient.post(`/providers/${providerId}/spaces/create`, spaceData);
-},
-getProviderAdmins(providerId) {
-  return apiClient.get(`/providers/${providerId}/admins`);
-},
-getBookingsBySpace(spaceId){
-  return apiClient.get(`/spaces/${spaceId}/bookings`)
-},
-updateSpace(providerId, id, data) {
-    return apiClient.put(`/providers/${providerId}/spaces/${id}/update`, data);
-},
-deleteSpace(providerId, id){
-  return apiClient.delete(`/providers/${providerId}/spaces/${id}/delete`);
-},
+  createSpace(providerId, spaceData) {
+    return apiClient.post(`/providers/${providerId}/spaces/create`, spaceData);
+  },
+  getProviderAdmins(providerId) {
+    return apiClient.get(`/providers/${providerId}/admins`);
+  },
+  getBookingsBySpace(spaceId){
+    return apiClient.get(`/spaces/${spaceId}/bookings`)
+  },
+  updateSpace(providerId, id, data) {
+    return apiClient.put(`/providers/${providerId}/spaces/${id}`, data);
+  },
+  deleteSpace(providerId, id){
+    return apiClient.delete(`/providers/${providerId}/spaces/${id}`);
+  },
+  getProviderAdmins(){
+    return apiClient.get(`/providers/provider/admins`);
+  },
   client: apiClient,
 };

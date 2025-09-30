@@ -12,6 +12,9 @@
       <SpacesBookingView v-else-if="currentView === 'bookings'" :space-id="selectedSpaceId"
         :space-name="selectedSpaceName" @back="currentView = 'spaces'" />
 
+      <!-- Vista de Admins de un Provider -->
+      <ProviderAdminList v-else-if="currentView === 'adminsList'" />
+
       <!-- Vista principal del dashboard -->
       <Dashboard v-else :title="dashboardTitle" :metrics="providerMetrics" :chartTitle="'Ingresos por Espacio'"
         :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Espacios Gestionados'"
@@ -44,11 +47,13 @@
   </div>
 </template>
 
+
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import Dashboard from "../components/Dashboard.vue";
 import ProviderSpacesView from "./ProviderSpacesView.vue";
 import SpacesBookingView from "./SpacesBookingView.vue";
+import ProviderAdminList from "./ProviderAdminList.vue";
 import GenericMenu from "../components/GenericMenu.vue";
 import api from "../services/api";
 import { useAuthStore } from "../stores/auth";
@@ -125,7 +130,15 @@ const tableData = computed(() =>
 function handleMenuClick(button) {
   if (button.action === "showSpaces") {
     currentView.value = "spaces";
-  } else {
+  }
+  else if (button.action === "showAdmins") {
+    console.log("Botón Administradores pulsado:", button);
+    currentView.value = "adminsList";
+  }
+  else if (button.action === "showDashboard") {
+    currentView.value = null; // vuelve al dashboard por defecto
+  }
+  else {
     currentView.value = null;
   }
 }

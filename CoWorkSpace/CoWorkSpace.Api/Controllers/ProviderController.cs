@@ -136,5 +136,40 @@ namespace CoWorkSpace.Api.Controllers
 
             return Ok(admins);
         }
+
+        [HttpGet("provider/admins")]
+        [Authorize]
+        public async Task<IActionResult> GetAdminsForProvider()
+        {
+            // Obtener claims del usuario autenticado
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+
+            if (!int.TryParse(roleIdClaim, out int roleId) || !int.TryParse(userIdClaim, out int loggedUserId))
+                return Unauthorized(new { Message = ApiMessages.InvalidUser });
+
+            // Solo Providers (roleId = 3) pueden acceder
+            if (roleId != 3)
+                return Unauthorized(new { Message = ApiMessages.OnlyProvidersCanViewAdmins });
+
+            // Obtener admins que pertenezcan a este provider
+            var admins = await _context.Users
+                .Where(u => u.RoleId == 2 && u.ProviderId == loggedUserId)
+                .Select(u => new
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Email = u.Email
+                })
+                .ToListAsync();
+
+            if (!admins.Any())
+                return NotFound(new { Message = ApiMessages.NoAdminsFound });
+
+            return Ok(admins);
+        }
     }
 }

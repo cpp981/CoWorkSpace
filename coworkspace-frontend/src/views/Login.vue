@@ -6,6 +6,10 @@
           <div class="card shadow border-0 bg-secondary bg-opacity-25">
             <div class="card-body p-3">
               <h3 class="text-center fw-bold mb-3">Iniciar Sesión</h3>
+              <!-- Mensaje visible dentro de la card -->
+              <div v-if="msg" class="alert alert-danger py-2 px-3">
+                {{ msg }}
+              </div>
               <form @submit.prevent="handleLogin">
                 <div class="mb-3 input-icon-wrapper">
                   <input v-model="form.email" type="email" class="form-control" id="email" placeholder="tu@email.com"
@@ -49,26 +53,28 @@ export default {
       password: "",
     });
     const loading = ref(false);
+    const msg = ref("");
 
     const authStore = useAuthStore();
     const notyf = useNotyf();
 
     const handleLogin = async () => {
       loading.value = true;
+      msg.value = "";
       try {
         const message = await authStore.login({
           email: form.value.email,
           password: form.value.password,
         });
         notyf.success(message || "Inicio de sesión exitoso");
+        msg.value = message || "Inicio de sesión exitoso";
         form.value.email = "";
         form.value.password = "";
         emit("login-success");
       } catch (error) {
-        const errorMsg =
-          error?.response?.data?.message ||
-          error?.message ||
-          "Error al iniciar sesión";
+        const errorMsg = error?.response?.data?.message
+          || (typeof error === "string" ? error : error?.message)
+          || "Error al iniciar sesión";
         notyf.error(errorMsg);
       } finally {
         loading.value = false;
@@ -79,6 +85,7 @@ export default {
       form,
       loading,
       handleLogin,
+      msg
     };
   },
 };
