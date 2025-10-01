@@ -22,6 +22,7 @@
         public const string NoPermissionDeleteOtherProviderSpaces = "No puedes borrar espacios de otro proveedor.";
 
         // Errores de validación
+        public const string PasswordTooShort = "La contraseña debe tener al menos 6 caracteres.";
         public const string EmailAlreadyRegistered = "El email ya está registrado.";
         public const string OnlyAdminRoleAllowed = "Solo puede crear usuarios con rol de administrador.";
         public const string RoleNotAllowedOnlyCanRegisterProviderOrClient = "Rol no permitido. Solo se pueden registrar usuarios con rol provider o client.";

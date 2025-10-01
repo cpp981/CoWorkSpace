@@ -9,7 +9,6 @@ namespace CoWorkSpace.Api.DTOs
         public string Email { get; set; }
 
         [Required]
-        [MinLength(6)]
         public string Password { get; set; }
 
         [Required]

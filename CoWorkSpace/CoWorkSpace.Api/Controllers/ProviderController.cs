@@ -20,16 +20,63 @@ namespace CoWorkSpace.Api.Controllers
             _context = context;
         }
 
+        [HttpGet("provider/admins")]
+        [Authorize]
+        public async Task<IActionResult> GetAdminsForProvider()
+        {
+            // Obtener claims del usuario autenticado
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim))
+                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+
+            if (!int.TryParse(roleIdClaim, out int roleId) || !int.TryParse(userIdClaim, out int loggedUserId))
+                return Unauthorized(new { Message = ApiMessages.InvalidUser });
+
+            // Solo Providers (rol 3) pueden acceder
+            if (roleId != 3)
+                return StatusCode(StatusCodes.Status403Forbidden,
+                    new { Message = ApiMessages.OnlyProvidersCanViewAdmins });
+
+            // Obtener admins que pertenezcan al provider autenticado
+            var admins = await _context.Users
+                .Where(u => u.RoleId == 2 && u.ProviderId == loggedUserId)
+                .Select(u => new
+                {
+                    Id = u.Id,
+                    Name = u.Name,
+                    Email = u.Email
+                })
+                .ToListAsync();
+
+            if (!admins.Any())
+                return NotFound(new { Message = ApiMessages.NoAdminsFound });
+
+            return Ok(admins);
+        }
+
         [HttpPost("{providerId}/admins")]
         [Authorize]
         public async Task<IActionResult> CreateAdmin(int providerId, [FromBody] RegisterRequestDTO request)
         {
-            // Validar modelo
+            // Validación manual de la contraseña (antes del ModelState)
+            if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 6)
+            {
+                return BadRequest(new RegisterResponseDTO
+                {
+                    Message = ApiMessages.PasswordTooShort
+                });
+            }
+
+            // Validar otros campos por atributos [Required]
             if (!ModelState.IsValid)
+            {
                 return BadRequest(new RegisterResponseDTO
                 {
                     Message = ApiMessages.InvalidData
                 });
+            }
 
             // Obtener claims de rol y usuario
             var roleIdClaim = User.FindFirst("roleId")?.Value;
@@ -37,43 +84,43 @@ namespace CoWorkSpace.Api.Controllers
 
             if (roleIdClaim == null || userIdClaim == null || !int.TryParse(roleIdClaim, out int roleId))
                 return Unauthorized(new RegisterResponseDTO
-                { 
-                    Message = ApiMessages.Unauthorized 
+                {
+                    Message = ApiMessages.Unauthorized
                 });
 
             if (!int.TryParse(userIdClaim, out int userId))
                 return Unauthorized(new RegisterResponseDTO
-                { 
-                    Message = ApiMessages.InvalidUser 
+                {
+                    Message = ApiMessages.InvalidUser
                 });
 
             // Solo Providers (rol 3) pueden usar este endpoint
             if (roleId != 3)
                 return Unauthorized(new RegisterResponseDTO
-                { 
-                    Message = ApiMessages.OnlyProvidersCanCreateAdmins 
+                {
+                    Message = ApiMessages.OnlyProvidersCanCreateAdmins
                 });
 
             // Solo puede crear admins para su propio providerId
             if (userId != providerId)
                 return Unauthorized(new RegisterResponseDTO
-                { 
-                    Message = ApiMessages.CannotCreateAdminsForOtherProviders 
+                {
+                    Message = ApiMessages.CannotCreateAdminsForOtherProviders
                 });
 
             // Validar que se está creando un admin (roleId = 2)
             if (request.RoleId != 2)
                 return BadRequest(new RegisterResponseDTO
-                { 
-                    Message = ApiMessages.OnlyAdminRoleAllowed 
+                {
+                    Message = ApiMessages.OnlyAdminRoleAllowed
                 });
 
             // Verificar si el email ya existe
             var exists = await _context.Users.IgnoreQueryFilters().AnyAsync(u => u.Email == request.Email);
             if (exists)
                 return BadRequest(new RegisterResponseDTO
-                { 
-                    Message = ApiMessages.EmailAlreadyRegistered 
+                {
+                    Message = ApiMessages.EmailAlreadyRegistered
                 });
 
             // Crear nuevo usuario admin
@@ -89,87 +136,15 @@ namespace CoWorkSpace.Api.Controllers
             _context.Users.Add(adminUser);
             await _context.SaveChangesAsync();
 
-            return Ok(new RegisterResponseDTO 
+            return Ok(new RegisterResponseDTO
             {
                 Id = adminUser.Id,
                 Email = adminUser.Email,
                 Name = adminUser.Name,
                 RoleId = adminUser.RoleId,
                 ProviderId = adminUser.ProviderId,
-                Message = ApiMessages.AdminCreatedSuccessfully 
+                Message = ApiMessages.AdminCreatedSuccessfully
             });
-        }
-        [HttpGet("{providerId}/admins")]
-        [Authorize]
-        public async Task<IActionResult> GetAdminsByProvider(int providerId)
-        {
-            // Obtener claims del usuario autenticado
-            var roleIdClaim = User.FindFirst("roleId")?.Value;
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim))
-                return Unauthorized(new { Message = ApiMessages.Unauthorized });
-
-            if (!int.TryParse(roleIdClaim, out int roleId) || !int.TryParse(userIdClaim, out int loggedUserId))
-                return Unauthorized(new { Message = ApiMessages.InvalidUser });
-
-            // Solo Providers (roleId = 3) pueden acceder
-            if (roleId != 3)
-                return Unauthorized(new { Message = ApiMessages.OnlyProvidersCanViewAdmins });
-
-            // Validar que el provider solo accede a sus propios admins
-            if (loggedUserId != providerId)
-                return Unauthorized(new { Message = ApiMessages.CannotViewAdminsForOtherProviders });
-
-            // Obtener admins que pertenezcan a este provider
-            var admins = await _context.Users
-                .Where(u => u.RoleId == 2 && u.ProviderId == providerId)
-                .Select(u => new
-                {
-                    Id = u.Id,
-                    Name = u.Name
-                })
-                .ToListAsync();
-
-            if (!admins.Any())
-                return NotFound(new { Message = ApiMessages.NoAdminsFound });
-
-            return Ok(admins);
-        }
-
-        [HttpGet("provider/admins")]
-        [Authorize]
-        public async Task<IActionResult> GetAdminsForProvider()
-        {
-            // Obtener claims del usuario autenticado
-            var roleIdClaim = User.FindFirst("roleId")?.Value;
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim))
-                return Unauthorized(new { Message = ApiMessages.Unauthorized });
-
-            if (!int.TryParse(roleIdClaim, out int roleId) || !int.TryParse(userIdClaim, out int loggedUserId))
-                return Unauthorized(new { Message = ApiMessages.InvalidUser });
-
-            // Solo Providers (roleId = 3) pueden acceder
-            if (roleId != 3)
-                return Unauthorized(new { Message = ApiMessages.OnlyProvidersCanViewAdmins });
-
-            // Obtener admins que pertenezcan a este provider
-            var admins = await _context.Users
-                .Where(u => u.RoleId == 2 && u.ProviderId == loggedUserId)
-                .Select(u => new
-                {
-                    Id = u.Id,
-                    Name = u.Name,
-                    Email = u.Email
-                })
-                .ToListAsync();
-
-            if (!admins.Any())
-                return NotFound(new { Message = ApiMessages.NoAdminsFound });
-
-            return Ok(admins);
         }
     }
 }
