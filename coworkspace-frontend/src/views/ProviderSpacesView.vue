@@ -32,50 +32,65 @@
     </div>
 
     <!-- Paginación -->
-    <nav class="mt-3 d-flex justify-content-center" v-if="totalPages > 1">
-      <ul class="pagination">
-        <li class="page-item" :class="{ disabled: currentPage === 1 }">
-          <button class="page-link" @click="prevPage">Anterior</button>
-        </li>
-        <li class="page-item" v-for="n in totalPages" :key="n" :class="{ active: currentPage === n }">
-          <button class="page-link" @click="goToPage(n)">{{ n }}</button>
-        </li>
-        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-          <button class="page-link" @click="nextPage">Siguiente</button>
-        </li>
-      </ul>
-    </nav>
+    <GenericPagination :currentPage="currentPage" :totalPages="totalPages" @prev="prevPage" @next="nextPage"
+      @goToPage="goToPage" />
+
     <!--Modal para confirmar el borrado-->
     <ConfirmDeleteModal v-model="showDeleteModal" title="Borrar Espacio"
       :message="`¿Estás seguro de borrar '${spaceToDelete?.name}'?`" @confirm="deleteSpace" />
+
     <!-- Modal Editar Espacio -->
     <GenericModal v-model="showEditSpaceModal" title="Editar Espacio" confirmText="Guardar cambios" @submit="editSpace">
       <div v-if="selectedSpace">
         <div class="mb-3">
           <label class="form-label">Nombre del Espacio</label>
-          <input v-model="selectedSpace.name" type="text" class="form-control border-secondary" required />
+          <div class="input-group">
+            <span class="input-group-text border-dark">
+              <i class="bi bi-building"></i>
+            </span>
+            <input v-model="selectedSpace.name" type="text" class="form-control border-secondary" required />
+          </div>
         </div>
         <div class="mb-3">
           <label class="form-label">Administrador</label>
-          <select v-model="selectedSpace.adminId" class="form-select border-secondary" required>
-            <option value="" disabled>Seleccione un administrador</option>
-            <option v-for="admin in admins" :key="admin.id" :value="admin.id">
-              {{ admin.name }}
-            </option>
-          </select>
+          <div class="input-group">
+            <span class="input-group-text border-dark">
+              <i class="bi bi-person"></i>
+            </span>
+            <select v-model="selectedSpace.adminId" class="form-select border-secondary" required>
+              <option value="" disabled>Seleccione un administrador</option>
+              <option v-for="admin in admins" :key="admin.id" :value="admin.id">
+                {{ admin.name }}
+              </option>
+            </select>
+          </div>
         </div>
         <div class="mb-3">
           <label class="form-label">Ciudad</label>
-          <input v-model="selectedSpace.city" type="text" class="form-control border-secondary" required />
+          <div class="input-group">
+            <span class="input-group-text border-dark">
+              <i class="bi bi-geo-alt"></i>
+            </span>
+            <input v-model="selectedSpace.city" type="text" class="form-control border-secondary" required />
+          </div>
         </div>
         <div class="mb-3">
           <label class="form-label">Precio</label>
-          <input v-model.number="selectedSpace.price" type="number" min="0" class="form-control border-secondary"
-            required />
+          <div class="input-group">
+            <span class="input-group-text border-dark">
+              <i class="bi bi-currency-euro"></i>
+            </span>
+            <input v-model.number="selectedSpace.price" type="number" min="0" class="form-control border-secondary"
+              required />
+          </div>
         </div>
-        <div class="form-check form-switch mb-3">
-          <input class="form-check-input border-secondary" type="checkbox" v-model="selectedSpace.isPublic" />
-          <label class="form-check-label">Es público</label>
+        <div class="form-check form-switch mb-3 d-flex align-items-center">
+          <input class="form-check-input border-secondary me-2" type="checkbox" v-model="selectedSpace.isPublic"
+            id="publicSwitch" />
+          <label class="form-check-label d-flex align-items-center" for="publicSwitch">
+            <i :class="selectedSpace.isPublic ? 'bi bi-eye text-success me-2' : 'bi bi-eye-slash text-muted me-2'"></i>
+            {{ selectedSpace.isPublic ? 'Público' : 'Privado' }}
+          </label>
         </div>
       </div>
     </GenericModal>
@@ -85,28 +100,52 @@
       @submit="createSpace">
       <div class="mb-3">
         <label class="form-label">Nombre del Espacio</label>
-        <input v-model="newSpace.name" type="text" class="form-control border-secondary" required />
+        <div class="input-group">
+          <span class="input-group-text border-dark">
+            <i class="bi bi-building"></i>
+          </span>
+          <input v-model="newSpace.name" type="text" class="form-control border-secondary" required />
+        </div>
       </div>
       <div class="mb-3">
         <label class="form-label">Administrador</label>
-        <select v-model="newSpace.adminId" class="form-select border-secondary" required>
-          <option value="" disabled>Seleccione un administrador</option>
-          <option v-for="admin in admins" :key="admin.id" :value="admin.id">
-            {{ admin.name }}
-          </option>
-        </select>
+        <div class="input-group">
+          <span class="input-group-text border-dark">
+            <i class="bi bi-person"></i>
+          </span>
+          <select v-model="newSpace.adminId" class="form-select border-secondary" required>
+            <option value="" disabled>Seleccione un administrador</option>
+            <option v-for="admin in admins" :key="admin.id" :value="admin.id">
+              {{ admin.name }}
+            </option>
+          </select>
+        </div>
       </div>
       <div class="mb-3">
         <label class="form-label">Ciudad</label>
-        <input v-model="newSpace.city" type="text" class="form-control border-secondary" required />
+        <div class="input-group">
+          <span class="input-group-text border-dark">
+            <i class="bi bi-geo-alt"></i>
+          </span>
+          <input v-model="newSpace.city" type="text" class="form-control border-secondary" required />
+        </div>
       </div>
       <div class="mb-3">
         <label class="form-label">Precio</label>
-        <input v-model.number="newSpace.price" type="number" min="0" class="form-control border-secondary" required />
+        <div class="input-group">
+          <span class="input-group-text border-dark">
+            <i class="bi bi-currency-euro"></i>
+          </span>
+          <input v-model.number="newSpace.price" type="number" min="0" class="form-control border-secondary" required />
+        </div>
       </div>
-      <div class="form-check form-switch mb-3">
-        <input class="form-check-input border-secondary" type="checkbox" v-model="newSpace.isPublic" />
-        <label class="form-check-label">Es público</label>
+      <div class="form-check form-switch mb-3 d-flex align-items-center">
+        <input class="form-check-input border-secondary me-2" type="checkbox" v-model="newSpace.isPublic"
+          id="publicSwitch" />
+        <label class="form-check-label d-flex align-items-center" for="publicSwitch">
+          <i :class="newSpace.isPublic ? 'bi bi-eye text-success me-2' : 'bi bi-eye-slash text-muted me-2'"></i>
+          {{ newSpace.isPublic ? 'Público' : 'Privado' }}
+        </label>
       </div>
     </GenericModal>
   </div>
@@ -120,12 +159,13 @@ import { useAuthStore } from "../stores/auth";
 import SpaceCard from "../components/SpaceCard.vue";
 import GenericModal from "../components/GenericModal.vue";
 import ConfirmDeleteModal from "./ConfirmDeleteModal.vue";
+import GenericPagination from "../components/GenericPagination.vue";
 import "notyf/notyf.min.css";
 import { Modal } from "bootstrap";
 
 export default {
   name: "ProviderSpacesView",
-  components: { SpaceCard, GenericModal, ConfirmDeleteModal },
+  components: { SpaceCard, GenericModal, ConfirmDeleteModal, GenericPagination },
   emits: ["view-bookings", "edit-space", "delete-space"],
   setup(props, context) {
     const authStore = useAuthStore();
