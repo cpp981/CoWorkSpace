@@ -1,7 +1,7 @@
 <template>
     <div>
         <!-- Título -->
-        <h2 class="mb-4">{{ title }}</h2>
+        <h2 class="mb-4 text-primary">{{ title }}</h2>
 
         <!-- Barra de búsqueda -->
         <div class="input-group mb-3">
@@ -69,8 +69,8 @@ export default {
         addLabel: { type: String, default: "Agregar" },
         emptyMessage: { type: String, default: "No se encontraron registros" },
         loading: { type: Boolean, default: false },
-        showAddButton: { type: Boolean, default: true }, // 👈 nuevo
-        showActions: { type: Boolean, default: true },   // 👈 nuevo
+        showAddButton: { type: Boolean, default: true },
+        showActions: { type: Boolean, default: true },
     },
     setup(props) {
         const search = ref("");

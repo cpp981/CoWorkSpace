@@ -64,5 +64,8 @@ export default {
   getProviderAdmins(){
     return apiClient.get(`/providers/provider/admins`);
   },
+  createAdmin(providerId, data){
+    return apiClient.post(`/providers/${providerId}/admins`, data);
+  },
   client: apiClient,
 };
