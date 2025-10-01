@@ -4,6 +4,40 @@
             :fields="['id', 'name']" :loading="loading" addLabel="Nuevo Administrador" :showAddButton="true"
             :showActions="true" @add="handleAdd" @edit="handleEdit" @delete="handleDelete" />
 
+        <!-- Modal editar admin -->
+        <GenericModal v-model="showEditAdminModal" title="Editar Administrador" confirmText="Editar"
+            @submit="editAdmin">
+            <div class="mb-3">
+                <label class="form-label">Nombre</label>
+                <div class="input-group">
+                    <span class="input-group-text border-dark">
+                        <i class="bi bi-person"></i>
+                    </span>
+                    <input v-model="editAdmin.name" type="text" class="form-control border-dark" required />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Email</label>
+                <div class="input-group">
+                    <span class="input-group-text border-dark">
+                        <i class="bi bi-envelope"></i>
+                    </span>
+                    <input v-model="editAdmin.email" type="email" class="form-control border-dark" required />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text border-dark">
+                        <i class="bi bi-lock"></i>
+                    </span>
+                    <input v-model="editAdmin.password" type="password" class="form-control border-dark" required />
+                </div>
+            </div>
+        </GenericModal>
+
         <!-- Modal crear admin -->
         <GenericModal v-model="showAddModal" title="Crear Nuevo Administrador" confirmText="Crear"
             @submit="createAdmin">
@@ -55,7 +89,9 @@ export default {
         const admins = ref([]);
         const loading = ref(false);
         const showAddModal = ref(false);
+        const showEditAdminModal = ref(false);
         const newAdmin = ref({ name: "", email: "", password: "" });
+        const editAdmin = ref({ name: "", email: "", password: "" });
         const notyf = useNotyf();
         const authStore = useAuthStore();
 
@@ -94,12 +130,41 @@ export default {
                 showAddModal.value = false;
                 await fetchAdmins();
             } catch (err) {
-                // Mostrar mensaje de error que viene del back
-                notyf.error(err.response?.data?.message || "Error al crear administrador");
+                const errors = err.response?.data?.errors;
+
+                if (errors) {
+                    // Recorremos todos los errores que envía ModelState
+                    for (const key in errors) {
+                        errors[key].forEach(message => notyf.error(message));
+                    }
+                } else {
+                    // Mensaje genérico si no vienen errores detallados
+                    notyf.error(err.response?.data?.message || "Error al crear administrador");
+                }
             }
         };
 
-        const handleEdit = (admin) => console.log("Editar", admin);
+        const handleEdit = (admin) => {
+            editAdmin.value =
+            {
+                name: admin.name,
+                email: admin.email,
+                password: ""
+            };
+            showEditAdminModal.value = true;
+        }
+
+        const editAdminByProvider = async () => {
+
+            const response = await api.editAdmin(
+                authStore.userId,
+                {
+                    name: editAdmin.value.name,
+                    email: editAdmin.value.email,
+                    password: editAdmin.value.password,
+                }
+            );
+        }
         const handleDelete = (admin) => console.log("Eliminar", admin);
 
         onMounted(fetchAdmins);
@@ -112,7 +177,10 @@ export default {
             handleEdit,
             handleDelete,
             showAddModal,
+            showEditAdminModal,
             newAdmin,
+            editAdmin,
+            editAdminByProvider,
             createAdmin,
         };
     },
