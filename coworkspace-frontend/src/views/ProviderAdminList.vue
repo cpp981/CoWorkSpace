@@ -1,12 +1,22 @@
 <template>
     <div class="container py-4">
-        <GenericList :title="`Admins para ${authStore.userName}`" :items="admins" :headers="['ID', 'Nombre']"
+
+        <!--  Lista de administradores -->
+        <GenericList :title="`Admins para ${authStore.userName}`" :items="paginatedAdmins" :headers="['ID', 'Nombre']"
             :fields="['id', 'name']" :loading="loading" addLabel="Nuevo Administrador" :showAddButton="true"
             :showActions="true" @add="handleAdd" @edit="handleEdit" @delete="handleDelete" />
 
+        <!-- Paginación -->
+        <GenericPagination :currentPage="currentPage" :totalPages="totalPages" @prev="prevPage" @next="nextPage"
+            @goToPage="goToPage" />
+
+        <!-- Modal para confirmar el borrado -->
+        <ConfirmDeleteModal v-model="showDeleteModal" tittle="Borrar Administrador" :message="`Se va a borrar a
+        <strong>'${adminToDelete?.name}'</strong>,<br><br> ¿Estás seguro?`" @confirm="deleteAdmin" />
+
         <!-- Modal editar admin -->
         <GenericModal v-model="showEditAdminModal" title="Editar Administrador" confirmText="Editar"
-            @submit="editAdmin">
+            @submit="editAdminByProvider">
             <div class="mb-3">
                 <label class="form-label">Nombre</label>
                 <div class="input-group">
@@ -33,7 +43,7 @@
                     <span class="input-group-text border-dark">
                         <i class="bi bi-lock"></i>
                     </span>
-                    <input v-model="editAdmin.password" type="password" class="form-control border-dark" required />
+                    <input v-model="editAdmin.password" type="password" class="form-control border-dark" />
                 </div>
             </div>
         </GenericModal>
@@ -75,23 +85,29 @@
 </template>
 
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import GenericList from "../components/GenericList.vue";
 import GenericModal from "../components/GenericModal.vue";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal.vue";
+import GenericPagination from "../components/GenericPagination.vue";
 import api from "../services/api";
 import { useNotyf } from "../composables/useNotyf";
 import { useAuthStore } from "../stores/auth";
 
 export default {
     name: "ProviderAdminList",
-    components: { GenericList, GenericModal },
+    components: { GenericList, GenericModal, ConfirmDeleteModal, GenericPagination },
     setup() {
         const admins = ref([]);
         const loading = ref(false);
         const showAddModal = ref(false);
         const showEditAdminModal = ref(false);
+        const showDeleteModal = ref(false);
         const newAdmin = ref({ name: "", email: "", password: "" });
         const editAdmin = ref({ name: "", email: "", password: "" });
+        const currentPage = ref(1);
+        const perPage = 10;
+        const search = ref("");
         const notyf = useNotyf();
         const authStore = useAuthStore();
 
@@ -145,8 +161,10 @@ export default {
         };
 
         const handleEdit = (admin) => {
+            // Traer los datos antes de abrir
             editAdmin.value =
             {
+                id: admin.id,
                 name: admin.name,
                 email: admin.email,
                 password: ""
@@ -155,17 +173,92 @@ export default {
         }
 
         const editAdminByProvider = async () => {
-
-            const response = await api.editAdmin(
-                authStore.userId,
-                {
+            try {
+                const payload = {
                     name: editAdmin.value.name,
                     email: editAdmin.value.email,
-                    password: editAdmin.value.password,
+                };
+
+                // Solo agregar password si tiene valor
+                if (editAdmin.value.password && editAdmin.value.password.trim() !== "") {
+                    payload.password = editAdmin.value.password;
                 }
-            );
+
+                const response = await api.updateAdmin(
+                    authStore.userId,
+                    editAdmin.value.id,
+                    payload
+                );
+
+                notyf.success(response.data?.message || "Administrador actualizado correctamente");
+
+                showEditAdminModal.value = false;
+                await fetchAdmins();
+            } catch (err) {
+                const errors = err.response?.data?.errors;
+
+                if (errors) {
+                    for (const key in errors) {
+                        errors[key].forEach(message => notyf.error(message));
+                    }
+                } else {
+                    notyf.error(err.response?.data?.message || "Error al actualizar el administrador");
+                }
+            }
+        };
+        const adminToDelete = ref(null);
+
+        const handleDelete = async (admin) => {
+            adminToDelete.value = admin;
+            showDeleteModal.value = true;
         }
-        const handleDelete = (admin) => console.log("Eliminar", admin);
+
+        const deleteAdmin = async () => {
+            try {
+                const response = await api.deleteAdmin(authStore.userId, adminToDelete.value.id);
+                notyf.success(response.data?.message || "Administrador borrado correctamente");
+                showDeleteModal.value = false;
+                await fetchAdmins();
+            } catch (err) {
+                const errors = err.response?.data?.errors;
+
+                if (errors) {
+                    for (const key in errors) {
+                        errors[key].forEach(message => notyf.error(message));
+                    }
+                } else {
+                    notyf.error(err.response?.data?.message || "Error al borrar el administrador");
+                }
+            }
+        }
+
+        // Paginación
+        const filteredAdmins = computed(() =>
+            admins.value.filter(
+                (admin) =>
+                    admin.name.toLowerCase().includes(search.value.toLowerCase())
+            ));
+        const totalPages = computed(() =>
+            Math.ceil(filteredAdmins.value.length / perPage)
+        );
+
+        watch(totalPages, (newVal) => {
+            if (currentPage.value > newVal) {
+                currentPage.value = newVal > 0 ? newVal : 1;
+            }
+        });
+
+        const paginatedAdmins = computed(() => {
+            const start = (currentPage.value - 1) * perPage;
+            return filteredAdmins.value.slice(start, start + perPage);
+        });
+
+        const goToPage = (n) => {
+            if (n >= 1 && n <= totalPages.value) currentPage.value = n;
+        };
+
+        const nextPage = () => goToPage(currentPage.value + 1);
+        const prevPage = () => goToPage(currentPage.value - 1);
 
         onMounted(fetchAdmins);
 
@@ -178,10 +271,20 @@ export default {
             handleDelete,
             showAddModal,
             showEditAdminModal,
+            showDeleteModal,
             newAdmin,
             editAdmin,
             editAdminByProvider,
             createAdmin,
+            deleteAdmin,
+            adminToDelete,
+            currentPage,
+            totalPages,
+            goToPage,
+            nextPage,
+            prevPage,
+            paginatedAdmins,
+            search
         };
     },
 };

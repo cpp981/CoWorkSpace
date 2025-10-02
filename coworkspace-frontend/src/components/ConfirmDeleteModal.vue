@@ -1,12 +1,12 @@
 <template>
     <GenericModal v-model="internalShow" :title="title" confirmText="Confirmar" @submit="handleConfirm">
-        <p>{{ message }}</p>
+        <p v-html="message" />
     </GenericModal>
 </template>
 
 <script setup>
 import { computed } from "vue";
-import GenericModal from "../components/GenericModal.vue";
+import GenericModal from "./GenericModal.vue";
 
 const props = defineProps({
     modelValue: { type: Boolean, required: true },
