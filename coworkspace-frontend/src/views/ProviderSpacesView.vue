@@ -36,8 +36,8 @@
       @goToPage="goToPage" />
 
     <!--Modal para confirmar el borrado-->
-    <ConfirmDeleteModal v-model="showDeleteModal" title="Borrar Espacio"
-      :message="`¿Estás seguro de borrar '${spaceToDelete?.name}'?`" @confirm="deleteSpace" />
+    <ConfirmDeleteModal v-model="showDeleteModal" title="Borrar Espacio" :message="`Se va a borrar
+        <strong>'${spaceToDelete?.name}'</strong>,<br><br> ¿Estás seguro?`" @confirm="deleteSpace" />
 
     <!-- Modal Editar Espacio -->
     <GenericModal v-model="showEditSpaceModal" title="Editar Espacio" confirmText="Guardar cambios" @submit="editSpace">
@@ -158,10 +158,9 @@ import api from "../services/api";
 import { useAuthStore } from "../stores/auth";
 import SpaceCard from "../components/SpaceCard.vue";
 import GenericModal from "../components/GenericModal.vue";
-import ConfirmDeleteModal from "./ConfirmDeleteModal.vue";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal.vue";
 import GenericPagination from "../components/GenericPagination.vue";
 import "notyf/notyf.min.css";
-import { Modal } from "bootstrap";
 
 export default {
   name: "ProviderSpacesView",

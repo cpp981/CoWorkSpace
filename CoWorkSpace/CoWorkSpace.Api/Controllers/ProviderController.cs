@@ -146,5 +146,132 @@ namespace CoWorkSpace.Api.Controllers
                 Message = ApiMessages.AdminCreatedSuccessfully
             });
         }
+
+        [HttpPut("{providerId}/admins/{adminId}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateAdmin(int providerId, int adminId, [FromBody] UpdateAdminRequestDTO request)
+        {
+            // Obtener claims del usuario autenticado
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(roleIdClaim, out int roleId)
+                || !int.TryParse(userIdClaim, out int loggedUserId))
+            {
+                return Unauthorized(new UpdateAdminResponseDTO
+                {
+                    Message = ApiMessages.Unauthorized
+                });
+            }
+
+            // Solo Providers (rol 3) pueden usar este endpoint
+            if (roleId != 3)
+                return Unauthorized(new UpdateAdminResponseDTO
+                {
+                    Message = ApiMessages.OnlyProvidersCanEditAdmins
+                });
+
+            // El provider solo puede editar sus propios admins
+            if (loggedUserId != providerId)
+                return Unauthorized(new UpdateAdminResponseDTO
+                {
+                    Message = ApiMessages.CannotEditAdminsForOtherProviders
+                });
+
+            // Buscar el admin a editar
+            var adminUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == adminId && u.ProviderId == providerId && u.RoleId == 2);
+
+            if (adminUser == null)
+                return NotFound(new UpdateAdminResponseDTO
+                {
+                    Message = ApiMessages.AdminNotFound
+                });
+
+            // Validar si se cambia el email
+            if (!string.IsNullOrWhiteSpace(request.Email) && request.Email != adminUser.Email)
+            {
+                var exists = await _context.Users.AnyAsync(u => u.Email == request.Email);
+                if (exists)
+                {
+                    return BadRequest(new UpdateAdminResponseDTO
+                    {
+                        Message = ApiMessages.EmailAlreadyRegistered
+                    });
+                }
+
+                adminUser.Email = request.Email;
+            }
+
+            // Actualizar campos
+            adminUser.Name = request.Name ?? adminUser.Name;
+
+            // Si se manda contraseña nueva, validar longitud y hashearla
+            if (!string.IsNullOrWhiteSpace(request.Password))
+            {
+                if (request.Password.Length < 6)
+                {
+                    return BadRequest(new UpdateAdminResponseDTO
+                    {
+                        Message = ApiMessages.PasswordTooShort
+                    });
+                }
+
+                adminUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password);
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new UpdateAdminResponseDTO
+            {
+                Id = adminUser.Id,
+                Name = adminUser.Name,
+                Email = adminUser.Email,
+                ProviderId = (int)adminUser.ProviderId,
+                RoleId = adminUser.RoleId,
+                Message = ApiMessages.AdminUpdatedSuccessfully
+            });
+        }
+
+        [HttpDelete("{providerId}/admins/{adminId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteAdmin(int providerId, int adminId)
+        {
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(roleIdClaim, out int roleId)
+                || !int.TryParse(userIdClaim, out int loggedUserId))
+            {
+                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+            }
+
+            if (roleId != 3)
+                return Forbid();
+
+            if (loggedUserId != providerId)
+                return Unauthorized(new { Message = ApiMessages.CannotDeleteAdminsForOtherProviders });
+
+            var adminUser = await _context.Users
+                .FirstOrDefaultAsync(u => u.Id == adminId && u.ProviderId == providerId && u.RoleId == 2);
+
+            if (adminUser == null)
+                return NotFound(new { Message = ApiMessages.AdminNotFound });
+
+            _context.Users.Remove(adminUser);
+            await _context.SaveChangesAsync();
+
+            var response = new DeleteAdminResponseDto
+            {
+                Id = adminUser.Id,
+                Name = adminUser.Name,
+                Email = adminUser.Email,
+                Message = ApiMessages.AdminDeletedSuccessfully
+            };
+
+            return Ok(response);
+        }
     }
 }

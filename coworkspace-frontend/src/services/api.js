@@ -67,5 +67,11 @@ export default {
   createAdmin(providerId, data){
     return apiClient.post(`/providers/${providerId}/admins`, data);
   },
+  updateAdmin(providerId, adminId, data){
+    return apiClient.put(`/providers/${providerId}/admins/${adminId}`, data)
+  },
+  deleteAdmin(providerId, adminId){
+    return apiClient.delete(`/providers/${providerId}/admins/${adminId}`)
+  },
   client: apiClient,
 };
