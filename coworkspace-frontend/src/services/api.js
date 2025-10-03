@@ -73,5 +73,8 @@ export default {
   deleteAdmin(providerId, adminId){
     return apiClient.delete(`/providers/${providerId}/admins/${adminId}`)
   },
+  getAdminSpaces(adminId){
+    return apiClient.get(`/admins/${adminId}/spaces`)
+  },
   client: apiClient,
 };

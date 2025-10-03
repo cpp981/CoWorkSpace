@@ -3,11 +3,13 @@
     <!-- Menú lateral -->
     <GenericMenu @button-click="handleMenuClick" />
 
-    <!-- Contenido principal del dashboard -->
+    <!-- Contenido principal -->
     <div class="flex-grow-1 p-3">
-      <Dashboard :title="dashboardTitle" :metrics="adminMetrics" :chartTitle="'Ingresos por Espacio'"
-        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Espacios Gestionados'"
-        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
+      <!-- Vista Dashboard -->
+      <Dashboard v-if="currentView === 'dashboard'" :title="dashboardTitle" :metrics="adminMetrics"
+        :chartTitle="'Ingresos por Espacio'" :chartData="chartData" :chartOptions="chartOptions"
+        :detailsTitle="'Espacios Gestionados'" :tableHeaders="tableHeaders" :tableData="tableData"
+        :errorMessage="errorMessage">
         <template #details>
           <table v-if="stats.spaces.length" class="table table-striped">
             <thead>
@@ -32,6 +34,9 @@
           <p v-else class="text-muted">No hay espacios disponibles.</p>
         </template>
       </Dashboard>
+
+      <!-- Vista Spaces -->
+      <AdminSpacesListView v-else-if="currentView === 'spaces'" />
     </div>
   </div>
 </template>
@@ -40,11 +45,12 @@
 import { ref, computed, onMounted } from 'vue';
 import Dashboard from '../components/Dashboard.vue';
 import GenericMenu from '../components/GenericMenu.vue';
+import AdminSpacesListView from './AdminSpacesListView.vue';
 import api from '../services/api';
 import { useAuthStore } from '../stores/auth';
 
 const authStore = useAuthStore();
-
+const currentView = ref("dashboard"); // por defecto mostramos dashboard
 const stats = ref({
   totalSpaces: 0,
   totalBookings: 0,
@@ -52,19 +58,16 @@ const stats = ref({
   averageRating: 0,
   spaces: [],
 });
-
 const errorMessage = ref(null);
 
 // --- Computed ---
 const dashboardTitle = computed(() => `Dashboard de ${authStore.userName || ''}`);
-
 const adminMetrics = computed(() => [
   { label: 'Espacios Totales', value: stats.value.totalSpaces },
   { label: 'Reservas Totales', value: stats.value.totalBookings },
   { label: 'Ingresos Totales', value: `${stats.value.totalRevenue.toFixed(2)} €` },
   { label: 'Valoración Media', value: stats.value.averageRating.toFixed(1) },
 ]);
-
 const chartData = computed(() => ({
   labels: stats.value.spaces.map(space => space.spaceName),
   datasets: [{
@@ -73,7 +76,6 @@ const chartData = computed(() => ({
     backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107'],
   }],
 }));
-
 const chartOptions = computed(() => ({
   responsive: true,
   maintainAspectRatio: false,
@@ -81,9 +83,7 @@ const chartOptions = computed(() => ({
     legend: { display: true },
   },
 }));
-
 const tableHeaders = computed(() => ['ID', 'Nombre', 'Reservas', 'Ingresos', 'Valoración']);
-
 const tableData = computed(() =>
   stats.value.spaces.map(space => [
     space.spaceId,
@@ -96,10 +96,12 @@ const tableData = computed(() =>
 
 // --- Métodos ---
 function handleMenuClick(button) {
-  console.log('Botón del menú clicado:', button);
-  // Aquí realizamos la acción de redirigir al pulsar el botón del menú lateral
+  if (button.action === "showSpaces") {
+    currentView.value = "spaces";
+  } else {
+    currentView.value = "dashboard";
+  }
 }
-
 
 onMounted(async () => {
   try {
