@@ -23,6 +23,8 @@
         public const string NoPermissionDeleteSpace = "No tienes permisos para borrar espacios.";
         public const string NoPermissionDeleteOtherProviderSpaces = "No puedes borrar espacios de otro proveedor.";
         public const string CannotDeleteAdminsForOtherProviders = "No puedes borrar administradores de otro proveedor.";
+        public const string OnlyAdminsCanAccessSpaces = "Solo los administradores pueden acceder a los espacios.";
+        public const string CannotAccessOtherAdminsSpaces = "No puedes ver espacios de otro administrador.";
 
 
         // Errores de validación
@@ -40,6 +42,7 @@
         public const string SpaceNotFound = "No se encontró el espacio.";
         public const string NoAdminsFound = "No se encontraron administradores.";
         public const string AdminNotFound = "No se encontró el administrador";
+        public const string NoSpacesFoundForAdmin = "No se encontraron espacios para este administrador.";
 
         // Éxito
         public const string LoginSuccessfully = "Inicio de sesión exitoso.";
