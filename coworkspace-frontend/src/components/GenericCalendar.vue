@@ -19,7 +19,7 @@ const props = defineProps({
     },
     initialView: {
         type: String,
-        default: "timeGridWeek", // Ej: 'dayGridMonth', 'timeGridDay'
+        default: "timeGridWeek",
     },
     editable: {
         type: Boolean,
