@@ -1,1 +1,4 @@
-coworkspace-frontend/index.html linguist-language=HTML
+coworkspace-frontend/*.html linguist-language=HTML
+coworkspace-frontend/**/*.html linguist-language=HTML
+coworkspace-frontend/**/*.vue linguist-language=Vue
+
