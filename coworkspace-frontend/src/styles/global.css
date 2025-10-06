@@ -70,6 +70,11 @@ button:focus-visible {
   color: inherit;
 }
 
+.status-dot {
+    width: 8px;
+    height: 8px;
+    display: inline-block;
+}
 
 /* Media Queries */
 @media (prefers-color-scheme: light) {
