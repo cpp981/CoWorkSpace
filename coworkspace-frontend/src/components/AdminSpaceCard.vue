@@ -16,8 +16,8 @@
                 <li><strong>Precio:</strong> {{ Number(space.precio).toFixed(2) }} €</li>
                 <li><strong>Siguiente Reserva:</strong> {{ space.siguienteReserva && space.siguienteReserva.trim() !==
                     ''
-                    ? space.siguienteReserva
-                    : 'Sin próximas reservas'}}</li>
+                    ? formatDate(space.siguienteReserva)
+                    : 'Sin próximas reservas' }}</li>
             </ul>
 
             <!-- Botones de acción -->
@@ -38,12 +38,16 @@ defineProps({
     }
 });
 defineEmits(["view-calendar"]);
-</script>
 
-<style scoped>
-.status-dot {
-    width: 8px;
-    height: 8px;
-    display: inline-block;
-}
-</style>
+// Función para formatear la fecha
+const formatDate = (dateStr) => {
+    if (!dateStr || dateStr.trim() === "") return "";
+    const date = new Date(dateStr);
+    const day = String(date.getDate()).padStart(2, "0");
+    const month = String(date.getMonth() + 1).padStart(2, "0"); // Enero = 0
+    const year = date.getFullYear();
+    const hours = String(date.getHours()).padStart(2, "0");
+    const minutes = String(date.getMinutes()).padStart(2, "0");
+    return `${day}-${month}-${year} - ${hours}:${minutes} h`;
+};
+</script>

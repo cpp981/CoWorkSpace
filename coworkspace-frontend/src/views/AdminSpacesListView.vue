@@ -19,7 +19,7 @@
 
         <p v-else class="text-muted">No tienes espacios registrados.</p>
 
-        <!-- Modal del calendario -->
+        <!-- Modal para el calendario -->
         <div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true"
             ref="calendarModalRef">
             <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
@@ -73,7 +73,7 @@ export default {
             selectedSpace.value = space;
 
             try {
-                // Llamada al backend para obtener reservas del espacio
+                // Obtener reservas del espacio y mostrarlas en el calendario
                 const res = await api.getSpaceBookings(space.id);
                 calendarEvents.value = res.data.map((b) => ({
                     title: b.nombreCliente,
