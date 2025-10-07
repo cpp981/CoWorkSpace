@@ -1,16 +1,16 @@
 <template>
     <div class="generic-calendar">
-        <FullCalendar :options="calendarOptions" class="calendar" />
+        <FullCalendar ref="calendarRef" :options="calendarOptions" class="calendar" />
     </div>
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref, watch } from "vue";
 import FullCalendar from "@fullcalendar/vue3";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import esLocale from "@fullcalendar/core/locales/es"; // Locale español
+import esLocale from "@fullcalendar/core/locales/es";
 
 const props = defineProps({
     events: {
@@ -28,6 +28,8 @@ const props = defineProps({
 });
 
 const emits = defineEmits(["event-click", "date-click"]);
+
+const calendarRef = ref(null);
 
 const calendarOptions = computed(() => ({
     plugins: [dayGridPlugin, timeGridPlugin, interactionPlugin],
@@ -47,6 +49,11 @@ const calendarOptions = computed(() => ({
         emits("date-click", info.date);
     },
 }));
+
+// Exponer la API para que el padre pueda llamar a updateSize()
+defineExpose({
+    getApi: () => calendarRef.value?.getApi(),
+});
 </script>
 
 <style scoped>
@@ -57,5 +64,7 @@ const calendarOptions = computed(() => ({
 
 .calendar {
     max-width: 100%;
+    min-height: 600px;
+    /* importante para que tenga espacio */
 }
 </style>

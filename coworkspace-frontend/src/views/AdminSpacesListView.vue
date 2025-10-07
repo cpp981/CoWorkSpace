@@ -22,7 +22,7 @@
         <!-- Modal para el calendario -->
         <div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true"
             ref="calendarModalRef">
-            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" id="calendarModalLabel">
@@ -31,7 +31,8 @@
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
-                        <GenericCalendar v-if="selectedSpace" :events="calendarEvents" initial-view="timeGridWeek" />
+                        <GenericCalendar v-if="selectedSpace" ref="calendarComponent" :events="calendarEvents"
+                            initial-view="timeGridWeek" />
                     </div>
                 </div>
             </div>
@@ -40,7 +41,7 @@
 </template>
 
 <script>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, nextTick } from "vue";
 import { useAuthStore } from "../stores/auth";
 import api from "../services/api";
 import AdminSpaceCard from "../components/AdminSpaceCard.vue";
@@ -59,6 +60,7 @@ export default {
         const selectedSpace = ref(null);
         const calendarEvents = ref([]);
         const calendarModalRef = ref(null);
+        const calendarComponent = ref(null);
         let modalInstance = null;
 
         const filteredSpaces = computed(() =>
@@ -69,26 +71,45 @@ export default {
             )
         );
 
+        const getColorForClient = (userId) => {
+            let hash = 0;
+            for (let i = 0; i < userId.toString().length; i++) {
+                hash = userId.toString().charCodeAt(i) + ((hash << 5) - hash);
+            }
+            return `hsl(${hash % 360}, 70%, 50%)`;
+        };
+
         const handleViewCalendar = async (space) => {
             selectedSpace.value = space;
 
             try {
-                // Obtener reservas del espacio y mostrarlas en el calendario
-                const res = await api.getSpaceBookings(space.id);
+                const res = await api.getSpaceBookings(authStore.userId, space.id);
                 calendarEvents.value = res.data.map((b) => ({
                     title: b.nombreCliente,
                     start: b.fechaInicio,
                     end: b.fechaFin,
-                    color: b.color || "#0d6efd",
+                    color: getColorForClient(b.userId),
                 }));
             } catch (err) {
-                notyf.error("Error al cargar las reservas del espacio");
+                const msg = err.response?.data?.message || "Error al cargar las reservas";
+                notyf.error(msg);
                 calendarEvents.value = [];
             }
 
             if (!modalInstance) {
                 modalInstance = new Modal(calendarModalRef.value);
+
+                // Listener nativo Bootstrap, fuerza render de FullCalendar al mostrar
+                calendarModalRef.value.addEventListener("shown.bs.modal", async () => {
+                    await nextTick();
+                    const api = calendarComponent.value?.getApi();
+                    if (api) {
+                        api.render();
+                        api.updateSize();
+                    }
+                });
             }
+
             modalInstance.show();
         };
 
@@ -98,15 +119,12 @@ export default {
                 spaces.value = res.data || [];
             } catch (err) {
                 const errors = err.response?.data?.errors;
-
                 if (errors) {
                     for (const key in errors) {
                         errors[key].forEach((message) => notyf.error(message));
                     }
                 } else {
-                    notyf.error(
-                        err.response?.data?.message || "Error al cargar los espacios"
-                    );
+                    notyf.error(err.response?.data?.message || "Error al cargar los espacios");
                 }
             }
         });
@@ -120,6 +138,7 @@ export default {
             selectedSpace,
             calendarEvents,
             calendarModalRef,
+            calendarComponent,
         };
     },
 };

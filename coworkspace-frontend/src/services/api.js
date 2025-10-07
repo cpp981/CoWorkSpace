@@ -76,5 +76,8 @@ export default {
   getAdminSpaces(adminId){
     return apiClient.get(`/admins/${adminId}/spaces`)
   },
+getSpaceBookings(adminId, spaceId) {
+  return apiClient.get(`/admins/${adminId}/spaces/${spaceId}/bookings`);
+},
   client: apiClient,
 };
