@@ -81,5 +81,50 @@ namespace CoWorkSpace.Api.Controllers
 
             return Ok(result);
         }
+
+        [HttpGet("{adminId}/spaces/{spaceId}/bookings")]
+        [Authorize]
+        public async Task<IActionResult> GetSpaceBookings(int adminId, int spaceId)
+        {
+            // Claims del usuario logueado
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(roleIdClaim, out int roleId)
+                || !int.TryParse(userIdClaim, out int loggedUserId))
+            {
+                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+            }
+
+            if (roleId != 2)
+                return Unauthorized(new { Message = ApiMessages.OnlyAdminsCanAccessSpaces });
+
+            if (loggedUserId != adminId)
+                return Unauthorized(new { Message = ApiMessages.CannotAccessOtherAdminsSpaces });
+
+            // Verificar que el espacio pertenece a este admin
+            var space = await _context.Spaces.FirstOrDefaultAsync(s => s.Id == spaceId && s.AdminId == adminId);
+            if (space == null)
+                return NotFound(new { Message = ApiMessages.NoSpacesFoundForAdmin });
+
+            // Traer reservas + nombre cliente
+            var bookings = await _context.Bookings
+                .Where(b => b.SpaceId == spaceId)
+                .Join(_context.Users,
+                    b => b.UserId,
+                    u => u.Id,
+                    (b, u) => new
+                    {
+                        b.Id,
+                        b.UserId,
+                        NombreCliente = u.Name,
+                        FechaInicio = b.StartTime,
+                        FechaFin = b.EndTime
+                    })
+                .ToListAsync();
+
+            return Ok(bookings);
+        }
     }
 }
