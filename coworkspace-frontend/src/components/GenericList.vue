@@ -24,7 +24,7 @@
             <thead class="table-light">
                 <tr>
                     <th v-for="header in headers" :key="header">{{ header }}</th>
-                    <th v-if="showActions" style="width: 120px;" class="text-end">Acciones</th>
+                    <th v-if="showActions || showManage" style="width: 120px;" class="text-end">Acciones</th>
                 </tr>
             </thead>
             <tbody>
@@ -39,13 +39,26 @@
                     </td>
                 </tr>
                 <tr v-for="item in filteredItems" :key="item[idKey]">
-                    <td v-for="field in fields" :key="field">{{ item[field] }}</td>
+                    <template v-for="field in fields" :key="field">
+                        <!-- Si el nombre del campo termina en "Html" renderizamos HTML (v-html) -->
+                        <td v-if="field.endsWith('Html')" v-html="item[field]"></td>
+
+                        <!-- Si no, mostramos el valor normal  -->
+                        <td v-else>{{ item[field] }}</td>
+                    </template>
+                    <!-- Botones de editar y borrar -->
                     <td v-if="showActions" class="text-end">
                         <button class="btn btn-sm btn-warning me-2" @click="$emit('edit', item)">
                             <i class="bi bi-pencil"></i>
                         </button>
                         <button class="btn btn-sm btn-danger" @click="$emit('delete', item)">
                             <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                    <!-- Botón de gestionar -->
+                    <td v-if="showManage" class="text-end">
+                        <button class="btn btn-sm btn-primary me-2" @click="$emit('manage', item)">
+                            <i class="bi bi-gear"></i>
                         </button>
                     </td>
                 </tr>
@@ -71,15 +84,17 @@ export default {
         loading: { type: Boolean, default: false },
         showAddButton: { type: Boolean, default: true },
         showActions: { type: Boolean, default: true },
+        showManage: { type: Boolean, default: true }
     },
     setup(props) {
         const search = ref("");
 
         const filteredItems = computed(() => {
             if (!search.value) return props.items;
+            const q = search.value.toLowerCase();
             return props.items.filter((item) =>
                 Object.values(item).some((val) =>
-                    String(val).toLowerCase().includes(search.value.toLowerCase())
+                    String(val).toLowerCase().includes(q)
                 )
             );
         });
