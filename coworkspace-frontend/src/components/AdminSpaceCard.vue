@@ -25,6 +25,9 @@
                 <button class="btn btn-sm btn-outline-primary" @click="$emit('view-calendar', space)">
                     <i class="bi bi-calendar-range"></i> Ver Calendario
                 </button>
+                <button class="btn btn-sm btn-outline-dark" @click="$emit('view-management', space)">
+                    <i class="bi bi-gear"></i> Gestionar Reservas
+                </button>
             </div>
         </div>
     </div>

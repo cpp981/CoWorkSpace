@@ -126,5 +126,57 @@ namespace CoWorkSpace.Api.Controllers
 
             return Ok(bookings);
         }
+
+        [HttpGet("{adminId}/clients")]
+        [Authorize]
+        public async Task<IActionResult> GetClientsForAdmin(int adminId)
+        {
+            // Obtener claims del usuario autenticado
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(roleIdClaim, out int roleId)
+                || !int.TryParse(userIdClaim, out int loggedUserId))
+            {
+                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+            }
+
+            // Solo Admins (rol 2) pueden usar este endpoint
+            if (roleId != 2)
+                return Unauthorized(new { Message = ApiMessages.OnlyAdminsCanAccessSpaces });
+
+            // El admin solo puede consultar sus propios clientes
+            if (loggedUserId != adminId)
+                return Unauthorized(new { Message = ApiMessages.CannotAccessOtherAdminsClients });
+
+            // Consulta: unir Bookings -> Spaces -> Users filtrando por espacios del admin
+            var query = from b in _context.Bookings
+                        join s in _context.Spaces on b.SpaceId equals s.Id
+                        join u in _context.Users on b.UserId equals u.Id
+                        where s.AdminId == adminId
+                        select new
+                        {
+                            ClientId = u.Id,
+                            ClientName = u.Name,
+                            SpaceName = s.Name
+                        };
+
+            var grouped = await query
+                .AsNoTracking()
+                .GroupBy(x => new { x.ClientId, x.ClientName })
+                .Select(g => new ClientWithSpacesDTO
+                {
+                    ClientId = g.Key.ClientId,
+                    ClientName = g.Key.ClientName,
+                    SpaceNames = g.Select(x => x.SpaceName).Distinct().ToList()
+                })
+                .ToListAsync();
+
+            if (!grouped.Any())
+                return NotFound(new { Message = ApiMessages.NoClientsFoundForAdmin });
+
+            return Ok(grouped);
+        }
     }
 }

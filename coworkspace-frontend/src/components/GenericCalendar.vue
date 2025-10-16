@@ -19,12 +19,12 @@ const props = defineProps({
     },
     initialView: {
         type: String,
-        default: "timeGridWeek",
+        default: "dayGridMonth",
     },
     editable: {
         type: Boolean,
         default: false,
-    },
+    }
 });
 
 const emits = defineEmits(["event-click", "date-click"]);
@@ -37,6 +37,7 @@ const calendarOptions = computed(() => ({
     events: props.events,
     editable: props.editable,
     locale: esLocale,
+    NowIndicator: true,
     headerToolbar: {
         left: "prev,next today",
         center: "title",
@@ -55,16 +56,3 @@ defineExpose({
     getApi: () => calendarRef.value?.getApi(),
 });
 </script>
-
-<style scoped>
-.generic-calendar {
-    width: 100%;
-    overflow-x: auto;
-}
-
-.calendar {
-    max-width: 100%;
-    min-height: 600px;
-    /* importante para que tenga espacio */
-}
-</style>

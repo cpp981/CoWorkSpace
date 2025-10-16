@@ -37,6 +37,9 @@
 
       <!-- Vista Spaces -->
       <AdminSpacesListView v-else-if="currentView === 'spaces'" />
+
+      <!-- Vista Clientes -->
+      <AdminClientsList v-else-if="currentView === 'clientsList'" />
     </div>
   </div>
 </template>
@@ -46,6 +49,7 @@ import { ref, computed, onMounted } from 'vue';
 import Dashboard from '../components/Dashboard.vue';
 import GenericMenu from '../components/GenericMenu.vue';
 import AdminSpacesListView from './AdminSpacesListView.vue';
+import AdminClientsList from './AdminClientsList.vue';
 import api from '../services/api';
 import { useAuthStore } from '../stores/auth';
 
@@ -98,7 +102,12 @@ const tableData = computed(() =>
 function handleMenuClick(button) {
   if (button.action === "showSpaces") {
     currentView.value = "spaces";
-  } else {
+  }
+  else if (button.action === "showClients") {
+    console.log("Botón Clientes pulsado:", button);
+    currentView.value = "clientsList";
+  }
+  else {
     currentView.value = "dashboard";
   }
 }

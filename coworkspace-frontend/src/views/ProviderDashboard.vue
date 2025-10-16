@@ -132,7 +132,7 @@ function handleMenuClick(button) {
     currentView.value = "spaces";
   }
   else if (button.action === "showAdmins") {
-    console.log("Botón Administradores pulsado:", button);
+    //console.log("Botón Administradores pulsado:", button);
     currentView.value = "adminsList";
   }
   else if (button.action === "showDashboard") {

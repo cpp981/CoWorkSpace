@@ -76,6 +76,17 @@ button:focus-visible {
     display: inline-block;
 }
 
+.generic-calendar {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.calendar {
+    max-width: 100%;
+    min-height: 600px;
+    /* importante para que tenga espacio */
+}
+
 /* Media Queries */
 @media (prefers-color-scheme: light) {
   html, body, #app {
