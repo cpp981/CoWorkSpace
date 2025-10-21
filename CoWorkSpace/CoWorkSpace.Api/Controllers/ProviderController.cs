@@ -29,15 +29,15 @@ namespace CoWorkSpace.Api.Controllers
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim))
-                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+                return Unauthorized(new { Message = ApiMessages.UNAUTHORIZED });
 
             if (!int.TryParse(roleIdClaim, out int roleId) || !int.TryParse(userIdClaim, out int loggedUserId))
-                return Unauthorized(new { Message = ApiMessages.InvalidUser });
+                return Unauthorized(new { Message = ApiMessages.INVALID_USER });
 
             // Solo Providers (rol 3) pueden acceder
             if (roleId != 3)
                 return StatusCode(StatusCodes.Status403Forbidden,
-                    new { Message = ApiMessages.OnlyProvidersCanViewAdmins });
+                    new { Message = ApiMessages.ONLY_PROVIDERS_CAN_VIEW_ADMINS });
 
             // Obtener admins que pertenezcan al provider autenticado
             var admins = await _context.Users
@@ -51,7 +51,7 @@ namespace CoWorkSpace.Api.Controllers
                 .ToListAsync();
 
             if (!admins.Any())
-                return NotFound(new { Message = ApiMessages.NoAdminsFound });
+                return NotFound(new { Message = ApiMessages.NO_ADMINS_FOUND });
 
             return Ok(admins);
         }
@@ -65,7 +65,7 @@ namespace CoWorkSpace.Api.Controllers
             {
                 return BadRequest(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.PasswordTooShort
+                    Message = ApiMessages.PASSWORD_TOO_SHORT
                 });
             }
 
@@ -74,7 +74,7 @@ namespace CoWorkSpace.Api.Controllers
             {
                 return BadRequest(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.InvalidData
+                    Message = ApiMessages.INVALID_DATA
                 });
             }
 
@@ -85,34 +85,34 @@ namespace CoWorkSpace.Api.Controllers
             if (roleIdClaim == null || userIdClaim == null || !int.TryParse(roleIdClaim, out int roleId))
                 return Unauthorized(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.Unauthorized
+                    Message = ApiMessages.UNAUTHORIZED
                 });
 
             if (!int.TryParse(userIdClaim, out int userId))
                 return Unauthorized(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.InvalidUser
+                    Message = ApiMessages.INVALID_USER
                 });
 
             // Solo Providers (rol 3) pueden usar este endpoint
             if (roleId != 3)
                 return Unauthorized(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.OnlyProvidersCanCreateAdmins
+                    Message = ApiMessages.ONLY_PROVIDERS_CAN_CREATE_ADMINS
                 });
 
             // Solo puede crear admins para su propio providerId
             if (userId != providerId)
                 return Unauthorized(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.CannotCreateAdminsForOtherProviders
+                    Message = ApiMessages.CANNOT_CREATE_ADMINS_FOR_OTHER_PROVIDERS
                 });
 
             // Validar que se está creando un admin (roleId = 2)
             if (request.RoleId != 2)
                 return BadRequest(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.OnlyAdminRoleAllowed
+                    Message = ApiMessages.ONLY_ADMIN_ROLE_ALLOWED
                 });
 
             // Verificar si el email ya existe
@@ -120,7 +120,7 @@ namespace CoWorkSpace.Api.Controllers
             if (exists)
                 return BadRequest(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.EmailAlreadyRegistered
+                    Message = ApiMessages.EMAIL_ALREADY_REGISTERED
                 });
 
             // Crear nuevo usuario admin
@@ -143,7 +143,7 @@ namespace CoWorkSpace.Api.Controllers
                 Name = adminUser.Name,
                 RoleId = adminUser.RoleId,
                 ProviderId = adminUser.ProviderId,
-                Message = ApiMessages.AdminCreatedSuccessfully
+                Message = ApiMessages.ADMIN_CREATED_SUCCESS
             });
         }
 
@@ -161,7 +161,7 @@ namespace CoWorkSpace.Api.Controllers
             {
                 return Unauthorized(new UpdateAdminResponseDTO
                 {
-                    Message = ApiMessages.Unauthorized
+                    Message = ApiMessages.UNAUTHORIZED
                 });
             }
 
@@ -169,14 +169,14 @@ namespace CoWorkSpace.Api.Controllers
             if (roleId != 3)
                 return Unauthorized(new UpdateAdminResponseDTO
                 {
-                    Message = ApiMessages.OnlyProvidersCanEditAdmins
+                    Message = ApiMessages.ONLY_PROVIDERS_CAN_EDIT_ADMINS
                 });
 
             // El provider solo puede editar sus propios admins
             if (loggedUserId != providerId)
                 return Unauthorized(new UpdateAdminResponseDTO
                 {
-                    Message = ApiMessages.CannotEditAdminsForOtherProviders
+                    Message = ApiMessages.CANNOT_EDIT_ADMINS_FOR_OTHER_PROVIDERS
                 });
 
             // Buscar el admin a editar
@@ -186,7 +186,7 @@ namespace CoWorkSpace.Api.Controllers
             if (adminUser == null)
                 return NotFound(new UpdateAdminResponseDTO
                 {
-                    Message = ApiMessages.AdminNotFound
+                    Message = ApiMessages.ADMIN_NOT_FOUND
                 });
 
             // Validar si se cambia el email
@@ -197,7 +197,7 @@ namespace CoWorkSpace.Api.Controllers
                 {
                     return BadRequest(new UpdateAdminResponseDTO
                     {
-                        Message = ApiMessages.EmailAlreadyRegistered
+                        Message = ApiMessages.EMAIL_ALREADY_REGISTERED
                     });
                 }
 
@@ -214,7 +214,7 @@ namespace CoWorkSpace.Api.Controllers
                 {
                     return BadRequest(new UpdateAdminResponseDTO
                     {
-                        Message = ApiMessages.PasswordTooShort
+                        Message = ApiMessages.PASSWORD_TOO_SHORT
                     });
                 }
 
@@ -230,7 +230,7 @@ namespace CoWorkSpace.Api.Controllers
                 Email = adminUser.Email,
                 ProviderId = (int)adminUser.ProviderId,
                 RoleId = adminUser.RoleId,
-                Message = ApiMessages.AdminUpdatedSuccessfully
+                Message = ApiMessages.ADMIN_UPDATED_SUCCESS
             });
         }
 
@@ -245,20 +245,20 @@ namespace CoWorkSpace.Api.Controllers
                 || !int.TryParse(roleIdClaim, out int roleId)
                 || !int.TryParse(userIdClaim, out int loggedUserId))
             {
-                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+                return Unauthorized(new { Message = ApiMessages.UNAUTHORIZED });
             }
 
             if (roleId != 3)
                 return Forbid();
 
             if (loggedUserId != providerId)
-                return Unauthorized(new { Message = ApiMessages.CannotDeleteAdminsForOtherProviders });
+                return Unauthorized(new { Message = ApiMessages.CANNOT_DELETE_ADMINS_FOR_OTHER_PROVIDERS });
 
             var adminUser = await _context.Users
                 .FirstOrDefaultAsync(u => u.Id == adminId && u.ProviderId == providerId && u.RoleId == 2);
 
             if (adminUser == null)
-                return NotFound(new { Message = ApiMessages.AdminNotFound });
+                return NotFound(new { Message = ApiMessages.ADMIN_NOT_FOUND });
 
             _context.Users.Remove(adminUser);
             await _context.SaveChangesAsync();
@@ -268,7 +268,7 @@ namespace CoWorkSpace.Api.Controllers
                 Id = adminUser.Id,
                 Name = adminUser.Name,
                 Email = adminUser.Email,
-                Message = ApiMessages.AdminDeletedSuccessfully
+                Message = ApiMessages.ADMIN_DELETED_SUCCESS
             };
 
             return Ok(response);

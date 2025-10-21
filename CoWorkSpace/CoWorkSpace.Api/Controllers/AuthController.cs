@@ -25,14 +25,14 @@ namespace CoWorkSpace.Api.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.InvalidData
+                    Message = ApiMessages.INVALID_DATA
                 });
 
             // Permitir solo roles 3 y 4 para registrar
             if (request.RoleId != 3 && request.RoleId != 4)
                 return BadRequest(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.RoleNotAllowedOnlyCanRegisterProviderOrClient
+                    Message = ApiMessages.ROLE_NOT_ALLOWED_ONLY_CAN_REGISTER_PROVIDER_OR_CLIENT
                 });
 
             // Verificar si el RoleId solicitado existe
@@ -40,7 +40,7 @@ namespace CoWorkSpace.Api.Controllers
             if (roleEntity == null)
                 return BadRequest(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.InvalidRoleOrRoleIdNotFound
+                    Message = ApiMessages.INVALID_ROLE_OR_ROLEID_NOT_FOUND
                 });
 
             // Verificar si el email ya existe
@@ -48,7 +48,7 @@ namespace CoWorkSpace.Api.Controllers
             if (existingUser)
                 return BadRequest(new RegisterResponseDTO
                 {
-                    Message = ApiMessages.EmailAlreadyRegistered
+                    Message = ApiMessages.EMAIL_ALREADY_REGISTERED
                 });
 
             // Crear el usuario
@@ -71,7 +71,7 @@ namespace CoWorkSpace.Api.Controllers
                 Name = user.Name,
                 RoleId = user.RoleId,
                 ProviderId = user.ProviderId,
-                Message = ApiMessages.UserRegisteredSuccessfully
+                Message = ApiMessages.USER_REGISTERED_SUCCESS
             });
         }
     }

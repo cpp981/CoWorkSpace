@@ -97,7 +97,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
             var response = Assert.IsType<LoginResponseDto>(unauthorizedResult.Value);
-            Assert.Equal(ApiMessages.InvalidCredentials, response.Message);
+            Assert.Equal(ApiMessages.INVALID_CREDENTIALS, response.Message);
         }
 
         [Fact]
@@ -120,7 +120,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
             var response = Assert.IsType<LoginResponseDto>(unauthorizedResult.Value);
-            Assert.Equal(ApiMessages.InvalidCredentials, response.Message);
+            Assert.Equal(ApiMessages.INVALID_CREDENTIALS, response.Message);
         }
 
         [Fact]
@@ -142,8 +142,8 @@ namespace CoWorkSpace.Tests
             var responseNull = Assert.IsType<LoginResponseDto>(badRequestNull.Value);
             var responseEmpty = Assert.IsType<LoginResponseDto>(badRequestEmpty.Value);
 
-            Assert.Equal(ApiMessages.MailAndPasswordAreRequired, responseNull.Message);
-            Assert.Equal(ApiMessages.MailAndPasswordAreRequired, responseEmpty.Message);
+            Assert.Equal(ApiMessages.MAIL_AND_PASSWORD_ARE_REQUIRED, responseNull.Message);
+            Assert.Equal(ApiMessages.MAIL_AND_PASSWORD_ARE_REQUIRED, responseEmpty.Message);
         }
     }
 }

@@ -51,7 +51,7 @@ namespace CoWorkSpace.Api.Controllers
                 .ToListAsync();
 
             if (spaces.Count == 0)
-                return NotFound(string.Format(ApiMessages.NoSpacesForProvider, providerId));
+                return NotFound(string.Format(ApiMessages.NO_SPACES_FOR_PROVIDER, providerId));
 
             return Ok(spaces);
         }
@@ -67,7 +67,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(403, new
                 {
                     success = false,
-                    message = ApiMessages.NoPermissionUpdateSpace
+                    message = ApiMessages.NO_PERMISSION_UPDATE_SPACE
                 });
             }
 
@@ -76,7 +76,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(403, new
                 {
                     success = false,
-                    message = ApiMessages.NoPermissionUpdateOtherProvider
+                    message = ApiMessages.NO_PERMISSION_UPDATE_OTHER_PROVIDER
                 });
             }
 
@@ -85,7 +85,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(403, new
                 {
                     success = false,
-                    message = ApiMessages.InvalidData
+                    message = ApiMessages.INVALID_DATA
                 });
             }
 
@@ -95,7 +95,7 @@ namespace CoWorkSpace.Api.Controllers
                     .FirstOrDefaultAsync(s => s.Id == id && s.ProviderId == providerId && !s.IsDeleted);
 
                 if (space == null)
-                    return NotFound(new { success = false, message = ApiMessages.SpaceNotFound });
+                    return NotFound(new { success = false, message = ApiMessages.SPACE_NOT_FOUND });
 
                 space.Name = dto.Name;
                 space.AdminId = dto.AdminId;
@@ -108,7 +108,7 @@ namespace CoWorkSpace.Api.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = ApiMessages.SpaceUpdatedSuccess,
+                    message = ApiMessages.SPACE_UPDATED_SUCCESS,
                     id = space.Id
                 });
             }
@@ -117,7 +117,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ApiMessages.SpaceUpdatedError
+                    message = ApiMessages.SPACE_UPDATED_ERROR
                 });
             }
         }
@@ -134,7 +134,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(403, new
                 {
                     success = false,
-                    message = ApiMessages.NoPermissionDeleteSpace
+                    message = ApiMessages.NO_PERMISSION_DELETE_SPACE
                 });
             }
             if(userId != providerId)
@@ -142,7 +142,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(403, new
                 {
                     success = false,
-                    message = ApiMessages.NoPermissionDeleteOtherProviderSpaces
+                    message = ApiMessages.NO_PERMISSION_DELETE_OTHER_PROVIDER_SPACES
                 });
                   
             }
@@ -158,7 +158,7 @@ namespace CoWorkSpace.Api.Controllers
                     return NotFound(new
                     {
                         success = false,
-                        message = ApiMessages.SpaceNotFound
+                        message = ApiMessages.SPACE_NOT_FOUND
                     });
                 }
 
@@ -171,7 +171,7 @@ namespace CoWorkSpace.Api.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = ApiMessages.SpaceDeletedSuccess
+                    message = ApiMessages.SPACE_DELETED_SUCCESS
                 });
             }
             catch (Exception)
@@ -179,7 +179,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ApiMessages.SpaceDeletedError
+                    message = ApiMessages.SPACE_DELETED_ERROR
                 });
             }
         }
@@ -195,7 +195,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(403, new
                 {
                     success = false,
-                    message = ApiMessages.InvalidData
+                    message = ApiMessages.INVALID_DATA
                 });
             }
             if (userId != providerId)
@@ -203,7 +203,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(403, new
                 {
                     success = false,
-                    message = ApiMessages.NoPermissionOtherProvider
+                    message = ApiMessages.NO_PERMISSION_OTHER_PROVIDER
                 });
             }
 
@@ -212,7 +212,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(403, new
                 {
                     success = false,
-                    message = ApiMessages.InvalidData
+                    message = ApiMessages.INVALID_DATA
                 });
             }
 
@@ -235,7 +235,7 @@ namespace CoWorkSpace.Api.Controllers
                 return Ok(new
                 {
                     success = true,
-                    message = ApiMessages.SpaceCreatedSuccess,
+                    message = ApiMessages.SPACE_CREATED_SUCCESS,
                     spaceId = newSpace.Id
                 });
             }
@@ -244,7 +244,7 @@ namespace CoWorkSpace.Api.Controllers
                 return StatusCode(500, new
                 {
                     success = false,
-                    message = ApiMessages.SpaceCreatedError
+                    message = ApiMessages.SPACE_CREATED_ERROR
                 });
             }
         }

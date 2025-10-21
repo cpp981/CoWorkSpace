@@ -32,7 +32,7 @@ namespace CoWorkSpace.Api.Controllers
 
             // Solo providers (roleId = 3)
             if (roleId != 3)
-                return Unauthorized(new {Message = ApiMessages.Unauthorized});
+                return Unauthorized(new {Message = ApiMessages.UNAUTHORIZED});
 
             // Comprobamos que el espacio pertenece al provider logueado
             var space = await _context.Spaces
@@ -40,7 +40,7 @@ namespace CoWorkSpace.Api.Controllers
                 .FirstOrDefaultAsync(s => s.Id == spaceId && s.ProviderId == providerId);
 
             if (space == null)
-                return Unauthorized(new { Message = ApiMessages.NoSpacesForProvider });
+                return Unauthorized(new { Message = ApiMessages.NO_SPACES_FOR_PROVIDER });
 
             // Traemos las reservas con nombre de usuario y espacio
             var bookings = await _context.Bookings

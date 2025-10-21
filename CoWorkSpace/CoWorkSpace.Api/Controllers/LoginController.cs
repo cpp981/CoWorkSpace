@@ -29,7 +29,7 @@ namespace CoWorkSpace.Api.Controllers
             if (loginDto == null || string.IsNullOrEmpty(loginDto.Email) || string.IsNullOrEmpty(loginDto.Password))
                 return BadRequest(new LoginResponseDto
                 {
-                    Message = ApiMessages.MailAndPasswordAreRequired
+                    Message = ApiMessages.MAIL_AND_PASSWORD_ARE_REQUIRED
                 });
 
             // Incluyo el Role para poder acceder a su nombre
@@ -41,7 +41,7 @@ namespace CoWorkSpace.Api.Controllers
             if (user == null)
                 return Unauthorized(new LoginResponseDto
                 {
-                    Message = ApiMessages.InvalidCredentials
+                    Message = ApiMessages.INVALID_CREDENTIALS
                 });
 
             // Validar contraseña con BCrypt
@@ -49,7 +49,7 @@ namespace CoWorkSpace.Api.Controllers
             if (!isPasswordValid)
                 return Unauthorized(new LoginResponseDto
                 {
-                    Message = ApiMessages.InvalidCredentials
+                    Message = ApiMessages.INVALID_CREDENTIALS
                 });
 
             // Uso el nombre del rol en el claim
@@ -84,7 +84,7 @@ namespace CoWorkSpace.Api.Controllers
             {
                 Token = tokenString,
                 Expiration = expiration,
-                Message = ApiMessages.LoginSuccessfully
+                Message = ApiMessages.LOGIN_SUCCESS
             };
 
             return Ok(response);
