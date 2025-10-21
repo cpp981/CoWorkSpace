@@ -40,7 +40,7 @@ defineProps({
         required: true
     }
 });
-defineEmits(["view-calendar"]);
+defineEmits(["view-calendar", "view-management"]);
 
 // Función para formatear la fecha
 const formatDate = (dateStr) => {

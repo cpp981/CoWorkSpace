@@ -1,42 +1,51 @@
 <template>
     <div class="container py-4">
-        <h1 class="my-4 text-primary">Espacios de {{ authStore.userName }}</h1>
+        <!-- VISTA LISTADO (cards) -->
+        <div v-if="view === 'list'">
+            <h1 class="my-4 text-primary">Espacios de {{ authStore.userName }}</h1>
 
-        <div v-if="spaces.length" class="row g-3">
-            <!-- Barra de búsqueda -->
-            <div class="input-group mb-3">
-                <span class="input-group-text bg-white border-end-0 border-secondary">
-                    <i class="bi bi-search text-muted"></i>
-                </span>
-                <input v-model="search" type="text" class="form-control border-start-0 border-secondary"
-                    placeholder="Buscar por nombre o ciudad..." />
+            <div v-if="spaces.length" class="row g-3">
+                <div class="input-group mb-3">
+                    <span class="input-group-text bg-white border-end-0 border-secondary">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input v-model="search" type="text" class="form-control border-start-0 border-secondary"
+                        placeholder="Buscar por nombre o ciudad..." />
+                </div>
+
+                <div class="col-md-4" v-for="space in filteredSpaces" :key="space.id">
+                    <AdminSpaceCard :space="space" @view-calendar="handleViewCalendar"
+                        @view-management="handleViewManagement" />
+                </div>
             </div>
 
-            <div class="col-md-4" v-for="space in filteredSpaces" :key="space.id">
-                <AdminSpaceCard :space="space" @view-calendar="handleViewCalendar" />
-            </div>
+            <p v-else class="text-muted">No tienes espacios registrados.</p>
         </div>
 
-        <p v-else class="text-muted">No tienes espacios registrados.</p>
+        <!-- VISTA GESTIÓN (oculta el listado) -->
+        <div v-else-if="view === 'management'">
+            <AdminBookingManagement :space="selectedSpace" @back="goBack" />
+        </div>
 
-        <!-- Modal para el calendario -->
-        <div class="modal fade" id="calendarModal" tabindex="-1" aria-labelledby="calendarModalLabel" aria-hidden="true"
-            ref="calendarModalRef">
+        <!-- Modal del calendario (markup siempre presente, lo mostramos vía Bootstrap Modal) -->
+        <div class="modal fade" id="calendarModal" tabindex="-1" aria-hidden="true" ref="calendarModalRef">
             <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title text-primary fs-2" id="calendarModalLabel">
+                        <h5 class="modal-title text-primary fs-2">
                             Reservas en {{ selectedSpace?.nombre }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
+                        <!-- GenericCalendar se renderiza dentro del modal -->
                         <GenericCalendar v-if="selectedSpace" ref="calendarComponent" :events="calendarEvents"
                             initial-view="dayGridMonth" />
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
 </template>
 
@@ -46,11 +55,12 @@ import { useAuthStore } from "../stores/auth";
 import api from "../services/api";
 import AdminSpaceCard from "../components/AdminSpaceCard.vue";
 import GenericCalendar from "../components/GenericCalendar.vue";
+import AdminBookingManagement from "./AdminBookingManagement.vue";
 import { useNotyf } from "../composables/useNotyf";
 import { Modal } from "bootstrap";
 
 export default {
-    components: { AdminSpaceCard, GenericCalendar },
+    components: { AdminSpaceCard, GenericCalendar, AdminBookingManagement },
     setup() {
         const authStore = useAuthStore();
         const spaces = ref([]);
@@ -59,15 +69,16 @@ export default {
 
         const selectedSpace = ref(null);
         const calendarEvents = ref([]);
+        const view = ref("list"); // 'list' | 'management' (el calendario usa modal, no una vista propia)
+
         const calendarModalRef = ref(null);
         const calendarComponent = ref(null);
         let modalInstance = null;
 
         const filteredSpaces = computed(() =>
-            spaces.value.filter(
-                (space) =>
-                    space.nombre.toLowerCase().includes(search.value.toLowerCase()) ||
-                    space.ciudad.toLowerCase().includes(search.value.toLowerCase())
+            spaces.value.filter((space) =>
+                space.nombre.toLowerCase().includes(search.value.toLowerCase()) ||
+                space.ciudad.toLowerCase().includes(search.value.toLowerCase())
             )
         );
 
@@ -91,26 +102,51 @@ export default {
                     color: getColorForClient(b.userId),
                 }));
             } catch (err) {
-                const msg = err.response?.data?.message || "Error al cargar las reservas";
-                notyf.error(msg);
+                notyf.error(err.response?.data?.message || "Error al cargar las reservas");
                 calendarEvents.value = [];
             }
 
+            // ocultar la lista mientras el modal está abierto
+            view.value = 'modal-calendar';
+
+            // crear instancia Modal la primera vez y listeners
             if (!modalInstance) {
                 modalInstance = new Modal(calendarModalRef.value);
 
-                // Listener nativo Bootstrap, fuerza render de FullCalendar al mostrar
+                // Al mostrarse el modal, forzamos render/update del calendario (FullCalendar)
                 calendarModalRef.value.addEventListener("shown.bs.modal", async () => {
                     await nextTick();
-                    const api = calendarComponent.value?.getApi();
-                    if (api) {
-                        api.render();
-                        api.updateSize();
+                    const apiCal = calendarComponent.value?.getApi?.();
+                    if (apiCal) {
+                        apiCal.render();
+                        apiCal.updateSize?.();
                     }
+                });
+
+                // Al cerrarse el modal, volvemos a la vista lista
+                calendarModalRef.value.addEventListener("hidden.bs.modal", () => {
+                    // restaurar vista a list y limpiar selección si deseas
+                    view.value = 'list';
+                    selectedSpace.value = null;
+                    calendarEvents.value = [];
                 });
             }
 
+            // mostrar el modal
             modalInstance.show();
+        };
+
+        const handleViewManagement = (space) => {
+            selectedSpace.value = space;
+            // mostramos gestión y ocultamos la lista
+            view.value = "management";
+        };
+
+        const goBack = () => {
+            // si venimos de gestión, volvemos a la lista
+            selectedSpace.value = null;
+            calendarEvents.value = [];
+            view.value = "list";
         };
 
         onMounted(async () => {
@@ -118,14 +154,7 @@ export default {
                 const res = await api.getAdminSpaces(authStore.userId);
                 spaces.value = res.data || [];
             } catch (err) {
-                const errors = err.response?.data?.errors;
-                if (errors) {
-                    for (const key in errors) {
-                        errors[key].forEach((message) => notyf.error(message));
-                    }
-                } else {
-                    notyf.error(err.response?.data?.message || "Error al cargar los espacios");
-                }
+                notyf.error(err.response?.data?.message || "Error al cargar los espacios");
             }
         });
 
@@ -135,8 +164,11 @@ export default {
             search,
             filteredSpaces,
             handleViewCalendar,
+            handleViewManagement,
             selectedSpace,
             calendarEvents,
+            view,
+            goBack,
             calendarModalRef,
             calendarComponent,
         };

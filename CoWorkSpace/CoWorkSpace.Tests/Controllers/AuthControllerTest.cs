@@ -60,7 +60,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var response = Assert.IsType<RegisterResponseDTO>(badRequest.Value);
-            Assert.Equal(ApiMessages.EmailAlreadyRegistered, response.Message);
+            Assert.Equal(ApiMessages.EMAIL_ALREADY_REGISTERED, response.Message);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var response = Assert.IsType<RegisterResponseDTO>(badRequest.Value);
-            Assert.Equal(ApiMessages.RoleNotAllowedOnlyCanRegisterProviderOrClient, response.Message);
+            Assert.Equal(ApiMessages.ROLE_NOT_ALLOWED_ONLY_CAN_REGISTER_PROVIDER_OR_CLIENT, response.Message);
         }
 
         [Fact]
@@ -114,7 +114,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var response = Assert.IsType<RegisterResponseDTO>(badRequest.Value);
-            Assert.Equal(ApiMessages.InvalidRoleOrRoleIdNotFound, response.Message);
+            Assert.Equal(ApiMessages.INVALID_ROLE_OR_ROLEID_NOT_FOUND, response.Message);
         }
 
         [Fact]
@@ -138,7 +138,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<RegisterResponseDTO>(okResult.Value);
-            Assert.Equal(ApiMessages.UserRegisteredSuccessfully, response.Message);
+            Assert.Equal(ApiMessages.USER_REGISTERED_SUCCESS, response.Message);
             Assert.Equal(dto.Email, response.Email);
             Assert.Equal(dto.Name, response.Name);
             Assert.Equal(dto.RoleId, response.RoleId);

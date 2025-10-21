@@ -32,16 +32,16 @@ namespace CoWorkSpace.Api.Controllers
                 || !int.TryParse(roleIdClaim, out int roleId)
                 || !int.TryParse(userIdClaim, out int loggedUserId))
             {
-                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+                return Unauthorized(new { Message = ApiMessages.UNAUTHORIZED });
             }
 
             // Solo Admins (rol 2) pueden usar este endpoint
             if (roleId != 2)
-                return Unauthorized(new { Message = ApiMessages.OnlyAdminsCanAccessSpaces });
+                return Unauthorized(new { Message = ApiMessages.ONLY_ADMINS_CAN_ACCESS_SPACES });
 
             // El admin solo puede ver sus propios espacios
             if (loggedUserId != adminId)
-                return Unauthorized(new { Message = ApiMessages.CannotAccessOtherAdminsSpaces });
+                return Unauthorized(new { Message = ApiMessages.CANNOT_ACCESS_OTHER_ADMIN_SPACE });
 
             // Traer todos los espacios del admin primero
             var spaces = await _context.Spaces
@@ -50,7 +50,7 @@ namespace CoWorkSpace.Api.Controllers
 
             if (!spaces.Any())
             {
-                return NotFound(new { Message = ApiMessages.NoSpacesFoundForAdmin });
+                return NotFound(new { Message = ApiMessages.NO_SPACES_FOUND_FOR_ADMIN });
             }
 
             // Proyectar manualmente para poder incluir la siguiente reserva correctamente
@@ -94,19 +94,19 @@ namespace CoWorkSpace.Api.Controllers
                 || !int.TryParse(roleIdClaim, out int roleId)
                 || !int.TryParse(userIdClaim, out int loggedUserId))
             {
-                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+                return Unauthorized(new { Message = ApiMessages.UNAUTHORIZED });
             }
 
             if (roleId != 2)
-                return Unauthorized(new { Message = ApiMessages.OnlyAdminsCanAccessSpaces });
+                return Unauthorized(new { Message = ApiMessages.ONLY_ADMINS_CAN_ACCESS_SPACES });
 
             if (loggedUserId != adminId)
-                return Unauthorized(new { Message = ApiMessages.CannotAccessOtherAdminsSpaces });
+                return Unauthorized(new { Message = ApiMessages.CANNOT_ACCESS_OTHER_ADMIN_SPACE });
 
             // Verificar que el espacio pertenece a este admin
             var space = await _context.Spaces.FirstOrDefaultAsync(s => s.Id == spaceId && s.AdminId == adminId);
             if (space == null)
-                return NotFound(new { Message = ApiMessages.NoSpacesFoundForAdmin });
+                return NotFound(new { Message = ApiMessages.NO_SPACES_FOUND_FOR_ADMIN });
 
             // Traer reservas + nombre cliente
             var bookings = await _context.Bookings
@@ -139,16 +139,16 @@ namespace CoWorkSpace.Api.Controllers
                 || !int.TryParse(roleIdClaim, out int roleId)
                 || !int.TryParse(userIdClaim, out int loggedUserId))
             {
-                return Unauthorized(new { Message = ApiMessages.Unauthorized });
+                return Unauthorized(new { Message = ApiMessages.UNAUTHORIZED });
             }
 
             // Solo Admins (rol 2) pueden usar este endpoint
             if (roleId != 2)
-                return Unauthorized(new { Message = ApiMessages.OnlyAdminsCanAccessSpaces });
+                return Unauthorized(new { Message = ApiMessages.ONLY_ADMINS_CAN_ACCESS_SPACES });
 
             // El admin solo puede consultar sus propios clientes
             if (loggedUserId != adminId)
-                return Unauthorized(new { Message = ApiMessages.CannotAccessOtherAdminsClients });
+                return Unauthorized(new { Message = ApiMessages.CANNOT_ACCESS_OTHER_ADMINS_CLIENTS });
 
             // Consulta: unir Bookings -> Spaces -> Users filtrando por espacios del admin
             var query = from b in _context.Bookings
@@ -174,7 +174,7 @@ namespace CoWorkSpace.Api.Controllers
                 .ToListAsync();
 
             if (!grouped.Any())
-                return NotFound(new { Message = ApiMessages.NoClientsFoundForAdmin });
+                return NotFound(new { Message = ApiMessages.NO_CLIENTS_FOUND_FOR_ADMIN });
 
             return Ok(grouped);
         }

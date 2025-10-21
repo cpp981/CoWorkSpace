@@ -78,7 +78,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var okResult = Assert.IsType<OkObjectResult>(result);
             var response = Assert.IsType<RegisterResponseDTO>(okResult.Value);
-            Assert.Equal(ApiMessages.AdminCreatedSuccessfully, response.Message);
+            Assert.Equal(ApiMessages.ADMIN_CREATED_SUCCESS, response.Message);
             Assert.Equal(dto.Email, response.Email);
             Assert.Equal(dto.Name, response.Name);
             Assert.Equal(dto.RoleId, response.RoleId);
@@ -112,7 +112,7 @@ namespace CoWorkSpace.Tests
                     HttpContext = new DefaultHttpContext { User = user }
                 }
             };
-            controller.ModelState.AddModelError("Email", ApiMessages.MailRequired);
+            controller.ModelState.AddModelError("Email", ApiMessages.MAIL_REQUIRED);
 
             var dto = new RegisterRequestDTO
             {
@@ -157,7 +157,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
             var response = Assert.IsType<RegisterResponseDTO>(unauthorizedResult.Value);
-            Assert.Equal(ApiMessages.Unauthorized, response.Message);
+            Assert.Equal(ApiMessages.UNAUTHORIZED, response.Message);
         }
 
         [Fact]
@@ -233,7 +233,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
             var response = Assert.IsType<RegisterResponseDTO>(unauthorizedResult.Value);
-            Assert.Equal(ApiMessages.CannotCreateAdminsForOtherProviders, response.Message);
+            Assert.Equal(ApiMessages.CANNOT_CREATE_ADMINS_FOR_OTHER_PROVIDERS, response.Message);
         }
 
         [Fact]
@@ -271,7 +271,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var response = Assert.IsType<RegisterResponseDTO>(badRequest.Value);
-            Assert.Equal(ApiMessages.OnlyAdminRoleAllowed, response.Message);
+            Assert.Equal(ApiMessages.ONLY_ADMIN_ROLE_ALLOWED, response.Message);
         }
 
         [Fact]
@@ -309,7 +309,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var badRequest = Assert.IsType<BadRequestObjectResult>(result);
             var response = Assert.IsType<RegisterResponseDTO>(badRequest.Value);
-            Assert.Equal(ApiMessages.EmailAlreadyRegistered, response.Message);
+            Assert.Equal(ApiMessages.EMAIL_ALREADY_REGISTERED, response.Message);
         }
     }
 }
