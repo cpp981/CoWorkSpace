@@ -5,9 +5,17 @@
 
     <!-- Contenido principal del dashboard -->
     <div class="flex-grow-1 p-3">
-      <Dashboard :title="dashboardTitle" :metrics="clientMetrics" :chartTitle="'Gasto por Reserva'"
-        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Historial de Reservas'"
-        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
+      <Dashboard
+        :title="dashboardTitle"
+        :metrics="clientMetrics"
+        :chartTitle="'Gasto por Reserva'"
+        :chartData="chartData"
+        :chartOptions="chartOptions"
+        :detailsTitle="'Historial de Reservas'"
+        :tableHeaders="tableHeaders"
+        :tableData="tableData"
+        :errorMessage="errorMessage"
+      >
         <template #details>
           <table v-if="stats.bookings.length" class="table table-striped">
             <thead>
@@ -57,15 +65,25 @@ const dashboardTitle = computed(
 );
 
 const clientMetrics = computed(() => [
-  { label: "Reservas Totales", value: stats.value.totalBookings },
-  { label: "Gasto Total", value: `${stats.value.totalSpent.toFixed(2)} €` },
-  { label: "Reseñas Totales", value: stats.value.totalReviews },
+  {
+    label: "Reservas Totales",
+    value: stats.value.totalBookings,
+    icon: "bi bi-calendar-check text-success fs-2",
+  },
+  {
+    label: "Gasto Total",
+    value: `${stats.value.totalSpent.toFixed(2)} €`,
+    icon: "bi bi-currency-euro text-success fs-2",
+  },
+  {
+    label: "Reseñas Totales",
+    value: stats.value.totalReviews,
+    icon: "bi bi-chat-left-text text-warning fs-2",
+  },
 ]);
 
 const chartData = computed(() => ({
-  labels: stats.value.bookings.map(
-    (booking) => `Reserva ${booking.bookingId}`
-  ),
+  labels: stats.value.bookings.map((booking) => `Reserva ${booking.bookingId}`),
   datasets: [
     {
       label: "Monto (€)",

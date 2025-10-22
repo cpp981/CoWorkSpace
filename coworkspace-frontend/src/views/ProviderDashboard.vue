@@ -6,19 +6,35 @@
     <!-- Contenido principal -->
     <div class="flex-grow-1 p-3">
       <!-- Vista de ESPACIOS -->
-      <ProviderSpacesView v-if="currentView === 'spaces'" @view-bookings="openBookings" />
+      <ProviderSpacesView
+        v-if="currentView === 'spaces'"
+        @view-bookings="openBookings"
+      />
 
       <!-- Vista de RESERVAS de un espacio -->
-      <SpacesBookingView v-else-if="currentView === 'bookings'" :space-id="selectedSpaceId"
-        :space-name="selectedSpaceName" @back="currentView = 'spaces'" />
+      <SpacesBookingView
+        v-else-if="currentView === 'bookings'"
+        :space-id="selectedSpaceId"
+        :space-name="selectedSpaceName"
+        @back="currentView = 'spaces'"
+      />
 
       <!-- Vista de Admins de un Provider -->
       <ProviderAdminList v-else-if="currentView === 'adminsList'" />
 
       <!-- Vista principal del dashboard -->
-      <Dashboard v-else :title="dashboardTitle" :metrics="providerMetrics" :chartTitle="'Ingresos por Espacio'"
-        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Espacios Gestionados'"
-        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
+      <Dashboard
+        v-else
+        :title="dashboardTitle"
+        :metrics="providerMetrics"
+        :chartTitle="'Ingresos por Espacio'"
+        :chartData="chartData"
+        :chartOptions="chartOptions"
+        :detailsTitle="'Espacios Gestionados'"
+        :tableHeaders="tableHeaders"
+        :tableData="tableData"
+        :errorMessage="errorMessage"
+      >
         <template #details>
           <table v-if="stats.spaces.length" class="table table-striped">
             <thead>
@@ -46,7 +62,6 @@
     </div>
   </div>
 </template>
-
 
 <script setup>
 import { ref, computed, onMounted } from "vue";
@@ -80,12 +95,25 @@ const dashboardTitle = computed(
 );
 
 const providerMetrics = computed(() => [
-  { label: "Espacios Totales", value: stats.value.totalSpaces },
-  { label: "Administradores", value: stats.value.totalAdmins },
-  { label: "Reservas Totales", value: stats.value.totalBookings },
+  {
+    label: "Espacios Totales",
+    value: stats.value.totalSpaces,
+    icon: "bi bi-building fs-2",
+  },
+  {
+    label: "Administradores",
+    value: stats.value.totalAdmins,
+    icon: "bi bi-person-badge text-primary fs-2",
+  },
+  {
+    label: "Reservas Totales",
+    value: stats.value.totalBookings,
+    icon: "bi bi-calendar-check text-success fs-2",
+  },
   {
     label: "Ingresos Totales",
     value: `${stats.value.totalRevenue.toFixed(2)} €`,
+    icon: "bi bi-currency-euro text-success fs-2",
   },
 ]);
 
@@ -130,15 +158,12 @@ const tableData = computed(() =>
 function handleMenuClick(button) {
   if (button.action === "showSpaces") {
     currentView.value = "spaces";
-  }
-  else if (button.action === "showAdmins") {
+  } else if (button.action === "showAdmins") {
     //console.log("Botón Administradores pulsado:", button);
     currentView.value = "adminsList";
-  }
-  else if (button.action === "showDashboard") {
+  } else if (button.action === "showDashboard") {
     currentView.value = null; // vuelve al dashboard por defecto
-  }
-  else {
+  } else {
     currentView.value = null;
   }
 }

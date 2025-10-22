@@ -6,10 +6,18 @@
     <!-- Contenido principal -->
     <div class="flex-grow-1 p-3">
       <!-- Vista Dashboard -->
-      <Dashboard v-if="currentView === 'dashboard'" :title="dashboardTitle" :metrics="adminMetrics"
-        :chartTitle="'Ingresos por Espacio'" :chartData="chartData" :chartOptions="chartOptions"
-        :detailsTitle="'Espacios Gestionados'" :tableHeaders="tableHeaders" :tableData="tableData"
-        :errorMessage="errorMessage">
+      <Dashboard
+        v-if="currentView === 'dashboard'"
+        :title="dashboardTitle"
+        :metrics="adminMetrics"
+        :chartTitle="'Ingresos por Espacio'"
+        :chartData="chartData"
+        :chartOptions="chartOptions"
+        :detailsTitle="'Espacios Gestionados'"
+        :tableHeaders="tableHeaders"
+        :tableData="tableData"
+        :errorMessage="errorMessage"
+      >
         <template #details>
           <table v-if="stats.spaces.length" class="table table-striped">
             <thead>
@@ -45,13 +53,13 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
-import Dashboard from '../components/Dashboard.vue';
-import GenericMenu from '../components/GenericMenu.vue';
-import AdminSpacesListView from './AdminSpacesListView.vue';
-import AdminClientsList from './AdminClientsList.vue';
-import api from '../services/api';
-import { useAuthStore } from '../stores/auth';
+import { ref, computed, onMounted } from "vue";
+import Dashboard from "../components/Dashboard.vue";
+import GenericMenu from "../components/GenericMenu.vue";
+import AdminSpacesListView from "./AdminSpacesListView.vue";
+import AdminClientsList from "./AdminClientsList.vue";
+import api from "../services/api";
+import { useAuthStore } from "../stores/auth";
 
 const authStore = useAuthStore();
 const currentView = ref("dashboard"); // por defecto mostramos dashboard
@@ -65,20 +73,40 @@ const stats = ref({
 const errorMessage = ref(null);
 
 // --- Computed ---
-const dashboardTitle = computed(() => `Dashboard de ${authStore.userName || ''}`);
+const dashboardTitle = computed(
+  () => `Dashboard de ${authStore.userName || ""}`
+);
 const adminMetrics = computed(() => [
-  { label: 'Espacios Totales', value: stats.value.totalSpaces },
-  { label: 'Reservas Totales', value: stats.value.totalBookings },
-  { label: 'Ingresos Totales', value: `${stats.value.totalRevenue.toFixed(2)} €` },
-  { label: 'Valoración Media', value: stats.value.averageRating.toFixed(1) },
+  {
+    label: "Espacios Totales",
+    value: stats.value.totalSpaces,
+    icon: "bi bi-building fs-2",
+  },
+  {
+    label: "Reservas Totales",
+    value: stats.value.totalBookings,
+    icon: "bi bi-calendar-check text-success fs-2",
+  },
+  {
+    label: "Ingresos Totales",
+    value: `${stats.value.totalRevenue.toFixed(2)} €`,
+    icon: "bi bi-currency-euro text-success fs-2",
+  },
+  {
+    label: "Valoración Media",
+    value: stats.value.averageRating.toFixed(1),
+    icon: "bi bi-star-fill text-warning fs-2",
+  },
 ]);
 const chartData = computed(() => ({
-  labels: stats.value.spaces.map(space => space.spaceName),
-  datasets: [{
-    label: 'Ingresos (€)',
-    data: stats.value.spaces.map(space => space.revenue),
-    backgroundColor: ['#007bff', '#28a745', '#dc3545', '#ffc107'],
-  }],
+  labels: stats.value.spaces.map((space) => space.spaceName),
+  datasets: [
+    {
+      label: "Ingresos (€)",
+      data: stats.value.spaces.map((space) => space.revenue),
+      backgroundColor: ["#007bff", "#28a745", "#dc3545", "#ffc107"],
+    },
+  ],
 }));
 const chartOptions = computed(() => ({
   responsive: true,
@@ -87,9 +115,15 @@ const chartOptions = computed(() => ({
     legend: { display: true },
   },
 }));
-const tableHeaders = computed(() => ['ID', 'Nombre', 'Reservas', 'Ingresos', 'Valoración']);
+const tableHeaders = computed(() => [
+  "ID",
+  "Nombre",
+  "Reservas",
+  "Ingresos",
+  "Valoración",
+]);
 const tableData = computed(() =>
-  stats.value.spaces.map(space => [
+  stats.value.spaces.map((space) => [
     space.spaceId,
     space.spaceName,
     space.bookingsCount,
@@ -102,12 +136,10 @@ const tableData = computed(() =>
 function handleMenuClick(button) {
   if (button.action === "showSpaces") {
     currentView.value = "spaces";
-  }
-  else if (button.action === "showClients") {
+  } else if (button.action === "showClients") {
     console.log("Botón Clientes pulsado:", button);
     currentView.value = "clientsList";
-  }
-  else {
+  } else {
     currentView.value = "dashboard";
   }
 }
@@ -115,13 +147,14 @@ function handleMenuClick(button) {
 onMounted(async () => {
   try {
     if (!authStore.userId) {
-      errorMessage.value = 'Usuario no autenticado.';
+      errorMessage.value = "Usuario no autenticado.";
       return;
     }
     const response = await api.getAdminStats(authStore.userId);
     stats.value = response.data || stats.value;
   } catch (error) {
-    errorMessage.value = error.response?.data?.message || 'Error al cargar las estadísticas.';
+    errorMessage.value =
+      error.response?.data?.message || "Error al cargar las estadísticas.";
   }
 });
 </script>

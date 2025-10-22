@@ -5,11 +5,22 @@
 
     <!-- Contenido principal del dashboard -->
     <div class="flex-grow-1 p-3">
-      <Dashboard :title="dashboardTitle" :metrics="superAdminMetrics" :chartTitle="'Usuarios por Rol'"
-        :chartData="chartData" :chartOptions="chartOptions" :detailsTitle="'Usuarios por Rol'"
-        :tableHeaders="tableHeaders" :tableData="tableData" :errorMessage="errorMessage">
+      <Dashboard
+        :title="dashboardTitle"
+        :metrics="superAdminMetrics"
+        :chartTitle="'Usuarios por Rol'"
+        :chartData="chartData"
+        :chartOptions="chartOptions"
+        :detailsTitle="'Usuarios por Rol'"
+        :tableHeaders="tableHeaders"
+        :tableData="tableData"
+        :errorMessage="errorMessage"
+      >
         <template #details>
-          <table v-if="Object.keys(stats.usersByRole).length" class="table table-striped">
+          <table
+            v-if="Object.keys(stats.usersByRole).length"
+            class="table table-striped"
+          >
             <thead>
               <tr>
                 <th>Rol</th>
@@ -56,10 +67,26 @@ const dashboardTitle = computed(
 );
 
 const superAdminMetrics = computed(() => [
-  { label: "Espacios Totales", value: stats.value.totalSpaces },
-  { label: "Reservas Totales", value: stats.value.totalBookings },
-  { label: "Ingresos Totales", value: `${stats.value.totalRevenue.toFixed(2)} €` },
-  { label: "Usuarios Totales", value: stats.value.totalUsers },
+  {
+    label: "Espacios Totales",
+    value: stats.value.totalSpaces,
+    icon: "bi bi-building fs-2",
+  },
+  {
+    label: "Reservas Totales",
+    value: stats.value.totalBookings,
+    icon: "bi bi-calendar-check text-success fs-2",
+  },
+  {
+    label: "Ingresos Totales",
+    value: `${stats.value.totalRevenue.toFixed(2)} €`,
+    icon: "bi bi-currency-euro text-success fs-2",
+  },
+  {
+    label: "Usuarios Totales",
+    value: stats.value.totalUsers,
+    icon: "bi bi-people-fill fs-2",
+  },
 ]);
 
 const chartData = computed(() => ({
