@@ -15,10 +15,19 @@
         :key="index"
         class="col-lg-3 col-md-4 col-sm-6 mb-4"
       >
-        <div class="card h-100 shadow-sm">
-          <div class="card-body text-center">
-            <h5 class="card-title text-muted">{{ metric.label }}</h5>
-            <p class="card-text display-4">{{ metric.value }}</p>
+        <div class="card h-100 shadow">
+          <!-- body en fila: icono (si existe) + contenido -->
+          <div class="card-body d-flex align-items-center">
+            <!-- icono a la izquierda -->
+            <div v-if="metric.icon" class="me-3 d-flex align-items-center">
+              <i :class="metric.icon + ' metric-icon'"></i>
+            </div>
+
+            <!-- contenido ocupa el resto y se centra (verticalmente ya lo hace align-items-center) -->
+            <div class="w-100 text-center">
+              <h5 class="card-title text-muted mb-2">{{ metric.label }}</h5>
+              <p class="card-text display-4 mb-0">{{ metric.value }}</p>
+            </div>
           </div>
         </div>
       </div>
@@ -27,15 +36,11 @@
     <!-- Gráfico -->
     <div v-if="chartData" class="row mb-4">
       <div class="col-12">
-        <div class="card shadow-sm">
+        <div class="card shadow">
           <div class="card-body">
             <h5 class="card-title text-primary">{{ chartTitle }}</h5>
             <div class="chart-container">
-              <Chart
-                :type="'bar'"
-                :data="chartData"
-                :options="chartOptions"
-              />
+              <Chart :type="'bar'" :data="chartData" :options="chartOptions" />
             </div>
           </div>
         </div>
@@ -45,7 +50,7 @@
     <!-- Detalles -->
     <div class="row">
       <div class="col-12">
-        <div class="card shadow-sm">
+        <div class="card shadow">
           <div class="card-body">
             <h5 class="card-title text-primary">{{ detailsTitle }}</h5>
             <slot name="details">
@@ -75,7 +80,7 @@
 </template>
 
 <script>
-import { Chart } from 'vue-chartjs';
+import { Chart } from "vue-chartjs";
 import {
   Chart as ChartJS,
   Title,
@@ -84,12 +89,19 @@ import {
   BarElement,
   CategoryScale,
   LinearScale,
-} from 'chart.js';
+} from "chart.js";
 
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
+ChartJS.register(
+  Title,
+  Tooltip,
+  Legend,
+  BarElement,
+  CategoryScale,
+  LinearScale
+);
 
 export default {
-  name: 'Dashboard',
+  name: "Dashboard",
   components: { Chart },
   props: {
     title: {
@@ -102,7 +114,7 @@ export default {
     },
     chartTitle: {
       type: String,
-      default: 'Gráfico',
+      default: "Gráfico",
     },
     chartData: {
       type: Object,
@@ -120,7 +132,7 @@ export default {
     },
     detailsTitle: {
       type: String,
-      default: 'Detalles',
+      default: "Detalles",
     },
     tableHeaders: {
       type: Array,
@@ -163,6 +175,12 @@ export default {
   font-size: 2rem;
   color: #007bff;
   font-weight: bold;
+}
+
+.metric-icon {
+  font-size: 1.9rem;
+  color: #6c757d;
+  line-height: 1;
 }
 
 .table th {
