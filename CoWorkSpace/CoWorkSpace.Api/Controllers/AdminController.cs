@@ -178,5 +178,97 @@ namespace CoWorkSpace.Api.Controllers
 
             return Ok(grouped);
         }
+
+        [HttpPut("{adminId}/spaces/{spaceId}/bookings/{bookingId}")]
+        [Authorize]
+        public async Task<IActionResult> UpdateBooking(int adminId, int spaceId, int bookingId, [FromBody] UpdateBookingDTO dto)
+        {
+            // Claims
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(roleIdClaim, out int roleId)
+                || !int.TryParse(userIdClaim, out int loggedUserId))
+            {
+                return Unauthorized(new { Message = ApiMessages.UNAUTHORIZED });
+            }
+
+            if (roleId != 2)
+                return Unauthorized(new { Message = ApiMessages.ONLY_ADMINS_CAN_ACCESS_SPACES });
+
+            if (loggedUserId != adminId)
+                return Unauthorized(new { Message = ApiMessages.CANNOT_ACCESS_OTHER_ADMIN_SPACE });
+
+            // Verificar que el espacio pertenece al admin
+            var space = await _context.Spaces.AsNoTracking().FirstOrDefaultAsync(s => s.Id == spaceId && s.AdminId == adminId);
+            if (space == null)
+                return NotFound(new { Message = ApiMessages.NO_SPACES_FOUND_FOR_ADMIN });
+
+            // Obtener la reserva y verificar que pertenece al espacio
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId && b.SpaceId == spaceId);
+            if (booking == null)
+                return NotFound(new { Message = ApiMessages.BOOKING_NOT_FOUND_FOR_SPACE });
+
+            // Validar DTO
+            if (dto == null || string.IsNullOrEmpty(dto.Start) || string.IsNullOrEmpty(dto.End))
+                return BadRequest(new { Message = ApiMessages.START_DATE_AND_END_DATE_ARE_REQUIREDS});
+
+            if (!DateTime.TryParse(dto.Start, out DateTime newStart) || !DateTime.TryParse(dto.End, out DateTime newEnd))
+                return BadRequest(new { Message = ApiMessages.INVALID_DATE_FORMAT });
+
+            if (newStart >= newEnd)
+                return BadRequest(new { Message = ApiMessages.START_DATE_BEFORE_END_DATE });
+
+            // Actualizar
+            booking.StartTime = newStart;
+            booking.EndTime = newEnd;
+            _context.Bookings.Update(booking);
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                booking.Id,
+                booking.UserId,
+                Start = booking.StartTime.ToString("o"),
+                End = booking.EndTime.ToString("o"),
+                Message = ApiMessages.BOOKING_UPDATED_SUCCESS
+            });
+        }
+
+        [HttpDelete("{adminId}/spaces/{spaceId}/bookings/{bookingId}")]
+        [Authorize]
+        public async Task<IActionResult> DeleteBooking(int adminId, int spaceId, int bookingId)
+        {
+            // Claims
+            var roleIdClaim = User.FindFirst("roleId")?.Value;
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (string.IsNullOrEmpty(roleIdClaim) || string.IsNullOrEmpty(userIdClaim)
+                || !int.TryParse(roleIdClaim, out int roleId)
+                || !int.TryParse(userIdClaim, out int loggedUserId))
+            {
+                return Unauthorized(new { Message = ApiMessages.UNAUTHORIZED });
+            }
+
+            if (roleId != 2)
+                return Unauthorized(new { Message = ApiMessages.ONLY_ADMINS_CAN_ACCESS_SPACES });
+
+            if (loggedUserId != adminId)
+                return Unauthorized(new { Message = ApiMessages.CANNOT_ACCESS_OTHER_ADMIN_SPACE });
+
+            // Verificar que el espacio pertenece al admin
+            var space = await _context.Spaces.AsNoTracking().FirstOrDefaultAsync(s => s.Id == spaceId && s.AdminId == adminId);
+            if (space == null)
+                return NotFound(new { Message = ApiMessages.NO_SPACES_FOUND_FOR_ADMIN });
+
+            // Obtener la reserva y verificar que pertenece al espacio
+            var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId && b.SpaceId == spaceId);
+            if (booking == null)
+                return NotFound(new { Message = "Reserva no encontrada para ese espacio." });
+
+            _context.Bookings.Remove(booking);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = ApiMessages.BOOKING_DELETED_SUCCESS });
+        }
     }
 }
