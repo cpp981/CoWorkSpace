@@ -25,7 +25,8 @@
         public const string CANNOT_DELETE_ADMINS_FOR_OTHER_PROVIDERS = "No puedes borrar administradores de otro proveedor.";
         public const string ONLY_ADMINS_CAN_ACCESS_SPACES = "Solo los administradores pueden acceder a los espacios.";
         public const string CANNOT_ACCESS_OTHER_ADMIN_SPACE = "No puedes ver espacios de otro administrador.";
-        public const string CANNOT_ACCESS_OTHER_ADMINS_CLIENTS = "No puedes ver clientes de otros administradores";
+        public const string CANNOT_ACCESS_OTHER_ADMINS_CLIENTS = "No puedes ver clientes de otros administradores.";
+        public const string START_DATE_AND_END_DATE_ARE_REQUIREDS = "Fecha de Inicio y fecha de fin son requeridas.";
 
 
         // Errores de validación
@@ -37,6 +38,8 @@
         public const string SPACE_CREATED_ERROR = "Ocurrió un error al crear el espacio.";
         public const string SPACE_UPDATED_ERROR = "Ocurrió un error al actualizar el espacio.";
         public const string SPACE_DELETED_ERROR = "Ocurrió un error al borrar el espaccio.";
+        public const string INVALID_DATE_FORMAT = "Formato de fecha inválido.";
+        public const string START_DATE_BEFORE_END_DATE = "La fecha de inicio debe ser anterior a la fecha de fin.";
 
         // Not Found
         public const string NO_SPACES_FOR_PROVIDER = "No se encontraron espacios para el proveedor.";
@@ -45,6 +48,7 @@
         public const string ADMIN_NOT_FOUND = "No se encontró el administrador";
         public const string NO_SPACES_FOUND_FOR_ADMIN = "No se encontraron espacios para este administrador.";
         public const string NO_CLIENTS_FOUND_FOR_ADMIN = "No se encontraron clientes para este administrador.";
+        public const string BOOKING_NOT_FOUND_FOR_SPACE = "Reserva no encontrada para ese espacio.";
 
         // Éxito
         public const string LOGIN_SUCCESS = "Inicio de sesión exitoso.";
@@ -55,5 +59,7 @@
         public const string SPACE_UPDATED_SUCCESS = "El espacio se ha actualizado correctamente,";
         public const string SPACE_DELETED_SUCCESS = "El espacio se ha borrado correctamente.";
         public const string ADMIN_DELETED_SUCCESS = "El administrador se ha borrado correctamente.";
+        public const string BOOKING_UPDATED_SUCCESS = "Reserva actualizada correctamente.";
+        public const string BOOKING_DELETED_SUCCESS = "Reserva eliminada correctamente.";
     }
 }

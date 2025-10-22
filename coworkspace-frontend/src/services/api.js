@@ -82,5 +82,11 @@ getSpaceBookings(adminId, spaceId) {
 getClientsByAdmin(adminId){
   return apiClient.get(`/admins/${adminId}/clients`);
 },
+updateBooking(adminId, spaceId, bookingId){
+  return apiClient.put(`/admins/${adminId}/spaces/${spaceId}/bookings/${bookingId}`);
+},
+deleteBooking(adminId, spaceId, bookingId){
+  return apiClient.delete(`/admins/${adminId}/spaces/${spaceId}/bookings/${bookingId}`);
+},
   client: apiClient,
 };

@@ -5,10 +5,17 @@
       <i class="bi bi-caret-left me-2"></i>Mis espacios
     </button>
 
-    <GenericList :title="`Reservas en: ${currentSpaceName}`" :items="bookings"
+    <GenericList
+      :title="`Reservas en: ${currentSpaceName}`"
+      :items="bookings"
       :headers="['Usuario', 'Fecha inicio', 'Fecha fin']"
-      :fields="['userName', 'startTimeFormatted', 'endTimeFormatted']" :loading="loading" :show-add-button="false"
-      :show-actions="false" searchPlaceholder="Buscar reserva..." />
+      :fields="['userName', 'startTimeFormatted', 'endTimeFormatted']"
+      :loading="loading"
+      :show-add-button="false"
+      :show-actions="false"
+      :show-manage="false"
+      searchPlaceholder="Buscar reserva..."
+    />
   </div>
 </template>
 
@@ -44,16 +51,22 @@ export default {
       );
     });
 
+    const dateOptions = {
+      dateStyle: "short",
+      timeStyle: "short",
+      timeZone: "Europe/Madrid",
+    };
+
     function formatDateTime(dateString) {
       const date = new Date(dateString);
-      return date.toLocaleString();
+      return date.toLocaleString("es-ES", dateOptions);
     }
 
     onMounted(async () => {
       try {
         loading.value = true;
         const response = await api.getBookingsBySpace(props.spaceId);
-        bookings.value = response.data.map(b => ({
+        bookings.value = response.data.map((b) => ({
           ...b,
           startTimeFormatted: formatDateTime(b.startTime),
           endTimeFormatted: formatDateTime(b.endTime),
@@ -67,7 +80,6 @@ export default {
         loading.value = false;
       }
     });
-
 
     return {
       bookings,
