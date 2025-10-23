@@ -263,7 +263,7 @@ namespace CoWorkSpace.Api.Controllers
             // Obtener la reserva y verificar que pertenece al espacio
             var booking = await _context.Bookings.FirstOrDefaultAsync(b => b.Id == bookingId && b.SpaceId == spaceId);
             if (booking == null)
-                return NotFound(new { Message = "Reserva no encontrada para ese espacio." });
+                return NotFound(new { Message = ApiMessages.BOOKING_NOT_FOUND_FOR_SPACE });
 
             _context.Bookings.Remove(booking);
             await _context.SaveChangesAsync();

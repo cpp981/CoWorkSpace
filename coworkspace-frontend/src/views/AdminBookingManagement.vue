@@ -21,12 +21,20 @@
       search-placeholder="Buscar reserva ..."
     />
 
-    <!-- Modal de edición reutilizando BookingEditModal -->
+    <!-- Modal de edición -->
     <BookingEditModal
       v-model="showEditModal"
       :booking="editingBooking"
       :space-id="space?.id"
       @updated="onBookingUpdated"
+    />
+
+    <!-- Modal de confirmación de borrado -->
+    <ConfirmDeleteModal
+      v-model="showDeleteModal"
+      title="Borrar Reserva"
+      :message="`Se va a eliminar la reserva de <strong>'${clientBookingToDelete.name}'</strong>.<br>¿Estás seguro?`"
+      @confirm="deleteBooking"
     />
   </div>
 </template>
@@ -35,12 +43,13 @@
 import { ref, watch } from "vue";
 import GenericList from "../components/GenericList.vue";
 import BookingEditModal from "../components/BookingEditModal.vue";
+import ConfirmDeleteModal from "../components/ConfirmDeleteModal.vue";
 import api from "../services/api";
 import { useAuthStore } from "../stores/auth";
 import { useNotyf } from "../composables/useNotyf";
 
 const props = defineProps({
-  space: { type: Object, required: false, default: null },
+  space: { type: Object, required: false },
 });
 
 const authStore = useAuthStore();
@@ -52,6 +61,10 @@ const loading = ref(false);
 /* Estado para el modal de edición */
 const showEditModal = ref(false);
 const editingBooking = ref(null);
+
+const showDeleteModal = ref(false);
+const clientBookingToDelete = ref(false);
+const spaceIdBooking = ref(false);
 
 const formatDateTime = (iso) => {
   if (!iso) return "";
@@ -92,13 +105,33 @@ const loadBookings = async (spaceId) => {
   }
 };
 
-/* Abrir modal para editar: GenericList emite el item como row */
+/* Abrir modal para editar (GenericList emite el item como row) */
 const handleEdit = (row) => {
   editingBooking.value = row;
   showEditModal.value = true;
 };
 
-const handleDelete = (row) => {};
+const handleDelete = async (row) => {
+  clientBookingToDelete.value = row;
+  showDeleteModal.value = true;
+  spaceIdBooking.value = props.space.id;
+};
+
+const deleteBooking = async () => {
+  // Llamamos al endpoint para borrar la reserva
+  try {
+    const res = await api.deleteBooking(
+      authStore.userId,
+      spaceIdBooking.value,
+      clientBookingToDelete.value.id
+    );
+    // Actualizamos la lista si el borrado es correcto
+    loadBookings(spaceIdBooking.value);
+    notyf.success(res.data.message);
+  } catch (error) {
+    notyf.error(error.response?.data?.message || "Error al borrar la reserva");
+  }
+};
 
 /* Cuando BookingEditModal emite 'updated', recargamos la lista */
 const onBookingUpdated = async () => {

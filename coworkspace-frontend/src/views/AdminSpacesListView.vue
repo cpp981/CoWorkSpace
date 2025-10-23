@@ -92,7 +92,7 @@ export default {
 
     const selectedSpace = ref(null);
     const calendarEvents = ref([]);
-    const view = ref("list"); // 'list' | 'management' (el calendario usa modal, no una vista propia)
+    const view = ref("list");
 
     const calendarModalRef = ref(null);
     const calendarComponent = ref(null);

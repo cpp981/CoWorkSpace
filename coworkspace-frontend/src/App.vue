@@ -1,7 +1,13 @@
 <template>
   <div class="app-container">
-    <component :is="currentViewComponent" :userId="authStore.userId" @open-login="setView('Login')"
-      @open-register="setView('Register')" @cancel="setView('Home')" @login-success="handleLoginSuccess" />
+    <component
+      :is="currentViewComponent"
+      :userId="authStore.userId"
+      @open-login="setView('Login')"
+      @open-register="setView('Register')"
+      @cancel="setView('Home')"
+      @login-success="handleLoginSuccess"
+    />
   </div>
 </template>
 
@@ -33,7 +39,7 @@ const views = {
 
 const currentView = ref("Home");
 
-// Computed que devuelve el componente real para <component :is="...">
+// Computed que devuelve el componente real
 const currentViewComponent = computed(() => views[currentView.value] || Home);
 
 const setView = (view) => {
@@ -77,17 +83,3 @@ onMounted(() => {
   );
 });
 </script>
-
-<style scoped>
-.app-container {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.logout-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-}
-</style>
