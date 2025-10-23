@@ -82,8 +82,8 @@ getSpaceBookings(adminId, spaceId) {
 getClientsByAdmin(adminId){
   return apiClient.get(`/admins/${adminId}/clients`);
 },
-updateBooking(adminId, spaceId, bookingId){
-  return apiClient.put(`/admins/${adminId}/spaces/${spaceId}/bookings/${bookingId}`);
+updateBooking(adminId, spaceId, bookingId, data){
+  return apiClient.put(`/admins/${adminId}/spaces/${spaceId}/bookings/${bookingId}`, data);
 },
 deleteBooking(adminId, spaceId, bookingId){
   return apiClient.delete(`/admins/${adminId}/spaces/${spaceId}/bookings/${bookingId}`);

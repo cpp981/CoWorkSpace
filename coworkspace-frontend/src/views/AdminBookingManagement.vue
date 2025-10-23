@@ -6,6 +6,7 @@
       </button>
     </div>
 
+    <!-- Lista de reservas -->
     <GenericList
       :title="`Gestionar reservas - ${space?.nombre}`"
       :items="bookings"
@@ -19,75 +20,98 @@
       @delete="handleDelete"
       search-placeholder="Buscar reserva ..."
     />
+
+    <!-- Modal de edición reutilizando BookingEditModal -->
+    <BookingEditModal
+      v-model="showEditModal"
+      :booking="editingBooking"
+      :space-id="space?.id"
+      @updated="onBookingUpdated"
+    />
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, watch } from "vue";
 import GenericList from "../components/GenericList.vue";
+import BookingEditModal from "../components/BookingEditModal.vue";
 import api from "../services/api";
 import { useAuthStore } from "../stores/auth";
 import { useNotyf } from "../composables/useNotyf";
 
-export default {
-  name: "AdminBookingManagement",
-  components: { GenericList },
-  props: { space: { type: Object, required: false, default: null } },
-  setup(props) {
-    const authStore = useAuthStore();
-    const notyf = useNotyf();
-    const bookings = ref([]);
-    const loading = ref(false);
+const props = defineProps({
+  space: { type: Object, required: false, default: null },
+});
 
-    const formatDateTime = (iso) => {
-      if (!iso) return "";
-      try {
-        return new Date(iso).toLocaleString("es-ES", {
-          dateStyle: "short",
-          timeStyle: "short",
-          timeZone: "Europe/Madrid",
-        });
-      } catch {
-        return iso;
-      }
-    };
+const authStore = useAuthStore();
+const notyf = useNotyf();
 
-    const handleEdit = (space) => {
-      console.log(space);
-    };
+const bookings = ref([]);
+const loading = ref(false);
 
-    const handleDelete = (space) => {};
+/* Estado para el modal de edición */
+const showEditModal = ref(false);
+const editingBooking = ref(null);
 
-    const loadBookings = async (spaceId) => {
-      if (!spaceId) return;
-      loading.value = true;
-      try {
-        const res = await api.getSpaceBookings(authStore.userId, spaceId);
-        // mapeamos la respuesta a lo que espera GenericList
-        bookings.value = (res.data || []).map((b) => ({
-          id: b.id, // clave para v-for / idKey
-          name: b.nombreCliente || "", // campo mostrado como 'Nombre'
-          start: formatDateTime(b.fechaInicio),
-          end: formatDateTime(b.fechaFin),
-        }));
-      } catch (err) {
-        notyf.error(err.response?.data?.message || "Error al cargar reservas");
-        bookings.value = [];
-      } finally {
-        loading.value = false;
-      }
-    };
-
-    watch(
-      () => props.space,
-      (s) => {
-        if (s) loadBookings(s.id);
-        else bookings.value = [];
-      },
-      { immediate: true }
-    );
-
-    return { bookings, loading, handleEdit, handleDelete };
-  },
+const formatDateTime = (iso) => {
+  if (!iso) return "";
+  try {
+    return new Date(iso).toLocaleString("es-ES", {
+      dateStyle: "short",
+      timeStyle: "short",
+      timeZone: "Europe/Madrid",
+    });
+  } catch {
+    return iso;
+  }
 };
+
+/* Carga reservas del espacio y preserva las fechas raw para reabrir el modal */
+const loadBookings = async (spaceId) => {
+  if (!spaceId) {
+    bookings.value = [];
+    return;
+  }
+  loading.value = true;
+  try {
+    const res = await api.getSpaceBookings(authStore.userId, spaceId);
+    bookings.value = (res.data || []).map((b) => ({
+      id: b.id,
+      name: b.nombreCliente || "",
+      start: formatDateTime(b.fechaInicio),
+      end: formatDateTime(b.fechaFin),
+      _rawFechaInicio: b.fechaInicio,
+      _rawFechaFin: b.fechaFin,
+      raw: b,
+    }));
+  } catch (err) {
+    notyf.error(err.response?.data?.message || "Error al cargar reservas");
+    bookings.value = [];
+  } finally {
+    loading.value = false;
+  }
+};
+
+/* Abrir modal para editar: GenericList emite el item como row */
+const handleEdit = (row) => {
+  editingBooking.value = row;
+  showEditModal.value = true;
+};
+
+const handleDelete = (row) => {};
+
+/* Cuando BookingEditModal emite 'updated', recargamos la lista */
+const onBookingUpdated = async () => {
+  await loadBookings(props.space?.id);
+};
+
+/* Recargamos cuando cambie la prop space */
+watch(
+  () => props.space,
+  (s) => {
+    if (s && s.id) loadBookings(s.id);
+    else bookings.value = [];
+  },
+  { immediate: true }
+);
 </script>
