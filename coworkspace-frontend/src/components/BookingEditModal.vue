@@ -46,7 +46,7 @@ const emit = defineEmits(["update:modelValue", "updated"]);
 const authStore = useAuthStore();
 const notyf = useNotyf();
 
-/* visible (v-model) */
+/* visible */
 const visible = ref(!!props.modelValue);
 watch(
   () => props.modelValue,
@@ -57,7 +57,7 @@ watch(visible, (v) => emit("update:modelValue", v));
 /* campos locales para datetime-local */
 const localStart = ref("");
 const localEnd = ref("");
-const originalIsoStart = ref(null); // ISO original cuando se abre
+const originalIsoStart = ref(null);
 const minDateTime = new Date().toISOString().slice(0, 16);
 let saving = ref(false);
 
