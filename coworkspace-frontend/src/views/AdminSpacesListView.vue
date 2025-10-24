@@ -1,9 +1,8 @@
 <template>
-  <div class="container py-4">
+  <div class="container py-4 mt-3">
     <!-- VISTA LISTADO -->
     <div v-if="view === 'list'">
-      <h1 class="my-4 text-primary">Espacios de {{ authStore.userName }}</h1>
-
+      <h2 class="my-4 mb-5 titulo">Mis espacios</h2>
       <div v-if="spaces.length" class="row g-3">
         <div class="input-group mb-3">
           <span class="input-group-text bg-white border-end-0 border-secondary">

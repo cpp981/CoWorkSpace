@@ -7,8 +7,12 @@
       <span class="input-group-text bg-white border-end-0 border-secondary">
         <i class="bi bi-search text-muted"></i>
       </span>
-      <input v-model="search" type="text" class="form-control border-start-0 border-secondary"
-        placeholder="Buscar por nombre o ciudad..." />
+      <input
+        v-model="search"
+        type="text"
+        class="form-control border-start-0 border-secondary"
+        placeholder="Buscar por nombre o ciudad..."
+      />
     </div>
 
     <!-- Botón Nuevo Espacio -->
@@ -25,22 +29,45 @@
     </div>
 
     <div class="row g-3" style="max-height: 70vh; overflow-y: auto">
-      <div class="col-md-6 col-lg-4" v-for="space in paginatedSpaces" :key="space.id">
-        <SpaceCard :space="space" @view-bookings="handleViewBookings" @edit-space="handleEditSpace"
-          @delete-space="handleDeleteSpace" />
+      <div
+        class="col-md-6 col-lg-4"
+        v-for="space in paginatedSpaces"
+        :key="space.id"
+      >
+        <SpaceCard
+          :space="space"
+          @view-bookings="handleViewBookings"
+          @edit-space="handleEditSpace"
+          @delete-space="handleDeleteSpace"
+        />
       </div>
     </div>
 
     <!-- Paginación -->
-    <GenericPagination :currentPage="currentPage" :totalPages="totalPages" @prev="prevPage" @next="nextPage"
-      @goToPage="goToPage" />
+    <GenericPagination
+      :currentPage="currentPage"
+      :totalPages="totalPages"
+      @prev="prevPage"
+      @next="nextPage"
+      @goToPage="goToPage"
+    />
 
     <!--Modal para confirmar el borrado-->
-    <ConfirmDeleteModal v-model="showDeleteModal" title="Borrar Espacio" :message="`Se va a borrar
-        <strong>'${spaceToDelete?.name}'</strong>,<br><br> ¿Estás seguro?`" @confirm="deleteSpace" />
+    <ConfirmDeleteModal
+      v-model="showDeleteModal"
+      title="Borrar Espacio"
+      :message="`Se va a borrar
+        <strong>'${spaceToDelete?.name}'</strong>,<br><br> ¿Estás seguro?`"
+      @confirm="deleteSpace"
+    />
 
     <!-- Modal Editar Espacio -->
-    <GenericModal v-model="showEditSpaceModal" title="Editar Espacio" confirmText="Guardar cambios" @submit="editSpace">
+    <GenericModal
+      v-model="showEditSpaceModal"
+      title="Editar Espacio"
+      confirmText="Guardar cambios"
+      @submit="editSpace"
+    >
       <div v-if="selectedSpace">
         <div class="mb-3">
           <label class="form-label">Nombre del Espacio</label>
@@ -48,7 +75,12 @@
             <span class="input-group-text border-dark">
               <i class="bi bi-building"></i>
             </span>
-            <input v-model="selectedSpace.name" type="text" class="form-control border-secondary" required />
+            <input
+              v-model="selectedSpace.name"
+              type="text"
+              class="form-control border-secondary"
+              required
+            />
           </div>
         </div>
         <div class="mb-3">
@@ -57,7 +89,11 @@
             <span class="input-group-text border-dark">
               <i class="bi bi-person"></i>
             </span>
-            <select v-model="selectedSpace.adminId" class="form-select border-secondary" required>
+            <select
+              v-model="selectedSpace.adminId"
+              class="form-select border-secondary"
+              required
+            >
               <option value="" disabled>Seleccione un administrador</option>
               <option v-for="admin in admins" :key="admin.id" :value="admin.id">
                 {{ admin.name }}
@@ -71,7 +107,12 @@
             <span class="input-group-text border-dark">
               <i class="bi bi-geo-alt"></i>
             </span>
-            <input v-model="selectedSpace.city" type="text" class="form-control border-secondary" required />
+            <input
+              v-model="selectedSpace.city"
+              type="text"
+              class="form-control border-secondary"
+              required
+            />
           </div>
         </div>
         <div class="mb-3">
@@ -80,31 +121,58 @@
             <span class="input-group-text border-dark">
               <i class="bi bi-currency-euro"></i>
             </span>
-            <input v-model.number="selectedSpace.price" type="number" min="0" class="form-control border-secondary"
-              required />
+            <input
+              v-model.number="selectedSpace.price"
+              type="number"
+              min="0"
+              class="form-control border-secondary"
+              required
+            />
           </div>
         </div>
         <div class="form-check form-switch mb-3 d-flex align-items-center">
-          <input class="form-check-input border-secondary me-2" type="checkbox" v-model="selectedSpace.isPublic"
-            id="publicSwitch" />
-          <label class="form-check-label d-flex align-items-center" for="publicSwitch">
-            <i :class="selectedSpace.isPublic ? 'bi bi-eye text-success me-2' : 'bi bi-eye-slash text-muted me-2'"></i>
-            {{ selectedSpace.isPublic ? 'Público' : 'Privado' }}
+          <input
+            class="form-check-input border-secondary me-2"
+            type="checkbox"
+            v-model="selectedSpace.isPublic"
+            id="publicSwitch"
+          />
+          <label
+            class="form-check-label d-flex align-items-center"
+            for="publicSwitch"
+          >
+            <i
+              :class="
+                selectedSpace.isPublic
+                  ? 'bi bi-eye text-success me-2'
+                  : 'bi bi-eye-slash text-muted me-2'
+              "
+            ></i>
+            {{ selectedSpace.isPublic ? "Público" : "Privado" }}
           </label>
         </div>
       </div>
     </GenericModal>
 
     <!--Modal Crear Espacio-->
-    <GenericModal v-model="showNewSpaceModal" title="Crear Nuevo Espacio" confirmText="Crear Espacio"
-      @submit="createSpace">
+    <GenericModal
+      v-model="showNewSpaceModal"
+      title="Crear Nuevo Espacio"
+      confirmText="Crear Espacio"
+      @submit="createSpace"
+    >
       <div class="mb-3">
         <label class="form-label">Nombre del Espacio</label>
         <div class="input-group">
           <span class="input-group-text border-dark">
             <i class="bi bi-building"></i>
           </span>
-          <input v-model="newSpace.name" type="text" class="form-control border-secondary" required />
+          <input
+            v-model="newSpace.name"
+            type="text"
+            class="form-control border-secondary"
+            required
+          />
         </div>
       </div>
       <div class="mb-3">
@@ -113,7 +181,11 @@
           <span class="input-group-text border-dark">
             <i class="bi bi-person"></i>
           </span>
-          <select v-model="newSpace.adminId" class="form-select border-secondary" required>
+          <select
+            v-model="newSpace.adminId"
+            class="form-select border-secondary"
+            required
+          >
             <option value="" disabled>Seleccione un administrador</option>
             <option v-for="admin in admins" :key="admin.id" :value="admin.id">
               {{ admin.name }}
@@ -127,7 +199,12 @@
           <span class="input-group-text border-dark">
             <i class="bi bi-geo-alt"></i>
           </span>
-          <input v-model="newSpace.city" type="text" class="form-control border-secondary" required />
+          <input
+            v-model="newSpace.city"
+            type="text"
+            class="form-control border-secondary"
+            required
+          />
         </div>
       </div>
       <div class="mb-3">
@@ -136,15 +213,34 @@
           <span class="input-group-text border-dark">
             <i class="bi bi-currency-euro"></i>
           </span>
-          <input v-model.number="newSpace.price" type="number" min="0" class="form-control border-secondary" required />
+          <input
+            v-model.number="newSpace.price"
+            type="number"
+            min="0"
+            class="form-control border-secondary"
+            required
+          />
         </div>
       </div>
       <div class="form-check form-switch mb-3 d-flex align-items-center">
-        <input class="form-check-input border-secondary me-2" type="checkbox" v-model="newSpace.isPublic"
-          id="publicSwitch" />
-        <label class="form-check-label d-flex align-items-center" for="publicSwitch">
-          <i :class="newSpace.isPublic ? 'bi bi-eye text-success me-2' : 'bi bi-eye-slash text-muted me-2'"></i>
-          {{ newSpace.isPublic ? 'Público' : 'Privado' }}
+        <input
+          class="form-check-input border-secondary me-2"
+          type="checkbox"
+          v-model="newSpace.isPublic"
+          id="publicSwitch"
+        />
+        <label
+          class="form-check-label d-flex align-items-center"
+          for="publicSwitch"
+        >
+          <i
+            :class="
+              newSpace.isPublic
+                ? 'bi bi-eye text-success me-2'
+                : 'bi bi-eye-slash text-muted me-2'
+            "
+          ></i>
+          {{ newSpace.isPublic ? "Público" : "Privado" }}
         </label>
       </div>
     </GenericModal>
@@ -164,7 +260,12 @@ import "notyf/notyf.min.css";
 
 export default {
   name: "ProviderSpacesView",
-  components: { SpaceCard, GenericModal, ConfirmDeleteModal, GenericPagination },
+  components: {
+    SpaceCard,
+    GenericModal,
+    ConfirmDeleteModal,
+    GenericPagination,
+  },
   emits: ["view-bookings", "edit-space", "delete-space"],
   setup(props, context) {
     const authStore = useAuthStore();
@@ -218,7 +319,13 @@ export default {
         await fetchSpaces();
         showNewSpaceModal.value = false; // cerrar modal de forma reactiva
         // reset
-        newSpace.value = { name: "", adminId: "", city: "", price: 0, isPublic: false };
+        newSpace.value = {
+          name: "",
+          adminId: "",
+          city: "",
+          price: 0,
+          isPublic: false,
+        };
       } catch (err) {
         notyf.error(err.response?.data?.message || "Error al crear el espacio");
       }
@@ -228,7 +335,7 @@ export default {
       context.emit("view-bookings", space);
     };
 
-    const showEditSpaceModal = ref(false);   // control del modal
+    const showEditSpaceModal = ref(false); // control del modal
     const selectedSpace = ref(null);
 
     const handleEditSpace = async (space) => {
@@ -337,7 +444,7 @@ export default {
       showDeleteModal,
       selectedSpace,
       spaceToDelete,
-      deleteSpace
+      deleteSpace,
     };
   },
 };

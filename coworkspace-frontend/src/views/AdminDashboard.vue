@@ -4,11 +4,10 @@
     <GenericMenu @button-click="handleMenuClick" />
 
     <!-- Contenido principal -->
-    <div class="flex-grow-1 pt-0">
+    <div class="flex-grow-1 pt-0 mt-5">
       <!-- Vista Dashboard -->
       <Dashboard
         v-if="currentView === 'dashboard'"
-        :title="dashboardTitle"
         :metrics="adminMetrics"
         :chartTitle="'Ingresos por Espacio'"
         :chartData="chartData"
@@ -73,10 +72,6 @@ const stats = ref({
 });
 const errorMessage = ref(null);
 
-// --- Computed ---
-const dashboardTitle = computed(
-  () => `Dashboard de ${authStore.userName || ""}`
-);
 const adminMetrics = computed(() => [
   {
     label: "Espacios Totales",
@@ -138,7 +133,6 @@ function handleMenuClick(button) {
   if (button.action === "showSpaces") {
     currentView.value = "spaces";
   } else if (button.action === "showClients") {
-    console.log("Botón Clientes pulsado:", button);
     currentView.value = "clientsList";
   } else {
     currentView.value = "dashboard";
