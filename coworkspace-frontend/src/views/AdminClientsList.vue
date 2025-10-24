@@ -1,6 +1,6 @@
 <template>
   <div class="container py-4">
-    <h1 class="my-4 text-primary">Clientes de {{ authStore.userName }}</h1>
+    <h2 class="my-4 titulo">Clientes</h2>
     <GenericList
       :items="clientsForList"
       :headers="['ID', 'Nombre', 'Reserva activa']"

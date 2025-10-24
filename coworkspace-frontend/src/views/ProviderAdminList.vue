@@ -1,8 +1,8 @@
 <template>
   <div class="container py-4">
+    <h2 class="my-4 titulo">Administradores</h2>
     <!--  Lista de administradores -->
     <GenericList
-      :title="`Admins para ${authStore.userName}`"
       :items="paginatedAdmins"
       :headers="['ID', 'Nombre']"
       :fields="['id', 'name']"

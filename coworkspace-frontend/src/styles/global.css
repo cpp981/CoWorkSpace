@@ -40,7 +40,7 @@ html, body, #app {
   font-size: 0.9rem;
 }
 
-.btn {
+.btn-logout {
   border-radius: 0.375rem;
   font-size: 0.9rem;
 }
@@ -79,11 +79,11 @@ label {
   padding-right: 2.5rem;
 }
 
-.btn {
+/*.btn {
   border-radius: 0.375rem;
   font-size: 0.9rem;
   height: 38px;
-}
+}*/
 
 .alert-sm {
   font-size: 0.9rem;
@@ -161,7 +161,8 @@ label {
 }
 
 .dropdown-item:hover {
-  background-color: #f0f4ff; /* hover sutil */
+  background-color: #3e4b5e; /* hover sutil */
+  color: white;
 }
 
 /* Iconos en items */
@@ -211,9 +212,9 @@ a:hover {
   color: #0a58ca; /* Azul más oscuro para hover */
 }
 
-/* Botones (respetar Bootstrap) */
+/* Botones (respetar Bootstrap) 
 button, .btn {
-  border-radius: 0.375rem; /* Consistente con Home.vue y Login.vue */
+  border-radius: 0.375rem; /* Consistente con Home.vue y Login.vue 
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -221,7 +222,7 @@ button, .btn {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
-}
+} */
 
 /* DASHBOARD */
 .dashboard {
@@ -318,7 +319,7 @@ button:focus-visible {
 }
 
 /* Botones con altura y estilo igual que login */
-.btn {
+.btn-menu {
   border-radius: 0.375rem;
   font-size: 0.9rem;
   height: 38px;
@@ -326,7 +327,7 @@ button:focus-visible {
   display: flex;
   align-items: center;
   justify-content: center;
-}
+} 
 
 /* Space Cards */
 .status-dot {

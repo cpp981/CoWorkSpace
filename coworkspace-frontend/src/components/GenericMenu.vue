@@ -24,7 +24,7 @@
     <ul v-else class="nav flex-column mb-4 mt-5">
       <li v-for="button in buttons" :key="button.label" class="nav-item mb-2">
         <button
-          class="btn text-light w-100 h-100 text-start d-flex align-items-center"
+          class="btn btn-menu text-light w-100 h-100 text-start d-flex align-items-center"
           @click="$emit('button-click', button)"
         >
           <i :class="`bi bi-${button.icon.toLowerCase()}`" class="me-2"></i>

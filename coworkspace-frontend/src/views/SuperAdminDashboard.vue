@@ -4,9 +4,8 @@
     <GenericMenu @button-click="handleMenuClick" />
 
     <!-- Contenido principal del dashboard -->
-    <div class="flex-grow-1 p-3">
+    <div class="flex-grow-1 p-3 mt-5">
       <Dashboard
-        :title="dashboardTitle"
         :metrics="superAdminMetrics"
         :chartTitle="'Usuarios por Rol'"
         :chartData="chartData"
@@ -62,10 +61,6 @@ const stats = ref({
 const errorMessage = ref(null);
 
 // Computed
-const dashboardTitle = computed(
-  () => `Dashboard de ${authStore.userName || ""}`
-);
-
 const superAdminMetrics = computed(() => [
   {
     label: "Espacios Totales",
