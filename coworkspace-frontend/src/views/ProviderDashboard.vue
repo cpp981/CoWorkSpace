@@ -4,7 +4,7 @@
     <GenericMenu @button-click="handleMenuClick" />
 
     <!-- Contenido principal -->
-    <div class="flex-grow-1 pt-0">
+    <div class="flex-grow-1 pt-0 mt-5">
       <!-- Vista de ESPACIOS -->
       <ProviderSpacesView
         v-if="currentView === 'spaces'"
@@ -25,7 +25,6 @@
       <!-- Vista principal del dashboard -->
       <Dashboard
         v-else
-        :title="dashboardTitle"
         :metrics="providerMetrics"
         :chartTitle="'Ingresos por Espacio'"
         :chartData="chartData"
@@ -90,9 +89,6 @@ const stats = ref({
 const errorMessage = ref(null);
 
 // Computed properties
-const dashboardTitle = computed(
-  () => `Dashboard de ${authStore.userName || ""}`
-);
 
 const providerMetrics = computed(() => [
   {

@@ -4,9 +4,8 @@
     <GenericMenu @button-click="handleMenuClick" />
 
     <!-- Contenido principal del dashboard -->
-    <div class="flex-grow-1 pt-0">
+    <div class="flex-grow-1 pt-0 mt-5">
       <Dashboard
-        :title="dashboardTitle"
         :metrics="clientMetrics"
         :chartTitle="'Gasto por Reserva'"
         :chartData="chartData"
@@ -60,10 +59,6 @@ const stats = ref({
 const errorMessage = ref(null);
 
 // Computed
-const dashboardTitle = computed(
-  () => `Dashboard de ${authStore.userName || ""}`
-);
-
 const clientMetrics = computed(() => [
   {
     label: "Reservas Totales",

@@ -1,6 +1,6 @@
 <template>
   <div class="container py-4">
-    <h1 class="my-4 text-primary">Espacios de {{ authStore.userName }}</h1>
+    <h2 class="my-4 titulo">Mis Espacios</h2>
 
     <!-- Barra de búsqueda -->
     <div class="input-group mb-3">
