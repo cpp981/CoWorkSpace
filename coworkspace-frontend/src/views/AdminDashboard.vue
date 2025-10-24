@@ -56,6 +56,7 @@
 import { ref, computed, onMounted } from "vue";
 import Dashboard from "../components/Dashboard.vue";
 import GenericMenu from "../components/GenericMenu.vue";
+import TopUserMenu from "../components/TopUserMenu.vue";
 import AdminSpacesListView from "./AdminSpacesListView.vue";
 import AdminClientsList from "./AdminClientsList.vue";
 import api from "../services/api";
