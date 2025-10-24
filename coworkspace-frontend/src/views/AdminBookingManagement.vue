@@ -33,7 +33,7 @@
     <ConfirmDeleteModal
       v-model="showDeleteModal"
       title="Borrar Reserva"
-      :message="`Se va a eliminar la reserva de <strong>'${clientBookingToDelete.name}'</strong>.<br>¿Estás seguro?`"
+      :message="`Se va a eliminar la reserva de <strong>'${clientBookingToDelete?.name}'</strong>.<br>¿Estás seguro?`"
       @confirm="deleteBooking"
     />
   </div>

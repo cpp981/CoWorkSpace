@@ -4,7 +4,7 @@
     <GenericMenu @button-click="handleMenuClick" />
 
     <!-- Contenido principal -->
-    <div class="flex-grow-1 p-3">
+    <div class="flex-grow-1 pt-0">
       <!-- Vista Dashboard -->
       <Dashboard
         v-if="currentView === 'dashboard'"

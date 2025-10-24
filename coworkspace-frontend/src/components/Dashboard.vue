@@ -16,14 +16,14 @@
         class="col-lg-3 col-md-4 col-sm-6 mb-4"
       >
         <div class="card h-100 shadow">
-          <!-- body en fila: icono (si existe) + contenido -->
+          <!-- body en fila: icono + contenido -->
           <div class="card-body d-flex align-items-center">
             <!-- icono a la izquierda -->
             <div v-if="metric.icon" class="me-3 d-flex align-items-center">
               <i :class="metric.icon + ' metric-icon'"></i>
             </div>
 
-            <!-- contenido ocupa el resto y se centra (verticalmente ya lo hace align-items-center) -->
+            <!-- contenido ocupa el resto y se centra  -->
             <div class="w-100 text-center">
               <h5 class="card-title text-muted mb-2">{{ metric.label }}</h5>
               <p class="card-text display-4 mb-0">{{ metric.value }}</p>
@@ -36,7 +36,7 @@
     <!-- Gráfico -->
     <div v-if="chartData" class="row mb-4">
       <div class="col-12">
-        <div class="card shadow">
+        <div class="card shadow h-auto">
           <div class="card-body">
             <h5 class="card-title text-primary">{{ chartTitle }}</h5>
             <div class="chart-container">
@@ -50,7 +50,7 @@
     <!-- Detalles -->
     <div class="row">
       <div class="col-12">
-        <div class="card shadow">
+        <div class="card shadow gestion">
           <div class="card-body">
             <h5 class="card-title text-primary">{{ detailsTitle }}</h5>
             <slot name="details">
@@ -155,6 +155,7 @@ export default {
   padding: 20px 0;
   max-height: 100vh; /* Limitar altura al viewport */
   overflow-y: hidden; /* Evitar scroll vertical */
+  overflow-x: hidden;
 }
 
 .card {
@@ -193,7 +194,36 @@ export default {
 
 .chart-container {
   position: relative;
-  height: 300px; /* Altura fija para el gráfico */
+  height: 250px; /* Altura fija para el gráfico */
   width: 100%;
+}
+
+.gestion {
+  overflow-x: auto;
+  overflow-y: auto; /* muestra un scroll vertical solo si es necesario */
+  max-height: 11.5em;
+}
+
+/* Necesario para que los elementos sticky se posicionen respecto al contenedor */
+.gestion .card-body {
+  position: relative;
+  padding-top: 0.5rem;
+}
+
+/* Hacemos sticky el título del card (se queda arriba dentro del área scrollable) */
+.gestion .card-title {
+  position: sticky;
+  top: 0;
+  z-index: 5; /* por delante de la tabla */
+  background: white; /* evitamos superposición visual */
+  margin: 0; /* evitamos saltos al fijar */
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Aseguramos que el tbody pueda scrollear correctamente dentro del card-body */
+.gestion .table-responsive,
+.gestion table {
+  margin-bottom: 0;
 }
 </style>
