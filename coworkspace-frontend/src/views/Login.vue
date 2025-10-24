@@ -12,21 +12,44 @@
               </div>
               <form @submit.prevent="handleLogin">
                 <div class="mb-3 input-icon-wrapper">
-                  <input v-model="form.email" type="email" class="form-control" id="email" placeholder="tu@email.com"
-                    required :disabled="loading" />
+                  <input
+                    v-model="form.email"
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    placeholder="tu@email.com"
+                    required
+                    :disabled="loading"
+                  />
                   <i class="bi bi-person input-icon"></i>
                 </div>
                 <div class="mb-3 input-icon-wrapper">
-                  <input v-model="form.password" type="password" class="form-control" id="password"
-                    placeholder="••••••••" required :disabled="loading" />
+                  <input
+                    v-model="form.password"
+                    type="password"
+                    class="form-control"
+                    id="password"
+                    placeholder="••••••••"
+                    required
+                    :disabled="loading"
+                  />
                   <i class="bi bi-lock input-icon"></i>
                 </div>
                 <div class="d-grid gap-2 mb-2">
-                  <button type="submit" class="btn btn-primary" :disabled="loading">
+                  <button
+                    type="submit"
+                    class="btn btn-primary"
+                    :disabled="loading"
+                  >
                     <i class="bi bi-box-arrow-in-right me-2"></i>
                     {{ loading ? "Iniciando..." : "Iniciar Sesión" }}
                   </button>
-                  <button type="button" class="btn btn-outline-secondary" @click="$emit('cancel')" :disabled="loading">
+                  <button
+                    type="button"
+                    class="btn btn-outline-secondary"
+                    @click="$emit('cancel')"
+                    :disabled="loading"
+                  >
                     Volver
                   </button>
                 </div>
@@ -72,9 +95,10 @@ export default {
         form.value.password = "";
         emit("login-success");
       } catch (error) {
-        const errorMsg = error?.response?.data?.message
-          || (typeof error === "string" ? error : error?.message)
-          || "Error al iniciar sesión";
+        const errorMsg =
+          error?.response?.data?.message ||
+          (typeof error === "string" ? error : error?.message) ||
+          "Error al iniciar sesión";
         notyf.error(errorMsg);
       } finally {
         loading.value = false;
@@ -85,66 +109,8 @@ export default {
       form,
       loading,
       handleLogin,
-      msg
+      msg,
     };
   },
 };
 </script>
-
-<style scoped>
-.login-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f8f9fa;
-  min-width: 125vh;
-}
-
-.card {
-  border-radius: 0.5rem;
-
-}
-
-.form-control {
-  border-radius: 0.375rem;
-  font-size: 0.9rem;
-  height: 38px;
-  padding-right: 2.5rem;
-}
-
-.btn {
-  border-radius: 0.375rem;
-  font-size: 0.9rem;
-  height: 38px;
-}
-
-.alert-sm {
-  font-size: 0.9rem;
-  padding: 0.75rem;
-  margin-bottom: 0;
-  display: flex;
-  align-items: center;
-}
-
-label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  display: block;
-  margin-bottom: 0.25rem;
-}
-
-.input-icon-wrapper {
-  position: relative;
-}
-
-.input-icon {
-  position: absolute;
-  top: 50%;
-  right: 0.75rem;
-  transform: translateY(-50%);
-  color: #6c757d;
-  pointer-events: none;
-  font-size: 1.1rem;
-}
-</style>

@@ -1,16 +1,18 @@
 <template>
-  <div class="sidebar border-end p-3" style="min-width: 220px;">
+  <div class="sidebar border-end p-3" style="min-width: 220px">
     <!-- Logo -->
-    <div class="logo mb-2 text-center" style="max-width: 220px;">
+    <div class="logo mb-2 text-center" style="max-width: 220px">
       <img src="../assets/logo.png" alt="Logo" class="img-fluid rounded" />
     </div>
 
     <!-- Nombre del usuario conectado -->
-    <div class="text-center  text-light mt-4 mb-5">
+    <div class="text-center text-light mt-4 mb-5">
       <small class="mt-4 text-light">Conectado como:</small><br />
       <strong><i class="bi bi-person-circle me-2"></i>{{ userName }}</strong>
     </div>
-
+    <div>
+      <hr class="text-center text-light text-white" />
+    </div>
     <!-- Spinner de carga -->
     <div v-if="isLoading" class="d-flex justify-content-center my-4">
       <div class="spinner-border text-primary" role="status">
@@ -21,8 +23,10 @@
     <!-- Menú de botones -->
     <ul v-else class="nav flex-column mb-4 mt-5">
       <li v-for="button in buttons" :key="button.label" class="nav-item mb-2">
-        <button class="btn text-light w-100 h-100 text-start d-flex align-items-center"
-          @click="$emit('button-click', button)">
+        <button
+          class="btn text-light w-100 h-100 text-start d-flex align-items-center"
+          @click="$emit('button-click', button)"
+        >
           <i :class="`bi bi-${button.icon.toLowerCase()}`" class="me-2"></i>
           {{ button.label }}
           <i class="bi bi-caret-right ms-auto"></i>
@@ -32,7 +36,7 @@
 
     <!-- Botón de logout -->
     <div class="mt-auto">
-      <button class="btn btn-danger w-100" @click="logout">
+      <button class="btn btn-outline-danger border-2 w-100" @click="logout">
         <i class="bi bi-box-arrow-right me-2"></i>
         Cerrar Sesión
       </button>
@@ -41,28 +45,28 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import { useAuthStore } from '../stores/auth';
+import { ref, onMounted } from "vue";
+import axios from "axios";
+import { useAuthStore } from "../stores/auth";
 
 export default {
-  name: 'GenericMenu',
+  name: "GenericMenu",
   setup(_, { emit }) {
     const authStore = useAuthStore();
     const buttons = ref([]);
     const isLoading = ref(true);
-    const userName = authStore.userName || 'Usuario';
+    const userName = authStore.userName || "Usuario";
 
     const fetchMenu = async () => {
       try {
-        const response = await axios.get('/api/v1/menu', {
+        const response = await axios.get("/api/v1/menu", {
           headers: {
-            Authorization: `Bearer ${authStore.accessToken}`
-          }
+            Authorization: `Bearer ${authStore.accessToken}`,
+          },
         });
         buttons.value = response.data;
       } catch (error) {
-        console.error('Error al cargar el menú:', error);
+        console.error("Error al cargar el menú:", error);
       } finally {
         isLoading.value = false;
       }
@@ -70,7 +74,7 @@ export default {
 
     const logout = () => {
       authStore.logout();
-      window.location.href = '/';
+      window.location.href = "/";
     };
 
     onMounted(fetchMenu);
@@ -79,17 +83,8 @@ export default {
       buttons,
       isLoading,
       logout,
-      userName
+      userName,
     };
-  }
+  },
 };
 </script>
-
-<style scoped>
-.sidebar {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background-color: #0a58ca;
-}
-</style>

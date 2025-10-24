@@ -5,6 +5,11 @@
   box-sizing: border-box;
 }
 
+.app-container {
+  min-height: 100vh;
+  position: relative;
+}
+
 html, body, #app {
   min-height: 100vh;
   min-width: 320px;
@@ -18,10 +23,111 @@ html, body, #app {
   flex-direction: column;
 }
 
+/* REGISTRO USER */
+.register-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /*background-color: #dddfe2;*/
+  min-width: 125vh;
+}
+
+
+.form-control,
+.form-select {
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+}
+
+.btn {
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+}
+
+.alert-sm {
+  font-size: 0.9rem;
+  padding: 0.75rem;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+label {
+  font-size: 0.9rem;
+}
+
+/* LOGIN */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  min-width: 125vh;
+}
+
+.card {
+  border-radius: 0.5rem;
+
+}
+
+.form-control {
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  height: 38px;
+  padding-right: 2.5rem;
+}
+
+.btn {
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  height: 38px;
+}
+
+.alert-sm {
+  font-size: 0.9rem;
+  padding: 0.75rem;
+  margin-bottom: 0;
+  display: flex;
+  align-items: center;
+}
+
+label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.input-icon-wrapper {
+  position: relative;
+}
+
+.input-icon {
+  position: absolute;
+  top: 50%;
+  right: 0.75rem;
+  transform: translateY(-50%);
+  color: #6c757d;
+  pointer-events: none;
+  font-size: 1.1rem;
+}
+
 .logout-container {
   position: fixed;
   top: 20px;
   right: 20px;
+}
+
+
+/* SIDEBAR */ 
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  width: 25vh;
+  background-color: #3e4b5e;
 }
 
 /* TOP USER MENÚ */
@@ -33,8 +139,8 @@ html, body, #app {
 .user-btn {
   background: transparent;
   border: none;
-  color: #0d6efd; /* siempre azul */
-  font-weight: 500;
+  color:#3e4b5e; /* siempre azul */
+ 
   cursor: pointer;
   padding: 0.25rem 0.5rem;
   display: flex;
@@ -43,11 +149,6 @@ html, body, #app {
 
 .user-btn i {
   font-size: 1.5rem;
-}
-
-/* Hover del botón: solo cursor, sin cambiar color */
-.user-btn:hover {
-  color: #0d6efd; /* se mantiene azul */
 }
 
 /* Dropdown items */
@@ -89,15 +190,19 @@ h1, h2, h3, h4, h5, h6, p, label, input, button, .form-control, .btn, .alert {
   font-weight: 500;
 }
 
-/* Títulos grandes (como el <h1> de Home.vue, que usa Poppins en scoped) */
+/* Títulos grandes */
 h1 {
   font-size: 3.2rem;
   line-height: 1.1;
 }
 
+.titulo {
+  color: #3e4b5e;
+}
+
 /* Enlaces */
 a {
-  color: #0d6efd; /* Azul de btn-primary */
+  color: #3e4b5e; /* Azul de btn-primary */
   text-decoration: none;
   font-weight: 500;
 }
@@ -116,6 +221,118 @@ button, .btn {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+/* DASHBOARD */
+.dashboard {
+  padding: 20px 0;
+  max-height: 100vh; /* Limitar altura al viewport */
+  overflow-y: hidden; /* Evitar scroll vertical */
+  overflow-x: hidden;
+}
+
+.card {
+  border-radius: 8px;
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.card-title {
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.card-text.display-4 {
+  font-size: 2rem;
+  color: #007bff;
+  font-weight: bold;
+}
+
+.metric-icon {
+  font-size: 1.9rem;
+  color: #6c757d;
+  line-height: 1;
+}
+
+.table th {
+  background-color: #f8f9fa;
+}
+
+.alert {
+  margin-bottom: 20px;
+}
+
+.chart-container {
+  position: relative;
+  height: 250px; /* Altura fija para el gráfico */
+  width: 100%;
+}
+
+.gestion {
+  overflow-x: auto;
+  overflow-y: auto; /* muestra un scroll vertical solo si es necesario */
+  max-height: 13.5em;
+}
+
+/* Necesario para que los elementos sticky se posicionen respecto al contenedor */
+.gestion .card-body {
+  position: relative;
+  padding-top: 0.5rem;
+}
+
+/* Hacemos sticky el título del card (se queda arriba dentro del área scrollable) */
+.gestion .card-title {
+  position: sticky;
+  top: 0;
+  z-index: 5; /* por delante de la tabla */
+  background: white; /* evitamos superposición visual */
+  margin: 0; /* evitamos saltos al fijar */
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+/* Aseguramos que el tbody pueda scrollear correctamente dentro del card-body */
+.gestion .table-responsive,
+.gestion table {
+  margin-bottom: 0;
+}
+
+/* REGISTER */
+.reg-cont {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Inputs y selects con altura fija para igualar login */
+.form-control,
+.form-select {
+  height: 38px;
+  font-size: 0.9rem;
+  border-radius: 0.375rem;
+  box-sizing: border-box;
+}
+
+/* Botones con altura y estilo igual que login */
+.btn {
+  border-radius: 0.375rem;
+  font-size: 0.9rem;
+  height: 38px;
+  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Space Cards */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  display: inline-block;
 }
 
 .badge-transparent-success {
