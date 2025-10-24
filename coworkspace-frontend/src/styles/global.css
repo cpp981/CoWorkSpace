@@ -26,7 +26,8 @@ html, body, #app {
 
 /* Tipografía */
 body {
-  font-family: "Orbitron", sans-serif;
+  /*font-family: "Orbitron", sans-serif;*/
+  font-family: "Zalando Sans Expanded", sans-serif;
   font-weight: 400; /* Regular para texto general */
   font-size: 16px; /* Tamaño base */
   line-height: 1.5;
@@ -35,7 +36,8 @@ body {
 
 /* Elementos específicos (usar Inter) */
 h1, h2, h3, h4, h5, h6, p, label, input, button, .form-control, .btn, .alert {
-  font-family: 'Orbitron', sans-serif;
+  /*font-family: 'Orbitron', sans-serif;*/
+  font-family: "Zalando Sans Expanded", sans-serif;
 }
 
 /* Énfasis con Inter Medium */
