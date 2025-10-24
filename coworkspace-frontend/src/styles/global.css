@@ -24,6 +24,50 @@ html, body, #app {
   right: 20px;
 }
 
+/* TOP USER MENÚ */
+.top-user-menu {
+  gap: 0.5rem;
+}
+
+/* Botón de usuario */
+.user-btn {
+  background: transparent;
+  border: none;
+  color: #0d6efd; /* siempre azul */
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.user-btn i {
+  font-size: 1.5rem;
+}
+
+/* Hover del botón: solo cursor, sin cambiar color */
+.user-btn:hover {
+  color: #0d6efd; /* se mantiene azul */
+}
+
+/* Dropdown items */
+.dropdown-menu {
+  min-width: 180px;
+}
+
+.dropdown-item {
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f4ff; /* hover sutil */
+}
+
+/* Iconos en items */
+.dropdown-item i {
+  font-size: 1rem;
+}
+
 /* Tipografía */
 body {
   /*font-family: "Orbitron", sans-serif;*/

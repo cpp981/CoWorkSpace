@@ -1,7 +1,7 @@
 <template>
   <div class="container dashboard">
     <!-- Título -->
-    <h1 class="my-4 text-primary">{{ title }}</h1>
+    <h1 class="my-3 text-primary">{{ title }}</h1>
 
     <!-- Mensaje de error -->
     <div v-if="errorMessage" class="alert alert-danger" role="alert">

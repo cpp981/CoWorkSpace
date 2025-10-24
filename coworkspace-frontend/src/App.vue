@@ -1,5 +1,18 @@
 <template>
-  <div class="app-container">
+  <div class="app-container position-relative">
+    <!-- Top user menu fijo en la esquina superior derecha cuando usuario se loguea -->
+    <div
+      class="position-absolute top-0 end-0 m-3"
+      v-if="authStore.isAuthenticated"
+    >
+      <TopUserMenu
+        :userName="authStore.userName"
+        @preferences="goToPreferences"
+        @logout="logout"
+      />
+    </div>
+
+    <!-- Componente actual -->
     <component
       :is="currentViewComponent"
       :userId="authStore.userId"
@@ -22,11 +35,12 @@ import SuperAdminDashboard from "./views/SuperAdminDashboard.vue";
 import AdminDashboard from "./views/AdminDashboard.vue";
 import ProviderDashboard from "./views/ProviderDashboard.vue";
 import ClientDashboard from "./views/ClientDashboard.vue";
+import TopUserMenu from "./components/TopUserMenu.vue";
 import api from "./services/api";
 
 const authStore = useAuthStore();
 
-// Mapa de vistas a componentes (pasamos el componente, no solo el nombre)
+// Vistas disponibles
 const views = {
   Home,
   Login,
@@ -38,8 +52,6 @@ const views = {
 };
 
 const currentView = ref("Home");
-
-// Computed que devuelve el componente real
 const currentViewComponent = computed(() => views[currentView.value] || Home);
 
 const setView = (view) => {
@@ -62,6 +74,10 @@ const logout = () => {
   setView("Home");
 };
 
+const goToPreferences = () => {
+  console.log("Ir a preferencias del usuario");
+};
+
 onMounted(() => {
   if (authStore.isAuthenticated && !authStore.isTokenValid) {
     authStore.logout();
@@ -70,7 +86,6 @@ onMounted(() => {
     handleLoginSuccess();
   }
 
-  // Interceptor para forzar logout en 401
   api.client.interceptors.response.use(
     (response) => response,
     (error) => {
@@ -83,3 +98,10 @@ onMounted(() => {
   );
 });
 </script>
+
+<style scoped>
+.app-container {
+  min-height: 100vh;
+  position: relative;
+}
+</style>
