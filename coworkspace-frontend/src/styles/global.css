@@ -329,6 +329,15 @@ button:focus-visible {
   justify-content: center;
 } 
 
+.btn-google {
+  color: #000 !important;
+  background-color: #fff !important;
+  border: 1px solid #6c757d !important; /* borde gris */
+}
+.btn-google:hover {
+  background-color: #f8f9fa !important;
+}
+
 /* Space Cards */
 .status-dot {
   width: 8px;
