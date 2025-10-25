@@ -1,11 +1,11 @@
 <template>
   <div class="login-container position-relative">
     <!-- Logo arriba a la izquierda -->
-    <div class="position-absolute top-0 start-0 m-3">
+    <div class="position-absolute top-0 start-0 mt-3 m-3">
       <img
-        src="../assets/logo.png"
+        src="../assets/logo.jpg"
         alt="Logo"
-        style="height: 120px; width: auto"
+        style="height: 60px; width: auto"
       />
     </div>
 
