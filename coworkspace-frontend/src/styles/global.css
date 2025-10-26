@@ -63,8 +63,13 @@ label {
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #f8f9fa;
   min-width: 125vh;
+}
+
+.login-logo{
+  height: 200px;
+  width: auto;
+  margin-top: -60px;
 }
 
 .card {

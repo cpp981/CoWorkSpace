@@ -1,12 +1,8 @@
 <template>
   <div class="login-container position-relative">
     <!-- Logo arriba a la izquierda -->
-    <div class="position-absolute top-0 start-0 mt-3 m-3">
-      <img
-        src="../assets/logo.jpg"
-        alt="Logo"
-        style="height: 60px; width: auto"
-      />
+    <div class="position-absolute top-0 start-0 m-3">
+      <img src="../assets/login_logo.png" alt="Logo" class="login-logo" />
     </div>
 
     <div

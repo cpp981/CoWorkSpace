@@ -42,12 +42,12 @@
         <div class="row g-3">
           <!-- Card 1: Anuncia tus espacios  -->
           <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card h-100 shadow border-0">
               <div class="card-body d-flex flex-column">
                 <div class="mb-3">
                   <i class="bi bi-megaphone fs-1"></i>
                 </div>
-                <h5 class="card-title">Anuncia tus espacios</h5>
+                <h5 class="card-title text-primary">Anuncia tus espacios</h5>
                 <p class="card-text text-muted flex-grow-1">
                   Publica salas, oficinas y zonas comunes con precios y
                   disponibilidad. Gestiona reservas y visibilidad desde tu
@@ -64,12 +64,12 @@
 
           <!-- Card 2: Reserva tu espacio  -->
           <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card h-100 shadow border-0">
               <div class="card-body d-flex flex-column">
                 <div class="mb-3">
                   <i class="bi bi-calendar-check fs-1"></i>
                 </div>
-                <h5 class="card-title">Reserva tu espacio</h5>
+                <h5 class="card-title text-primary">Reserva tu espacio</h5>
                 <p class="card-text text-muted flex-grow-1">
                   Busca por ubicación, precio o servicios. Reserva por horas,
                   días o meses y gestiona tus reservas en un solo lugar.
@@ -85,12 +85,12 @@
 
           <!-- Card 3: Designa administradores -->
           <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card h-100 shadow border-0">
               <div class="card-body d-flex flex-column">
                 <div class="mb-3">
                   <i class="bi bi-people-fill fs-1"></i>
                 </div>
-                <h5 class="card-title">Designa administradores</h5>
+                <h5 class="card-title text-primary">Designa administradores</h5>
                 <p class="card-text text-muted flex-grow-1">
                   Cede permisos a tu equipo para gestionar reservas y espacios.
                 </p>
@@ -100,12 +100,12 @@
 
           <!-- Card 4: Precios flexibles -->
           <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card h-100 shadow border-0">
               <div class="card-body d-flex flex-column">
                 <div class="mb-3">
                   <i class="bi bi-currency-dollar fs-1"></i>
                 </div>
-                <h5 class="card-title">Precios flexibles</h5>
+                <h5 class="card-title text-primary">Precios flexibles</h5>
                 <p class="card-text text-muted flex-grow-1">
                   Define tus propias tarifas. Ofrece descuentos y promociones
                   temporales.
@@ -116,12 +116,12 @@
 
           <!-- Card 5: Dashboard de gestión -->
           <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card h-100 shadow border-0">
               <div class="card-body d-flex flex-column">
                 <div class="mb-3">
                   <i class="bi bi-bar-chart-line-fill fs-1"></i>
                 </div>
-                <h5 class="card-title">Dashboard de gestión</h5>
+                <h5 class="card-title text-primary">Dashboard de gestión</h5>
                 <p class="card-text text-muted flex-grow-1">
                   Supervisa el rendimiento de tus espacios en un panel
                   intuitivo. Visualiza métricas clave y toma decisiones con
@@ -133,15 +133,17 @@
 
           <!-- Card 6: Opiniones y valoraciones -->
           <div class="col-12 col-md-6 col-lg-4">
-            <div class="card h-100 shadow-sm border-0">
+            <div class="card h-100 shadow border-0">
               <div class="card-body d-flex flex-column">
                 <div class="mb-3">
                   <i class="bi bi-star-fill fs-1"></i>
                 </div>
-                <h5 class="card-title">Opiniones y valoraciones</h5>
+                <h5 class="card-title text-primary">
+                  Opiniones y valoraciones
+                </h5>
                 <p class="card-text text-muted flex-grow-1">
-                  Recoge feedback de clientes, responde reseñas y muestra
-                  puntuaciones para aumentar confianza.
+                  Recoge feedback de clientes y muestra puntuaciones para
+                  aumentar confianza.
                 </p>
               </div>
             </div>
