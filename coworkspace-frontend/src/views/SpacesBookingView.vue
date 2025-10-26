@@ -4,9 +4,8 @@
     <button class="btn btn-outline-secondary mb-3" @click="$emit('back')">
       <i class="bi bi-caret-left me-2"></i>Mis espacios
     </button>
-
+    <h2 class="my-4 titulo">Reservas en {{ currentSpaceName }}</h2>
     <GenericList
-      :title="`Reservas en: ${currentSpaceName}`"
       :items="bookings"
       :headers="['Usuario', 'Fecha inicio', 'Fecha fin']"
       :fields="['userName', 'startTimeFormatted', 'endTimeFormatted']"

@@ -1,14 +1,13 @@
 <template>
   <div class="py-4">
-    <div class="d-flex align-items-center mt-3">
+    <div class="d-flex align-items-center">
       <button class="btn btn-outline-secondary mb-3" @click="$emit('back')">
         <i class="bi bi-arrow-left"></i> Volver
       </button>
     </div>
-
+    <h2 class="my-4 titulo">Gestor de Reservas en {{ space.nombre }}</h2>
     <!-- Lista de reservas -->
     <GenericList
-      :title="`Gestionar reservas - ${space?.nombre}`"
       :items="bookings"
       :headers="['Nombre', 'Fecha Inicio', 'Fecha Fin']"
       :fields="['name', 'start', 'end']"

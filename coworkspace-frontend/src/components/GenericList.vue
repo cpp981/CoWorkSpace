@@ -27,11 +27,13 @@
     <table class="table table-striped table-bordered">
       <thead class="table-light">
         <tr>
-          <th v-for="header in headers" :key="header">{{ header }}</th>
+          <th class="text-primary" v-for="header in headers" :key="header">
+            {{ header }}
+          </th>
           <th
             v-if="showActions || showManage"
             style="width: 120px"
-            class="text-end"
+            class="text-end text-primary"
           >
             Acciones
           </th>
