@@ -1,109 +1,72 @@
 <template>
-  <div class="login-container position-relative">
-    <div class="position-absolute top-0 start-0 m-3">
-      <img src="../assets/login_logo.png" alt="Logo" class="login-logo" />
-    </div>
+  <div class="container reg-cont">
+    <div class="row justify-content-center">
+      <div class="col-11 col-md-8 col-lg-5">
+        <div class="card bg-secondary bg-opacity-25 shadow border-0">
+          <div class="card-body p-3">
+            <form @submit.prevent="onSubmit">
+              <h2 class="mb-4">{{ title }}</h2>
 
-    <div
-      class="container d-flex align-items-center justify-content-center min-vh-100"
-    >
-      <div class="row justify-content-center w-100">
-        <div class="col-11 col-md-8 col-lg-5">
-          <div class="card bg-secondary bg-opacity-25 shadow border-0">
-            <div class="card-body p-3">
-              <h3 class="text-center fw-bold mb-3">Crear Nueva Cuenta</h3>
-
-              <form @submit.prevent="onSubmit" novalidate>
-                <!-- Nombre -->
-                <div class="mb-3">
-                  <label for="name" class="form-label">Nombre</label>
-                  <div class="position-relative input-icon-wrapper">
-                    <input
-                      id="name"
-                      type="text"
-                      class="form-control"
-                      v-model="form.name"
-                      placeholder="Tu nombre"
-                      required
-                      :disabled="loading"
-                    />
-                    <i class="bi bi-person input-icon"></i>
-                  </div>
+              <div v-for="field in fields" :key="field.key" class="mb-3">
+                <!-- Inputs normales con icono a la derecha -->
+                <div
+                  v-if="field.type !== 'roleSelect' && field.type !== 'select'"
+                  class="input-group"
+                >
+                  <input
+                    :type="field.type"
+                    class="form-control"
+                    :id="field.key"
+                    v-model="form[field.key]"
+                    :placeholder="field.placeholder"
+                    :required="field.required"
+                    :disabled="loading"
+                  />
+                  <span class="input-group-text">
+                    <i :class="field.icon"></i>
+                  </span>
                 </div>
 
-                <!-- Email -->
-                <div class="mb-3">
-                  <label for="email" class="form-label">Email</label>
-                  <div class="position-relative input-icon-wrapper">
-                    <input
-                      id="email"
-                      type="email"
-                      class="form-control"
-                      v-model="form.email"
-                      placeholder="tu@email.com"
-                      required
-                      :disabled="loading"
-                    />
-                    <i class="bi bi-envelope input-icon"></i>
-                  </div>
-                </div>
-
-                <!-- Password -->
-                <div class="mb-3">
-                  <label for="password" class="form-label">Contraseña</label>
-                  <div class="position-relative input-icon-wrapper">
-                    <input
-                      id="password"
-                      type="password"
-                      class="form-control"
-                      v-model="form.password"
-                      placeholder="••••••••"
-                      required
-                      :disabled="loading"
-                    />
-                    <i class="bi bi-lock input-icon"></i>
-                  </div>
-                </div>
-
-                <!-- Confirmar Password -->
-                <div class="mb-3">
-                  <label for="passwordConfirm" class="form-label"
-                    >Repetir contraseña</label
+                <!-- Select tradicional -->
+                <select
+                  v-else-if="field.type === 'select'"
+                  class="form-select"
+                  :id="field.key"
+                  v-model="form[field.key]"
+                  :required="field.required"
+                  :disabled="loading"
+                >
+                  <option disabled value="">{{ field.placeholder }}</option>
+                  <option
+                    v-for="option in field.options"
+                    :key="option.value"
+                    :value="option.value"
                   >
-                  <div class="position-relative input-icon-wrapper">
-                    <input
-                      id="passwordConfirm"
-                      type="password"
-                      class="form-control"
-                      v-model="form.passwordConfirm"
-                      placeholder="••••••••"
-                      required
-                      :disabled="loading"
-                    />
-                    <i class="bi bi-lock-fill input-icon"></i>
-                  </div>
-                </div>
+                    {{ option.label }}
+                  </option>
+                </select>
 
-                <!-- Selector visual de rol -->
-                <div class="mb-4 text-center">
+                <!-- Selector (cards) visual de rol  -->
+                <div v-else-if="field.type === 'roleSelect'" class="mb-3">
                   <label
-                    class="form-label d-block fw-semibold mb-2 text-primary"
-                    >Selecciona tu tipo de cuenta</label
+                    class="form-label d-block fw-semibold mb-2 text-primary text-center"
                   >
+                    {{ field.label }}
+                  </label>
                   <div class="d-flex justify-content-center gap-3 flex-wrap">
                     <div
-                      v-for="option in roleOptions"
+                      v-for="option in field.options"
                       :key="option.value"
                       class="role-card p-3 rounded text-center shadow-sm"
                       :class="{
                         'border-primary bg-primary bg-opacity-10':
-                          form.roleId === option.value,
-                        'border-secondary': form.roleId !== option.value,
+                          form[field.key] === option.value,
+                        'border-secondary': form[field.key] !== option.value,
                       }"
                       style="cursor: pointer; width: 140px"
-                      @click="form.roleId = option.value"
+                      @click="form[field.key] = option.value"
                       role="button"
-                      :aria-pressed="form.roleId === option.value"
+                      :aria-pressed="form[field.key] === option.value"
                     >
                       <i :class="option.icon + ' fs-3 mb-2 d-block'"></i>
                       <div class="fw-semibold">{{ option.label }}</div>
@@ -111,48 +74,49 @@
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <!-- Enlace a login -->
-                <div class="text-center mb-3">
-                  <small class="text-muted">
-                    ¿Ya tienes cuenta?
-                    <a
-                      href="#"
-                      class="ms-1 text-primary"
-                      @click.prevent="$emit('open-login')"
-                      ><u>Inicia sesión</u></a
-                    >
-                  </small>
-                </div>
-
-                <!-- Botones -->
-                <div class="d-flex justify-content-between">
-                  <button
-                    type="button"
-                    class="btn btn-outline-secondary"
-                    @click="$emit('cancel')"
-                    :disabled="loading"
+              <!-- Frase con enlace opcional -->
+              <div v-if="linkText && linkLabel" class="text-center mb-3">
+                <small class="text-muted">
+                  {{ linkText }}
+                  <a
+                    href="#"
+                    class="ms-1 text-primary"
+                    @click.prevent="goToLogin"
                   >
-                    <i class="bi bi-x-circle me-2"></i> Cancelar
-                  </button>
+                    <u>{{ linkLabel }}</u>
+                  </a>
+                </small>
+              </div>
 
-                  <button
-                    type="submit"
-                    class="btn btn-primary"
-                    :disabled="loading"
-                  >
-                    <i class="bi bi-person-check-fill me-2"></i>
-                    <span
-                      v-if="loading"
-                      class="spinner-border spinner-border-sm me-2"
-                      role="status"
-                      aria-hidden="true"
-                    ></span>
-                    {{ loading ? "Registrando..." : submitText }}
-                  </button>
-                </div>
-              </form>
-            </div>
+              <!-- Botones -->
+              <div class="d-flex justify-content-between">
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary"
+                  @click="emitCancel"
+                  :disabled="loading"
+                >
+                  <i class="bi bi-x-circle me-2"></i>
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  class="btn btn-primary"
+                  :disabled="loading"
+                >
+                  <i class="bi bi-person-check-fill me-2"></i>
+                  <span
+                    v-if="loading"
+                    class="spinner-border spinner-border-sm me-2"
+                    role="status"
+                    aria-hidden="true"
+                  ></span>
+                  {{ loading ? "Registrando..." : submitButtonText }}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       </div>
@@ -161,86 +125,53 @@
 </template>
 
 <script setup>
-import { reactive, ref } from "vue";
-import { useNotyf } from "../composables/useNotyf";
-import api from "../services/api";
-
-const notyf = useNotyf();
+import { reactive, ref, onMounted } from "vue";
 
 const props = defineProps({
-  submitButtonText: { type: String, default: "Crear cuenta" },
+  title: { type: String, default: "" },
+  fields: { type: Array, default: () => [] },
+  submitButtonText: { type: String, default: "Enviar" },
+  submitHandler: { type: Function, default: null },
+  linkText: { type: String, default: "" },
+  linkLabel: { type: String, default: "" },
 });
-const emit = defineEmits(["cancel", "open-login", "registered"]);
 
+const emit = defineEmits(["cancel", "submitted", "error"]);
+
+const form = reactive({});
 const loading = ref(false);
-const submitText = props.submitButtonText;
 
-const form = reactive({
-  name: "",
-  email: "",
-  password: "",
-  passwordConfirm: "",
-  roleId: null,
-});
+const initializeForm = () => {
+  props.fields.forEach((field) => {
+    form[field.key] = field?.value ?? "";
+  });
+};
 
-const roleOptions = [
-  {
-    value: 4,
-    label: "Cliente",
-    icon: "bi bi-person",
-    desc: "Reserva espacios",
-  },
-  {
-    value: 3,
-    label: "Proveedor",
-    icon: "bi bi-building",
-    desc: "Publica tus espacios",
-  },
-];
+onMounted(() => initializeForm());
+
+const emitCancel = () => emit("cancel");
 
 const onSubmit = async () => {
-  // Validaciones
-  if (!form.name || !form.email || !form.password || !form.passwordConfirm) {
-    notyf.error("Completa todos los campos obligatorios.");
-    return;
-  }
-  if (form.password !== form.passwordConfirm) {
-    notyf.error("Las contraseñas no coinciden.");
-    return;
-  }
-  if (!form.roleId) {
-    notyf.error("Por favor selecciona el tipo de cuenta.");
-    return;
-  }
-
   loading.value = true;
   try {
-    const payload = {
-      name: form.name,
-      email: form.email,
-      password: form.password,
-      roleId: form.roleId,
-    };
-
-    const response = await api.register(payload);
+    let response = null;
+    if (typeof props.submitHandler === "function") {
+      response = await props.submitHandler(form);
+    } else {
+      emit("submitted", form);
+    }
     const msg = response?.data?.message || "Registro exitoso";
-    notyf.success(msg);
-
-    // emitimos al padre para redirección
-    emit("registered", { success: true, data: response?.data || null });
-
-    // limpiamos formulario
-    form.name = "";
-    form.email = "";
-    form.password = "";
-    form.passwordConfirm = "";
-    form.roleId = null;
-  } catch (err) {
+    if (response) initializeForm();
+  } catch (error) {
     const errorMsg =
-      err?.response?.data?.message || err?.message || "Error al registrar";
-    notyf.error(errorMsg);
+      error?.response?.data?.message || error?.message || "Error al registrar";
+    emit("error", error);
   } finally {
     loading.value = false;
   }
+};
+
+const goToLogin = () => {
+  window.location.href = "Login.html";
 };
 </script>
