@@ -2,7 +2,7 @@
   <GenericModal
     v-model="internalShow"
     :title="title"
-    confirmText="Confirmar"
+    confirmText="Borrar"
     @submit="handleConfirm"
   >
     <p v-html="message" />
@@ -15,7 +15,7 @@ import GenericModal from "./GenericModal.vue";
 
 const props = defineProps({
   modelValue: { type: Boolean, required: true },
-  title: { type: String, default: "Confirmación" },
+  title: { type: String, default: null },
   message: { type: String, required: true },
 });
 

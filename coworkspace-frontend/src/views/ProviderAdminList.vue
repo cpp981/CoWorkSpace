@@ -28,7 +28,7 @@
     <!-- Modal para confirmar el borrado -->
     <ConfirmDeleteModal
       v-model="showDeleteModal"
-      tittle="Borrar Administrador"
+      title="Borrar Administrador"
       :message="`Se va a borrar a
         <strong>'${adminToDelete?.name}'</strong>,<br><br> ¿Estás seguro?`"
       @confirm="deleteAdmin"
