@@ -70,7 +70,12 @@
                 <div class="text-center mt-3">
                   <small class="text-muted">
                     ¿Aún no tienes una cuenta?
-                    <a class="text-primary" href="#"><u>Regístrate aquí</u></a>
+                    <a
+                      class="text-primary"
+                      href="#"
+                      @click.prevent="openRegister"
+                      ><u>Regístrate aquí</u></a
+                    >
                   </small>
                 </div>
               </form>
@@ -91,7 +96,7 @@ import GoogleIcon from "../assets/GoogleIcon.vue";
 export default {
   name: "LoginPage",
   components: { GoogleIcon },
-  emits: ["cancel", "login-success"],
+  emits: ["cancel", "login-success", "open-register"],
   setup(_, { emit }) {
     const form = ref({
       email: "",
@@ -127,11 +132,16 @@ export default {
       }
     };
 
+    const openRegister = () => {
+      emit("open-register");
+    };
+
     return {
       form,
       loading,
       handleLogin,
       msg,
+      openRegister,
     };
   },
 };

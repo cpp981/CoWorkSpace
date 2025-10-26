@@ -15,6 +15,7 @@
         link-text="¿Ya tienes cuenta?"
         link-label="Inicia sesión"
         @cancel="$emit('cancel')"
+        @go-login="$emit('open-login')"
       />
     </div>
   </div>

@@ -5,7 +5,7 @@
         <div class="card bg-secondary bg-opacity-25 shadow border-0">
           <div class="card-body p-3">
             <form @submit.prevent="onSubmit">
-              <h2 class="mb-4">{{ title }}</h2>
+              <h2 class="mb-4 fw-bold">{{ title }}</h2>
 
               <div v-for="field in fields" :key="field.key" class="mb-3">
                 <!-- Inputs normales con icono a la derecha -->
@@ -136,7 +136,7 @@ const props = defineProps({
   linkLabel: { type: String, default: "" },
 });
 
-const emit = defineEmits(["cancel", "submitted", "error"]);
+const emit = defineEmits(["cancel", "submitted", "error", "go-login"]);
 
 const form = reactive({});
 const loading = ref(false);
@@ -172,6 +172,6 @@ const onSubmit = async () => {
 };
 
 const goToLogin = () => {
-  window.location.href = "Login.html";
+  emit("go-login");
 };
 </script>
