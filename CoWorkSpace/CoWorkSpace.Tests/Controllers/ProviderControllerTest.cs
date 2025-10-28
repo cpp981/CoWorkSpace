@@ -195,7 +195,7 @@ namespace CoWorkSpace.Tests
             // Assert
             var unauthorizedResult = Assert.IsType<UnauthorizedObjectResult>(result);
             var response = Assert.IsType<RegisterResponseDTO>(unauthorizedResult.Value);
-            Assert.Equal(ApiMessages.OnlyProvidersCanCreateAdmins, response.Message);
+            Assert.Equal(ApiMessages.ONLY_PROVIDERS_CAN_CREATE_ADMINS, response.Message);
         }
 
         [Fact]

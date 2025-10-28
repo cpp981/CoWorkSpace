@@ -13,6 +13,8 @@ namespace CoWorkSpace.Api.Data
         public virtual DbSet<Payment> Payments { get; set; }
         public virtual DbSet<Review> Reviews { get; set; }
         public virtual DbSet<Log> Logs { get; set; }
+        public virtual DbSet<RefreshToken> RefreshTokens { get; set; }
+
 
         public CoWorkSpaceContext(DbContextOptions<CoWorkSpaceContext> options)
      : base(options)
