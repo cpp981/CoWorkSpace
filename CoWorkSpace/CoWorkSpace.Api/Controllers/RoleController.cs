@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using CoWorkSpace.Api.Data;
-using Microsoft.EntityFrameworkCore;
+using System;
+using System.Threading.Tasks;
+using CoWorkSpace.Api.Constants;
+using CoWorkSpace.Api.Services;
 
 namespace CoWorkSpace.Api.Controllers
 {
@@ -8,22 +10,25 @@ namespace CoWorkSpace.Api.Controllers
     [Route("api/v1/roles")]
     public class RoleController : ControllerBase
     {
-        private readonly CoWorkSpaceContext _context;
+        private readonly IRoleService _roleService;
 
-        public RoleController(CoWorkSpaceContext context)
+        public RoleController(IRoleService roleService)
         {
-            _context = context;
+            _roleService = roleService;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetRoles()
         {
-            var roles = await _context.Roles
-                .Where(r => r.RoleId != 2 && r.RoleId != 1) // Excluir rol Admin
-                .Select(r => new { Id = r.RoleId, Name = r.RoleName })
-                .ToListAsync();
-
-            return Ok(roles);
+            try
+            {
+                var roles = await _roleService.GetRolesAsync();
+                return Ok(roles);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { Message = ApiMessages.INTERNAL_SERVER_ERROR });
+            }
         }
     }
 }

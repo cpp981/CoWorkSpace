@@ -3,23 +3,50 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using CoWorkSpace.Api.Data;
+using CoWorkSpace.Api.Services; 
+using CoWorkSpace.Api.Models;
+using CoWorkSpace.Api.Repositories;
+using CoWorkSpace.Api.Services.Interfaces;
+using CoWorkSpace.Api.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configuración CORS
+// Configuración CORS (importante al usar cookies, AllowCredentials es necesario)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowFrontend", policy =>
     {
         policy.WithOrigins("http://localhost:5173")
               .AllowAnyMethod()
-              .AllowAnyHeader();
+              .AllowAnyHeader()
+              .AllowCredentials(); 
     });
 });
 
 // Añadir DbContext
 builder.Services.AddDbContext<CoWorkSpaceContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+//Registrar servicios
+builder.Services.AddScoped<ILoginService, LoginService>();
+builder.Services.AddScoped<IRegisterService, RegisterService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IMenuService, MenuService>();
+builder.Services.AddScoped<IProviderService, ProviderService>();
+builder.Services.AddScoped<IProviderSpaceService, ProviderSpaceService>();
+builder.Services.AddScoped<IRoleService, RoleService>();
+builder.Services.AddScoped<ISpaceBookingService, SpaceBookingService>();
+builder.Services.AddScoped<IStatsService, StatsService>();
+
+// Registrar IHttpContextAccessor para IP y otros datos HTTP
+builder.Services.AddHttpContextAccessor();
+
+// Registrar servicios de tokens / repositorios
+builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+
+// Opcional: cache si necesitamos almacenamiento temporal
+// builder.Services.AddDistributedMemoryCache();
 
 // Leer configuración JWT desde appsettings.json
 var jwtSettings = builder.Configuration.GetSection("Jwt");
@@ -45,8 +72,11 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ClockSkew = TimeSpan.Zero
     };
+
+    // Si quieres que Swagger/postman puedan enviar tokens desde la UI no hace falta más aquí.
 });
 
+// Controllers + JSON
 builder.Services.AddControllers().AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.PropertyNameCaseInsensitive = true;

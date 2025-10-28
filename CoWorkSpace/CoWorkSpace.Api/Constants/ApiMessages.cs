@@ -27,6 +27,7 @@
         public const string CANNOT_ACCESS_OTHER_ADMIN_SPACE = "No puedes ver espacios de otro administrador.";
         public const string CANNOT_ACCESS_OTHER_ADMINS_CLIENTS = "No puedes ver clientes de otros administradores.";
         public const string START_DATE_AND_END_DATE_ARE_REQUIREDS = "Fecha de Inicio y fecha de fin son requeridas.";
+        public const string INTERNAL_SERVER_ERROR = "Error interno al procesar la solicitud";
 
 
         // Errores de validación

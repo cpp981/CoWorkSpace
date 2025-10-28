@@ -20,10 +20,10 @@ apiClient.interceptors.request.use((config) => {
 
 export default {
   login(credentials) {
-    return apiClient.post('/auth/login', credentials);
+    return apiClient.post('/login', credentials);
   },
   register(userData) {
-    return apiClient.post('/auth/register', userData);
+    return apiClient.post('/register', userData);
   },
   registerAdmin(providerId, adminData) {
     return apiClient.post(`/providers/${providerId}/admins`, adminData);
