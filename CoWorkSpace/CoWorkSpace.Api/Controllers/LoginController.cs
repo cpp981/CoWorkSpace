@@ -1,93 +1,43 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using CoWorkSpace.Api.Data;
+using System;
+using System.Threading.Tasks;
 using CoWorkSpace.Api.DTOs;
 using CoWorkSpace.Api.Constants;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+using CoWorkSpace.Api.Services;
 
 namespace CoWorkSpace.Api.Controllers
 {
     [ApiController]
-    [Route("api/v1/auth/login")]
+    [Route("api/v1/")]
     public class LoginController : ControllerBase
     {
-        private readonly CoWorkSpaceContext _context;
-        private readonly IConfiguration _configuration;
+        private readonly ILoginService _loginService;
 
-        public LoginController(CoWorkSpaceContext context, IConfiguration configuration)
+        public LoginController(ILoginService loginService)
         {
-            _context = context;
-            _configuration = configuration;
+            _loginService = loginService;
         }
 
-        [HttpPost]
+        [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] LoginRequestDto loginDto)
         {
-            if (loginDto == null || string.IsNullOrEmpty(loginDto.Email) || string.IsNullOrEmpty(loginDto.Password))
-                return BadRequest(new LoginResponseDto
-                {
-                    Message = ApiMessages.MAIL_AND_PASSWORD_ARE_REQUIRED
-                });
-
-            // Incluyo el Role para poder acceder a su nombre
-            var user = await _context.Users
-                .IgnoreQueryFilters()
-                .Include(u => u.Role)
-                .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
-
-            if (user == null)
-                return Unauthorized(new LoginResponseDto
-                {
-                    Message = ApiMessages.INVALID_CREDENTIALS
-                });
-
-            // Validar contraseña con BCrypt
-            bool isPasswordValid = BCrypt.Net.BCrypt.Verify(loginDto.Password, user.PasswordHash);
-            if (!isPasswordValid)
-                return Unauthorized(new LoginResponseDto
-                {
-                    Message = ApiMessages.INVALID_CREDENTIALS
-                });
-
-            // Uso el nombre del rol en el claim
-            var roleName = user.Role?.RoleName ?? "User";
-
-            var claims = new[]
+            try
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim("roleId", user.RoleId.ToString()),
-                new Claim("name", user.Name),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
-            };
-
-            var jwtSettings = _configuration.GetSection("Jwt");
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var expiration = DateTime.UtcNow.AddHours(2);
-
-            var token = new JwtSecurityToken(
-                issuer: jwtSettings["Issuer"],
-                audience: jwtSettings["Audience"],
-                claims: claims,
-                expires: expiration,
-                signingCredentials: creds
-            );
-
-            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
-            var response = new LoginResponseDto
+                var result = await _loginService.LoginAsync(loginDto);
+                return Ok(result);
+            }
+            catch (ArgumentException ex)
             {
-                Token = tokenString,
-                Expiration = expiration,
-                Message = ApiMessages.LOGIN_SUCCESS
-            };
-
-            return Ok(response);
+                return BadRequest(new LoginResponseDto { Message = ex.Message });
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(new LoginResponseDto { Message = ex.Message });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new LoginResponseDto { Message = ApiMessages.INTERNAL_SERVER_ERROR });
+            }
         }
     }
 }

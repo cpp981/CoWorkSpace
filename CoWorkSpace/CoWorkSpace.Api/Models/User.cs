@@ -31,7 +31,7 @@ namespace CoWorkSpace.Api.Models
 
         // Solo para Providers: sus admins
         [InverseProperty("Provider")]
-        [JsonIgnore] // si vas a serializar usuarios, evita bucles
+        [JsonIgnore] 
         public ICollection<User> Admins { get; set; }
     }
 }
