@@ -72,8 +72,6 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(key),
         ClockSkew = TimeSpan.Zero
     };
-
-    // Si quieres que Swagger/postman puedan enviar tokens desde la UI no hace falta más aquí.
 });
 
 // Controllers + JSON
